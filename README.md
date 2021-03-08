@@ -36,3 +36,13 @@
     gandirii. (P.S.: daca mutarea e valida, atunci trebuie actualizata starea 
     tablei.)
 
+## Resources
+- [3-check chess](https://www.chess.com/terms/3-check-chess)
+- [3-check traps](https://www.chess.com/article/view/the-3-check-traps-you-need-to-know)
+- [3-check openings](https://www.chess.com/forum/view/chess960-chess-variants/3-checks-best-openings-1)
+- [chessprogramming: a very resourceful site for chess engines](https://www.chessprogramming.org/Main_Page)
+- [A chess engine that can play 3-check chess](https://github.com/ianfab/Fairy-Stockfish)
+- [Stockfish: a very powerful chess engine](https://github.com/ddugovic/Stockfish)
+- [How do computers play three-check chess?](https://chess.stackexchange.com/questions/18903/how-do-computers-play-three-check-chess)
+- [How Stockfish works](http://rin.io/chess-engine/)
+
