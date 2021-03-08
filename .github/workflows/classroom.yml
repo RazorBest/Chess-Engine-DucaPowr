@@ -8,4 +8,7 @@
         runs-on: ubuntu-latest
         steps:
           - uses: actions/checkout@v2
+          - name: pack
+            run: ./pack.sh
+            shell: bash
           - uses: education/autograding@v1
