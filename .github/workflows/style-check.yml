@@ -7,13 +7,11 @@ on:
     branches: [ main ]
 
 jobs:
-  cpp-style-check:
-
-    runs-on: ubuntu-latest
-    name: Check C++ Style
-
-    steps:
-    - name: Checkout this commit
-      uses: actions/checkout@v2
-    - name: Run style checks
-      uses: coleaeason/actions-uncrustify@v1
+  clang-tidy:
+      name: clang-tidy
+      runs-on: ubuntu-latest
+      steps:
+        - name: clang-tidy check
+          uses: /Tlazypanda/cpp-clang-check@master
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
