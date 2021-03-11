@@ -10,10 +10,7 @@
 5. Trebuie sa decida mutarile intr-un anumit timp limita.
 
 6. Vom spune ca botul "gandeste" atunci cand computeaza pozitii.
-7. Trebuie sa raspunda la comenzi care au nevoie de raspuns instant. De
-    exemplu, daca in timp ce botul gandeste, xboard trimite comanda
-    "go", acesta trebuie sa se opreasca din gandit si sa raspunda instant
-    cu o mutare.
+7. Trebuie sa poata gandi pentru ambele parti.
 8. Trebuie sa sa gandeasca in timp ce oponentul gandeste. Adica sa se
     foloseasca la maxim de timpul limita.
 
