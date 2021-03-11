@@ -28,10 +28,7 @@
 	- trebuie sa aiba o metoda de gandire. Aceasta trebuie sa
     aplice un algoritm pentru a calcula mutarea optima. Problema este ca
     aceasta metoda trebuie sa aiba un timp limita. Botul nu poate gandi la 
-    nesfarsit. Totusi, metoda de gandire trebuie sa poata fi apelata de 
-    repetate ori la rand. Cu cat e apelata de mai multe ori, cu atat botul 
-    gandeste "mai mult". (Un exemplu de implementare a acestei metode este
-    ca acesta sa nu depaseasca o secunda).
+    nesfarsit. Astfel, algoritmul trebuie sa permita conditii de oprire.
 	- Clasa Chess trebuie sa aiba o metoda care returneaza o mutare in urma
     gandirii. (P.S.: daca mutarea e valida, atunci trebuie actualizata starea 
     tablei.)
