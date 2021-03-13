@@ -1,6 +1,15 @@
 
 # Botul de sah DucaPowr
 
+## Usage
+```
+chmod +x ./run.sh
+./run.sh
+```
+
+
+## Ce face DucaPowr?
+
 0. Trebuie sa dea la comanda citate memorabile.
 1. Trebuie sa primeasca inputul de la xboard.
 2. Trebuie sa scrie/raspunda catre xboard.

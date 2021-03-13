@@ -1,18 +1,28 @@
 CC = g++
-CFLAGS = -g
+CFLAGS = -Wall -Wextra
+DEBUG = -g -O0
 
 BINARY = duca
 
 build: $(BINARY)
 
 main.o: main.cpp
-	$(CC) $(CFLAGS) -c $^ -o $@
+	$(CC) $(CFLAGS) $(DEBUG) -c $^ -o $@
 
-$(BINARY): main.o
-	$(CC) $(CFLAGS) $^ -o $@
+logger.o: logger.cpp
+	$(CC) $(CFLAGS) $(DEBUG) -c $^ -o $@
+
+xboardHandler.o: xboardHandler.cpp
+	$(CC) $(CFLAGS) $(DEBUG) -c $^ -o $@
+
+chess.o: chess.cpp
+	$(CC) $(CFLAGS) $(DEBUG) -c $^ -o $@
+
+$(BINARY): main.o logger.o xboardHandler.o chess.o
+	$(CC) $(CFLAGS) $(DEBUG) $^ -o $@
 
 run: $(BINARY)
 	./$(BINARY)
 
 clean:
-	rm -f $(BINARY) *.o
+	rm -f $(BINARY) *.o *.debug
