@@ -1,10 +1,11 @@
 #include "xboardHandler.h"
 
-xBoardHandler::xBoardHandler(Chess& chess) {
-    chess = chess;
+xBoardHandler::xBoardHandler(Engine& engine) {
+    engine = engine;
 }
 
 void xBoardHandler::init() {
+    std::cout.setf(std::ios::unitbuf);
     std::string buffer;
 
     // RECV xboard
@@ -37,7 +38,7 @@ void xBoardHandler::run() {
     std::getline(iss, firstToken, ' ');
 
     if (firstToken == "new") {
-        chess.newGame();
+        engine.newGame();
 
         // default engineRunning = true
         engineRunning = true;
@@ -47,18 +48,18 @@ void xBoardHandler::run() {
         std::getline(iss, move, ' ');
 
         // opponent moved
-        chess.userMove(move);
+        engine.userMove(move);
 
         if (engineRunning) {
             // engine moves
-            std::string move = "move " + chess.move();
+            std::string move = "move " + engine.move();
             std::cout <<  move << std::endl;
             logger.info("xboard <- " + move);
         }
 
     } else if (firstToken == "go") {
         // engine moves
-        std::string move = "move " + chess.move();
+        std::string move = "move " + engine.move();
         std::cout <<  move << std::endl;
         logger.info("xboard <- " + move);
 

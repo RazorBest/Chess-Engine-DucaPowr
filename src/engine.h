@@ -2,7 +2,7 @@
 
 #include <string>
 
-class Chess {
+class Engine {
     public:
         /**
          * Resets the game and makes engine play black.

@@ -1,9 +1,9 @@
-#include "chess.h"
+#include "engine.h"
 
 /**
  * Resets the game and makes engine play black.
  */
-void Chess::newGame() {
+void Engine::newGame() {
     // todo
 }
 
@@ -12,7 +12,7 @@ void Chess::newGame() {
  * 
  * @param move san=0 encoding of the move
  */
-void Chess::userMove(std::string move) {
+void Engine::userMove(std::string move) {
     // todo
 }
 
@@ -21,7 +21,7 @@ void Chess::userMove(std::string move) {
  * 
  * @return san=0 encoding of the move
  */
-std::string Chess::move() {
+std::string Engine::move() {
     // todo
     return "e7e5";
 }

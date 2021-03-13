@@ -1,18 +1,19 @@
 #pragma once
 
 #include <iostream>
+#include <stdio.h>
 #include <sstream>
-#include "chess.h"
+#include "engine.h"
 #include "logger.h"
 
 class xBoardHandler {
     private:
-        Chess chess;
+        Engine engine;
         Logger logger;
 
         bool engineRunning = true;
     public:
-        xBoardHandler(Chess& chess);
+        xBoardHandler(Engine& engine);
         void init();
         void run();
 };
