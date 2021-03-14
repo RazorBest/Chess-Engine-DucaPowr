@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 
-#include "chess.h"
+#include "engine.h"
 #include "xboardHandler.h"
 #include "logger.h"
 #include "config.h"
