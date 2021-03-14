@@ -15,10 +15,10 @@ logger.o: logger.cpp
 xboardHandler.o: xboardHandler.cpp
 	$(CC) $(CFLAGS) $(DEBUG) -c $^ -o $@
 
-chess.o: chess.cpp
+engine.o: engine.cpp
 	$(CC) $(CFLAGS) $(DEBUG) -c $^ -o $@
 
-$(BINARY): main.o logger.o xboardHandler.o chess.o
+$(BINARY): main.o logger.o xboardHandler.o engine.o
 	$(CC) $(CFLAGS) $(DEBUG) $^ -o $@
 
 run: $(BINARY)
