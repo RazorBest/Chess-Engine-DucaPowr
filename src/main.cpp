@@ -11,8 +11,8 @@ std::ofstream Logger::debug_file(DEBUG_FILE_NAME);
 
 // main
 int main() {
-    Chess chess;
-    xBoardHandler handler(chess);
+    Engine engine;
+    xBoardHandler handler(engine);
 
     handler.init();
 
