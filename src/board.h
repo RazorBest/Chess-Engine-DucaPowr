@@ -1,6 +1,8 @@
 #pragma once
 
 #include <stdint.h>
+#include <sys/types.h>
+#include <string>
 
 typedef uint64_t U64;
 
@@ -27,4 +29,6 @@ class Board  {
         U64 king(Side side);
 
         U64 all();
+
+        uint16_t convertMove(std::string move);
 };

@@ -1,4 +1,5 @@
 #include "board.h"
+#include <bits/stdint-uintn.h>
 
 enum enumPiece {
     nWhitePawn,
@@ -53,4 +54,10 @@ U64 Board::king(Side side) {
 
 U64 Board::all() {
     return this->piece(whiteSide) | this->piece(blackSide);
+}
+
+uint16_t Board::convertMove(std::string move) {
+    uint16_t src = ((move[1] - '1') << 3) + (move[0] - 'a');
+    uint16_t dst = ((move[3] - '1') << 3) + (move[2] - 'a');
+    return (src << 6) + src;
 }
