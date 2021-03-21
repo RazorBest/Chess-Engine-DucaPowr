@@ -1,4 +1,5 @@
 #include "board.h"
+#include "constants.h"
 
 enum enumPiece {
     nWhitePawn,
@@ -14,6 +15,21 @@ enum enumPiece {
     nWhiteKing,
     nBlackKing
 };
+
+void Board::init() {
+    pieceBB[nWhitePawn] = WHITEPAWNSTART;                                   
+    pieceBB[nBlackPawn] = BLACKPAWNSTART;                                   
+    pieceBB[nWhiteBishop] = WHITEBISHOPSTART;                               
+    pieceBB[nBlackBishop] = BLACKBISHOPSTART;                               
+    pieceBB[nWhiteKnight] = WHITEKNIGHTSTART;                               
+    pieceBB[nBlackKnight] = BLACKKNIGHTSTART;                               
+    pieceBB[nWhiteRook] = WHITEROOKSTART;                                   
+    pieceBB[nBlackRook] = BLACKROOKSTART;                                   
+    pieceBB[nWhiteQueen] = WHITEQUEENSTART;                                 
+    pieceBB[nBlackQueen] = BLACKQUEENSTART;                                 
+    pieceBB[nWhiteKing] = WHITEKINGSTART;                                   
+    pieceBB[nBlackKing] = BLACKKINGSTART;
+}
 
 U64 Board::piece(Side side) {
     U64 *BB = this->pieceBB;

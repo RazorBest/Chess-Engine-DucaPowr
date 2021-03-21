@@ -15,6 +15,8 @@ class Board  {
         U64 pieceBB[12];
 
     public:
+        void init();
+        
         /* Side is either 0 (white) or 1 (black) */
 
         // Get bitboard of pieces on the coresponding side
