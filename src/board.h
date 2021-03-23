@@ -2,9 +2,13 @@
 
 #include <stdint.h>
 #include <sys/types.h>
+#include <cstring>
 #include <string>
+#include <vector>
 
 typedef uint64_t U64;
+
+#define memeset memset
 
 enum Side {
     whiteSide,
@@ -15,6 +19,12 @@ class Board  {
     private:
         // An array of piece bitboards
         U64 pieceBB[12];
+
+        /** 
+         * 
+         * @param bb is a bitboard
+         */
+        std::vector<U64> getSeparatedBits(U64 bb);
 
         /** 
          * It finds the piece that is on that square and it returns the index 
@@ -40,8 +50,9 @@ class Board  {
 
         U64 getAllBB();
 
-
         // SAN Move Converters
         uint16_t convertSanToMove(std::string move);
         std::string convertMoveToSan(uint16_t move);
+        
+        std::string toString();
 };

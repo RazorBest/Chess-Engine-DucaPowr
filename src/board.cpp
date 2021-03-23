@@ -82,7 +82,7 @@ int Board::getPieceIndexFromSquare(uint16_t sq) {
     U64 sqBB = 1 << sq;
 
     // Iterate through every bitboard
-    for (int i = 0; sizeof(pieceBB) / sizeof(*pieceBB); i++) {
+    for (size_t i = 0; i < sizeof(pieceBB) / sizeof(*pieceBB); i++) {
         if (pieceBB[i] & sqBB) {
             return i;
         }  
@@ -123,4 +123,55 @@ uint16_t Board::convertSanToMove(std::string move) {
 std::string Board::convertMoveToSan(uint16_t move) {
     // TODO - barbu
 }
+
 #pragma endregion
+
+std::vector<U64> Board::getSeparatedBits(U64 bb) {
+    std::vector<U64> moves;
+
+    while (bb) {
+        moves.push_back(bb & -bb);
+        bb &= bb - 1;
+    }
+
+    return moves;
+}
+
+// This is inefficient
+uint16_t getSquareIndex(U64 bb) {
+    int index = 0;
+
+    while (bb >>= 1) {
+        index++;
+    }
+
+    return index;
+}
+
+std::string Board::toString() {
+    static char const pieceSymbol[12] = {'p', 'P', 'b', 'B', 'n', 'N',
+        'r', 'R', 'q', 'Q', 'k', 'K'};
+    static char const emptySymbol = '.';
+    // char array map
+    char board[64];
+
+    memeset(board, emptySymbol, 64);
+
+    // Store the pieces in the char array map
+    for (size_t i = 0; i < sizeof(pieceBB) / sizeof(*pieceBB); i++) {
+        auto pieces = getSeparatedBits(pieceBB[i]);
+        for (U64 pieceBB : pieces) {
+            int sqIndex = getSquareIndex(pieceBB);
+
+            board[sqIndex] = pieceSymbol[i];
+        } 
+    }
+
+    // Convert to std::string and add a newline after every 8 characters
+    std::string output;
+    for (int i = 0; i < 8; i++) {
+        output += std::string(board + i*8, 8) + '\n'; 
+    }
+
+    return output;
+}
