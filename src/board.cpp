@@ -96,34 +96,59 @@ int Board::getPieceIndexFromSquare(uint16_t sq) {
 
 #pragma region SAN Move Converters
 uint16_t Board::convertSanToMove(std::string move) {
-    // TODO - check special flags
-    uint16_t src = ((move[1] - '1') << 3) + (move[0] - 'a');
-    uint16_t dest = ((move[3] - '1') << 3) + (move[2] - 'a');
-    uint8_t prom = 0;
-    uint8_t flags = 0;
+    uint16_t res = ((move[1] - '1') << 3) | (move[0] - 'a');
+    res <<= 6;
+    res |= ((move[3] - '1') << 3) | (move[2] - 'a');
+
     if (move.size() == 5) {
+        res |= 0x4000;
         switch (move[4]) {
             case 'r':
-                prom = 0;
                 break;
             case 'n':
-                prom = 1;
+                res |= 0x1000;
                 break;
             case 'b':
-                prom = 2;
+                res |= 0x2000;
                 break;
             case 'q':
-                prom = 3;
+                res |= 0x3000;
                 break;
             default:
                 break;
         }
     }
-    return (flags << 14) + (prom << 12) + (src << 6) + dest;
+    return res;
 }
 
 std::string Board::convertMoveToSan(uint16_t move) {
-    // TODO - barbu
+  std::string res;
+  res.push_back(((move >> 6) & 7) + 'a');
+  res.push_back(((move >> 9) & 7) + '1');
+  res.push_back((move & 7) + 'a');
+  res.push_back(((move >> 3) & 7) + '1');
+
+  if (move & 0x4000) {
+    char prom;
+    switch ((move & 0x3000) >> 12) {
+    case 0:
+      prom = 'r';
+      break;
+    case 1:
+      prom = 'n';
+      break;
+    case 2:
+      prom = 'b';
+      break;
+    case 3:
+      prom = 'q';
+      break;
+    default:
+      break;
+    }
+    res.push_back(prom);
+    }
+    return res;
 }
 
 #pragma endregion
