@@ -37,9 +37,8 @@ class Board  {
         // Init function that resets the board to initial state
         void init();
         
-        /* Side is either 0 (white) or 1 (black) */
-
         // Get bitboard of pieces on the coresponding side
+        /* Side is either 0 (white) or 1 (black) */
         U64 getPieceBB(Side side);
         U64 getPawnBB(Side side);
         U64 getBishopBB(Side side);
@@ -47,8 +46,10 @@ class Board  {
         U64 getRookBB(Side side);
         U64 getQueenBB(Side side);
         U64 getKingBB(Side side);
-
         U64 getAllBB();
+
+        // apply move - returns false if move is not legal
+        bool applyMove(uint16_t move);
 
         // SAN Move Converters
         uint16_t convertSanToMove(std::string move);

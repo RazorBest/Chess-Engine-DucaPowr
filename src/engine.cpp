@@ -14,6 +14,9 @@ void Engine::newGame() {
  */
 void Engine::userMove(std::string move) {
     // todo
+
+    // now its my turn to move
+    switchSide();
 }
 
 /**
@@ -35,5 +38,16 @@ std::string Engine::move() {
 
     //return board.convertMoveToSan(moves[rand_index]);
 
+    // now its opponent's turn to move
+    switchSide();
+
     return "e7e5";
+}
+
+void Engine::switchSide() {
+    if (side_to_move == Side::whiteSide) {
+        side_to_move = Side::blackSide;
+    } else {
+        side_to_move = Side::whiteSide;
+    }
 }

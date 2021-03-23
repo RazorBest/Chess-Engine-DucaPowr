@@ -31,4 +31,7 @@ class Engine {
     private:
         Board board;
         Generator generator;
+        Side side_to_move = Side::whiteSide;
+
+        void switchSide();
 };
