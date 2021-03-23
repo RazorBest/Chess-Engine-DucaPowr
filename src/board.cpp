@@ -58,6 +58,6 @@ U64 Board::all() {
 
 uint16_t Board::convertMove(std::string move) {
     uint16_t src = ((move[1] - '1') << 3) + (move[0] - 'a');
-    uint16_t dst = ((move[3] - '1') << 3) + (move[2] - 'a');
-    return (src << 6) + src;
+    uint16_t dest = ((move[3] - '1') << 3) + (move[2] - 'a');
+    return (src << 6) + dest;
 }
