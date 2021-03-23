@@ -1,5 +1,8 @@
+#include <bits/stdint-uintn.h>
+
 #include "board.h"
 #include "constants.h"
+
 
 enum enumPiece {
     nWhitePawn,
@@ -70,6 +73,33 @@ U64 Board::king(Side side) {
 
 U64 Board::all() {
     return this->piece(whiteSide) | this->piece(blackSide);
+}
+
+uint16_t Board::convertMove(std::string move) {
+    // TODO - check special flags
+    uint16_t src = ((move[1] - '1') << 3) + (move[0] - 'a');
+    uint16_t dest = ((move[3] - '1') << 3) + (move[2] - 'a');
+    uint8_t prom = 0;
+    uint8_t flags = 0;
+    if (move.size() == 5) {
+        switch (move[4]) {
+            case 'r':
+                prom = 0;
+                break;
+            case 'n':
+                prom = 1;
+                break;
+            case 'b':
+                prom = 2;
+                break;
+            case 'q':
+                prom = 3;
+                break;
+            default:
+                break;
+        }
+    }
+    return (flags << 14) + (prom << 12) + (src << 6) + dest;
 }
 
 int Board::getPieceIndexFromSquare(uint16_t sq) {
