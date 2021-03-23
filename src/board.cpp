@@ -59,5 +59,25 @@ U64 Board::all() {
 uint16_t Board::convertMove(std::string move) {
     uint16_t src = ((move[1] - '1') << 3) + (move[0] - 'a');
     uint16_t dest = ((move[3] - '1') << 3) + (move[2] - 'a');
-    return (src << 6) + dest;
+    uint8_t prom = 0;
+    uint8_t flags = 0;
+    if (move.size() == 5) {
+        switch (move[4]) {
+            case 'r':
+                prom = 0;
+                break;
+            case 'n':
+                prom = 1;
+                break;
+            case 'b':
+                prom = 2;
+                break;
+            case 'q':
+                prom = 3;
+                break;
+            default:
+                break;
+        }
+    }
+    return (flags << 14) + (prom << 12) + (src << 6) + dest;
 }
