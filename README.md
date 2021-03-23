@@ -23,25 +23,7 @@ chmod +x ./run.sh
 8. Trebuie sa sa gandeasca in timp ce oponentul gandeste. Adica sa se
     foloseasca la maxim de timpul limita.
 9. Trebuie sa se opreasa din gandit odata ce oponentul face o mutare.
-
-10. Botul este reprezentat de clasa Chess.
-
-**Clasa Chess:**
-
-	- trebuie sa stocheze starea tablei.
-	- trebuie sa stie modul in care piesele se pot muta; reguli de atac;
-        reguli de promovare; reguli pentru rocada; conditii de castig etc.
-    - trebuie sa gandeasca.
-	- trebuie sa aiba o metoda care actualizeaza starea tablei. (
-        care e apelata atunci cand e facuta o mutare).
-	- trebuie sa aiba o metoda de gandire. Aceasta trebuie sa
-    aplice un algoritm pentru a calcula mutarea optima. Problema este ca
-    aceasta metoda trebuie sa aiba un timp limita. Botul nu poate gandi la 
-    nesfarsit. Astfel, algoritmul trebuie sa permita conditii de oprire.
-	- trebuie sa aiba o metoda care returneaza o mutare in urma
-    gandirii. (P.S.: daca mutarea e valida, atunci trebuie actualizata starea 
-    tablei.)
-
+10. 
 ## Resources
 - [3-check chess](https://www.chess.com/terms/3-check-chess)
 - [3-check traps](https://www.chess.com/article/view/the-3-check-traps-you-need-to-know)

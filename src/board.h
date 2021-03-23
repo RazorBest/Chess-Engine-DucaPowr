@@ -16,7 +16,15 @@ class Board  {
         // An array of piece bitboards
         U64 pieceBB[12];
 
+        // sq is a 0-63 number indicating a board square
+        // It finds the piece that is on that square and it returns the index 
+        //  to its bitboard in the pieceBB array
+        int getPieceIndexFromSquare(uint16_t sq);
+        bool isEnPassant(uint16_t move);
+
     public:
+        void init();
+        
         /* Side is either 0 (white) or 1 (black) */
 
         // Get bitboard of pieces on the coresponding side
