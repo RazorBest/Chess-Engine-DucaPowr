@@ -34,7 +34,7 @@ void Board::init() {
     pieceBB[nBlackKing] = BLACKKINGSTART;
 }
 
-U64 Board::piece(Side side) {
+U64 Board::getPieceBB(Side side) {
     U64 *BB = this->pieceBB;
 
     // Perform bitwise OR between all white pieces
@@ -46,33 +46,33 @@ U64 Board::piece(Side side) {
             BB[nWhiteKing + side];
 }
 
-U64 Board::pawn(Side side) {
-    return this->pieceBB[nWhitePawn + side];
+U64 Board::getPawnBB(Side side) {
+    return pieceBB[nWhitePawn + side];
 }
 
-U64 Board::bishop(Side side) {
-    return this->pieceBB[nWhiteBishop + side];
+U64 Board::getBishopBB(Side side) {
+    return pieceBB[nWhiteBishop + side];
 }
 
 
-U64 Board::knight(Side side) {
-    return this->pieceBB[nWhiteKnight + side];
+U64 Board::getKnightBB(Side side) {
+    return pieceBB[nWhiteKnight + side];
 }
 
-U64 Board::rook(Side side) {
-    return this->pieceBB[nWhiteRook + side];
+U64 Board::getRookBB(Side side) {
+    return pieceBB[nWhiteRook + side];
 }
 
-U64 Board::queen(Side side) {
-    return this->pieceBB[nWhiteQueen + side];
+U64 Board::getQueenBB(Side side) {
+    return pieceBB[nWhiteQueen + side];
 }
 
-U64 Board::king(Side side) {
-    return this->pieceBB[nWhiteKing + side];
+U64 Board::getKingBB(Side side) {
+    return pieceBB[nWhiteKing + side];
 }
 
-U64 Board::all() {
-    return this->piece(whiteSide) | this->piece(blackSide);
+U64 Board::getAllBB() {
+    return getPieceBB(whiteSide) | getPieceBB(blackSide);
 }
 
 uint16_t Board::convertMove(std::string move) {
@@ -125,9 +125,9 @@ bool Board::isEnPassant(uint16_t move) {
 
     U64 dstBB = 1 << dst;
     U64 srcBB = 1 << src;
-    U64 whitePawn = pawn(whiteSide);
-    U64 blackPawn = pawn(blackSide);
-    U64 allPcs = all();
+    U64 whitePawn = getPawnBB(whiteSide);
+    U64 blackPawn = getPawnBB(blackSide);
+    U64 allPcs = getAllBB();
 
     // If the move is a normal attack
     if (dstBB & allPcs) {
