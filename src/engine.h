@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <stdlib.h>
+#include <bitset>
 
 #include "board.h"
 #include "moveGen.h"

@@ -4,21 +4,14 @@ DEBUG = -g -O0
 
 BINARY = duca
 
+SOURCE_FILES = main.o logger.o xboardHandler.o engine.o board.o moveChecker.o moveGen.o
+
 build: $(BINARY)
 
-main.o: main.cpp
+%.o: %.cpp
 	$(CC) $(CFLAGS) $(DEBUG) -c $^ -o $@
 
-logger.o: logger.cpp
-	$(CC) $(CFLAGS) $(DEBUG) -c $^ -o $@
-
-xboardHandler.o: xboardHandler.cpp
-	$(CC) $(CFLAGS) $(DEBUG) -c $^ -o $@
-
-engine.o: engine.cpp
-	$(CC) $(CFLAGS) $(DEBUG) -c $^ -o $@
-
-$(BINARY): main.o logger.o xboardHandler.o engine.o
+$(BINARY): $(SOURCE_FILES)
 	$(CC) $(CFLAGS) $(DEBUG) $^ -o $@
 
 run: $(BINARY)

@@ -25,7 +25,15 @@ std::string Engine::move() {
     // this only for etapa 1 - generate random pseudo-legal pawn move
     uint16_t moves[MAX_MOVES_AT_STEP];
 
-    generator.generateMoves(board, moves, 0);
+    uint16_t moves_len = 0;
+
+    generator.generateMoves(board, moves, &moves_len);
+
+    // TODO - change this
+
+    //int rand_index = rand() % moves_len;
+
+    //return board.convertMoveToSan(moves[rand_index]);
 
     return "e7e5";
 }

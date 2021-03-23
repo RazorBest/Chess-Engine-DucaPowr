@@ -13,9 +13,9 @@ bool MoveChecker::isEnPassant(uint16_t move) {
 
     U64 dstBB = 1 << dst;
     U64 srcBB = 1 << src;
-    U64 whitePawn = board.pawn(whiteSide);
-    U64 blackPawn = board.pawn(blackSide);
-    U64 allPcs = board.all();
+    U64 whitePawn = board.getPawnBB(whiteSide);
+    U64 blackPawn = board.getPawnBB(blackSide);
+    U64 allPcs = board.getAllBB();
 
     // If the move is a normal attack
     if (dstBB & allPcs) {
