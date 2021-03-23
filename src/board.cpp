@@ -82,7 +82,7 @@ int Board::getPieceIndexFromSquare(uint16_t sq) {
     U64 sqBB = 1 << sq;
 
     // Iterate through every bitboard
-    for (int i = 0; sizeof(pieceBB) / sizeof(*pieceBB); i++) {
+    for (size_t i = 0; i < sizeof(pieceBB) / sizeof(*pieceBB); i++) {
         if (pieceBB[i] & sqBB) {
             return i;
         }  
