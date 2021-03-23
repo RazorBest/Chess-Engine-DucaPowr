@@ -4,9 +4,10 @@
 #include <sys/types.h>
 #include <cstring>
 #include <string>
-#include <vector>
+#include <iostream>
 
-typedef uint64_t U64;
+#include "logger.h"
+#include "utils.h"
 
 #define memeset memset
 
@@ -17,14 +18,10 @@ enum Side {
 
 class Board  {
     private:
-        // An array of piece bitboards
-        U64 pieceBB[12];
+        Logger logger;
 
-        /** 
-         * 
-         * @param bb is a bitboard
-         */
-        std::vector<U64> getSeparatedBits(U64 bb);
+        // An array of piece bitboards
+        U64 pieceBB[13];
 
         /** 
          * It finds the piece that is on that square and it returns the index 
@@ -34,6 +31,10 @@ class Board  {
         int getPieceIndexFromSquare(uint16_t sq);
 
     public:
+        // state vars
+        Side side_to_move;
+        void switchSide();
+
         // Init function that resets the board to initial state
         void init();
         
@@ -47,6 +48,7 @@ class Board  {
         U64 getQueenBB(Side side);
         U64 getKingBB(Side side);
         U64 getAllBB();
+        U64 getEmptyBB();
 
         // apply move - returns false if move is not legal
         bool applyMove(uint16_t move);

@@ -4,7 +4,7 @@ DEBUG = -g -O0
 
 BINARY = duca
 
-SOURCE_FILES = main.o logger.o xboardHandler.o engine.o board.o moveChecker.o moveGen.o
+SOURCE_FILES = main.o logger.o xboardHandler.o engine.o board.o moveChecker.o moveGen.o utils.o
 
 build: $(BINARY)
 

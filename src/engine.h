@@ -30,8 +30,5 @@ class Engine {
         std::string move();
     private:
         Board board;
-        Generator generator;
-        Side side_to_move = Side::whiteSide;
-
-        void switchSide();
+        Generator generator{board};
 };

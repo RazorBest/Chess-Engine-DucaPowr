@@ -1,5 +1,7 @@
 #include "engine.h"
 
+#include <time.h>
+
 /**
  * Resets the game and makes engine play black.
  */
@@ -13,10 +15,7 @@ void Engine::newGame() {
  * @param move san=0 encoding of the move
  */
 void Engine::userMove(std::string move) {
-    // todo
-
-    // now its my turn to move
-    switchSide();
+    board.applyMove(board.convertSanToMove(move));
 }
 
 /**
@@ -27,27 +26,18 @@ void Engine::userMove(std::string move) {
 std::string Engine::move() {
     // this only for etapa 1 - generate random pseudo-legal pawn move
     uint16_t moves[MAX_MOVES_AT_STEP];
+    memset(moves, 0, sizeof(moves));
 
     uint16_t moves_len = 0;
 
     generator.generateMoves(board, moves, &moves_len);
 
-    // TODO - change this
+    srand(time(NULL));
 
-    //int rand_index = rand() % moves_len;
+    int rand_index = rand() % moves_len;
+    uint16_t move = moves[rand_index];
 
-    //return board.convertMoveToSan(moves[rand_index]);
+    board.applyMove(move);
 
-    // now its opponent's turn to move
-    switchSide();
-
-    return "e7e5";
-}
-
-void Engine::switchSide() {
-    if (side_to_move == Side::whiteSide) {
-        side_to_move = Side::blackSide;
-    } else {
-        side_to_move = Side::whiteSide;
-    }
+    return board.convertMoveToSan(move);
 }

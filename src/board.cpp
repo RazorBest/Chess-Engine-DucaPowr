@@ -15,7 +15,8 @@ enum enumPiece {
     nWhiteQueen,
     nBlackQueen,
     nWhiteKing,
-    nBlackKing
+    nBlackKing,
+    trashPiece
 };
 
 void Board::init() {
@@ -31,6 +32,8 @@ void Board::init() {
     pieceBB[nBlackQueen] = BLACKQUEENSTART;                                 
     pieceBB[nWhiteKing] = WHITEKINGSTART;                                   
     pieceBB[nBlackKing] = BLACKKINGSTART;
+
+    side_to_move = whiteSide;
 }
 
 #pragma region Bitboard getters
@@ -74,31 +77,43 @@ U64 Board::getKingBB(Side side) {
 U64 Board::getAllBB() {
     return getPieceBB(whiteSide) | getPieceBB(blackSide);
 }
+
+U64 Board::getEmptyBB() {
+    return ~getAllBB();
+}
 #pragma endregion
 
 #pragma region Helpers
 int Board::getPieceIndexFromSquare(uint16_t sq) {
     // Convert from index(0-63) to bitboard 
-    U64 sqBB = 1 << sq;
+    U64 sqBB = 1;
+    sqBB <<= sq;
 
     // Iterate through every bitboard
-    for (size_t i = 0; i < sizeof(pieceBB) / sizeof(*pieceBB); i++) {
+    for (size_t i = 0; i < 12; i++) {
         if (pieceBB[i] & sqBB) {
             return i;
         }  
     }
 
-    return -1;
+    return trashPiece;
 }
 
-
+void Board::switchSide() {
+    logger.info("hereee");
+    if (side_to_move == Side::whiteSide) {
+        side_to_move = Side::blackSide;
+    } else {
+        side_to_move = Side::whiteSide;
+    }
+}
 #pragma endregion
 
 #pragma region SAN Move Converters
 uint16_t Board::convertSanToMove(std::string move) {
-    uint16_t res = ((move[1] - '1') << 3) | (move[0] - 'a');
+    uint16_t res = ((move[3] - '1') << 3) | (move[2] - 'a');
     res <<= 6;
-    res |= ((move[3] - '1') << 3) | (move[2] - 'a');
+    res |= ((move[1] - '1') << 3) | (move[0] - 'a');
 
     if (move.size() == 5) {
         res |= 0x4000;
@@ -123,10 +138,10 @@ uint16_t Board::convertSanToMove(std::string move) {
 
 std::string Board::convertMoveToSan(uint16_t move) {
   std::string res;
-  res.push_back(((move >> 6) & 7) + 'a');
-  res.push_back(((move >> 9) & 7) + '1');
   res.push_back((move & 7) + 'a');
   res.push_back(((move >> 3) & 7) + '1');
+  res.push_back(((move >> 6) & 7) + 'a');
+  res.push_back(((move >> 9) & 7) + '1');
 
   if (move & 0x4000) {
     char prom;
@@ -153,28 +168,6 @@ std::string Board::convertMoveToSan(uint16_t move) {
 
 #pragma endregion
 
-std::vector<U64> Board::getSeparatedBits(U64 bb) {
-    std::vector<U64> moves;
-
-    while (bb) {
-        moves.push_back(bb & -bb);
-        bb &= bb - 1;
-    }
-
-    return moves;
-}
-
-// This is inefficient
-uint16_t getSquareIndex(U64 bb) {
-    int index = 0;
-
-    while (bb >>= 1) {
-        index++;
-    }
-
-    return index;
-}
-
 std::string Board::toString() {
     static char const pieceSymbol[12] = {'p', 'P', 'b', 'B', 'n', 'N',
         'r', 'R', 'q', 'Q', 'k', 'K'};
@@ -185,7 +178,7 @@ std::string Board::toString() {
     memeset(board, emptySymbol, 64);
 
     // Store the pieces in the char array map
-    for (size_t i = 0; i < sizeof(pieceBB) / sizeof(*pieceBB); i++) {
+    for (size_t i = 0; i < 12; i++) {
         auto pieces = getSeparatedBits(pieceBB[i]);
         for (U64 pieceBB : pieces) {
             int sqIndex = getSquareIndex(pieceBB);
@@ -196,7 +189,7 @@ std::string Board::toString() {
 
     // Convert to std::string and add a newline after every 8 characters
     std::string output;
-    for (int i = 0; i < 8; i++) {
+    for (int i = 7; i >= 0; i--) {
         output += std::string(board + i*8, 8) + '\n'; 
     }
 
@@ -209,13 +202,33 @@ std::string Board::toString() {
  * TODO test function, add legality check
 */
 bool Board::applyMove(uint16_t move) {
-    uint16_t sourceSquare = move & 0xf;
-    uint16_t destSquare = (move & 0xf0) >> 4;
-    uint64_t sourcePosBoard = 1 << sourceSquare;
-    uint64_t destPosBoard = 1 << destSquare;
+    logger.raw("side to move: " + std::to_string(side_to_move));
 
-    pieceBB[getPieceIndexFromSquare(sourceSquare)] ^= sourcePosBoard;
-    pieceBB[getPieceIndexFromSquare(destSquare)] |= destPosBoard;
+    uint16_t sourceSquare = move & 0x3f;
+    uint16_t destSquare = (move >> 6) & 0x3f;
+
+    uint64_t sourcePosBoard = 1;
+    sourcePosBoard <<= sourceSquare;
+    uint64_t destPosBoard = 1; 
+    destPosBoard <<= destSquare;
+
+
+    int sourceSquareIndex = getPieceIndexFromSquare(sourceSquare);
+    int destSquareIndex = getPieceIndexFromSquare(destSquare);
+
+    // remove source piece from its bb
+    pieceBB[sourceSquareIndex] ^= sourcePosBoard;
+
+    // remove dest piece from its bb
+    pieceBB[destSquareIndex] ^= destPosBoard;
+
+    // add source piece to dest pos in source bb
+    pieceBB[sourceSquareIndex] |= destPosBoard;
+
+
+    switchSide();
+
+    logger.raw(toString() + '\n');
 
     return true; // TODO change later
 }

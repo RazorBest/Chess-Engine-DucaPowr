@@ -4,6 +4,7 @@
 
 #include "board.h"
 #include "logger.h"
+#include "constants.h"
 
 class Generator {
     /**
@@ -15,20 +16,24 @@ class Generator {
      * bits 14-15 flags (0 - none, 1 - promotion, 2 - en passant, 3 - castling)
     */
    public:
-        void generateMoves(Board board, uint16_t* moves, uint16_t* cnt);
+        Generator(Board& board);
+
+        void generateMoves(Board board, uint16_t* moves, uint16_t* len);
 
     private:
+        Board board;
         Logger logger;
 
-        void pawnMoves(Board board, uint16_t* moves, uint16_t* cnt);
 
-        void rookMoves(Board board, uint16_t* moves, uint16_t* cnt);
+        void pawnMoves(Board board, uint16_t* moves, uint16_t* len);
 
-        void bishopMoves(Board board, uint16_t* moves, uint16_t* cnt);
+        void rookMoves(Board board, uint16_t* moves, uint16_t* len);
 
-        void knightMoves(Board board, uint16_t* moves, uint16_t* cnt);
+        void bishopMoves(Board board, uint16_t* moves, uint16_t* len);
 
-        void queenMoves(Board board, uint16_t* moves, uint16_t* cnt);
+        void knightMoves(Board board, uint16_t* moves, uint16_t* len);
 
-        void kingMoves(Board board, uint16_t* moves, uint16_t* cnt);
+        void queenMoves(Board board, uint16_t* moves, uint16_t* len);
+
+        void kingMoves(Board board, uint16_t* moves, uint16_t* len);
 };
