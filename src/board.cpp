@@ -90,6 +90,8 @@ int Board::getPieceIndexFromSquare(uint16_t sq) {
 
     return -1;
 }
+
+
 #pragma endregion
 
 #pragma region SAN Move Converters
@@ -174,4 +176,21 @@ std::string Board::toString() {
     }
 
     return output;
+}
+
+/**
+ * Change bitboards according to given move.
+ * Returns whether the move is legal or not
+ * TODO test function, add legality check
+*/
+bool Board::applyMove(uint16_t move) {
+    uint16_t sourceSquare = move & 0xf;
+    uint16_t destSquare = (move & 0xf0) >> 4;
+    uint64_t sourcePosBoard = 1 << sourceSquare;
+    uint64_t destPosBoard = 1 << destSquare;
+
+    pieceBB[getPieceIndexFromSquare(sourceSquare)] ^= sourcePosBoard;
+    pieceBB[getPieceIndexFromSquare(destSquare)] |= destPosBoard;
+
+    return true; // TODO change later
 }
