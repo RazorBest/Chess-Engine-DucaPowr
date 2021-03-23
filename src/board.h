@@ -16,13 +16,15 @@ class Board  {
         // An array of piece bitboards
         U64 pieceBB[12];
 
-        // sq is a 0-63 number indicating a board square
-        // It finds the piece that is on that square and it returns the index 
-        //  to its bitboard in the pieceBB array
+        /** 
+         * It finds the piece that is on that square and it returns the index 
+         * to its bitboard in the pieceBB array
+         * @param sq is a 0-63 number indicating a board square
+         */
         int getPieceIndexFromSquare(uint16_t sq);
-        bool isEnPassant(uint16_t move);
 
     public:
+        // Init function that resets the board to initial state
         void init();
         
         /* Side is either 0 (white) or 1 (black) */
@@ -38,5 +40,8 @@ class Board  {
 
         U64 getAllBB();
 
-        uint16_t convertMove(std::string move);
+
+        // SAN Move Converters
+        uint16_t convertSanToMove(std::string move);
+        std::string convertMoveToSan(uint16_t move);
 };

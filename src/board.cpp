@@ -3,7 +3,6 @@
 #include "board.h"
 #include "constants.h"
 
-
 enum enumPiece {
     nWhitePawn,
     nBlackPawn,
@@ -34,6 +33,7 @@ void Board::init() {
     pieceBB[nBlackKing] = BLACKKINGSTART;
 }
 
+#pragma region Bitboard getters
 U64 Board::getPieceBB(Side side) {
     U64 *BB = this->pieceBB;
 
@@ -74,8 +74,26 @@ U64 Board::getKingBB(Side side) {
 U64 Board::getAllBB() {
     return getPieceBB(whiteSide) | getPieceBB(blackSide);
 }
+#pragma endregion
 
-uint16_t Board::convertMove(std::string move) {
+#pragma region Helpers
+int Board::getPieceIndexFromSquare(uint16_t sq) {
+    // Convert from index(0-63) to bitboard 
+    U64 sqBB = 1 << sq;
+
+    // Iterate through every bitboard
+    for (int i = 0; sizeof(pieceBB) / sizeof(*pieceBB); i++) {
+        if (pieceBB[i] & sqBB) {
+            return i;
+        }  
+    }
+
+    return -1;
+}
+#pragma endregion
+
+#pragma region SAN Move Converters
+uint16_t Board::convertSanToMove(std::string move) {
     // TODO - check special flags
     uint16_t src = ((move[1] - '1') << 3) + (move[0] - 'a');
     uint16_t dest = ((move[3] - '1') << 3) + (move[2] - 'a');
@@ -102,50 +120,7 @@ uint16_t Board::convertMove(std::string move) {
     return (flags << 14) + (prom << 12) + (src << 6) + dest;
 }
 
-int Board::getPieceIndexFromSquare(uint16_t sq) {
-    // Convert from index(0-63) to bitboard 
-    U64 sqBB = 1 << sq;
-
-    // Iterate through every bitboard
-    for (int i = 0; sizeof(pieceBB) / sizeof(*pieceBB); i++) {
-        if (pieceBB[i] & sqBB) {
-            return i;
-        }  
-    }
-
-    return -1;
+std::string Board::convertMoveToSan(uint16_t move) {
+    // TODO - barbu
 }
-
-// This doesn't check the corectness of the move
-bool Board::isEnPassant(uint16_t move) {
-    // Extract the last 6 bits
-    uint16_t dst = move & 0x3F;
-    // Extract the next 6 bits
-    uint16_t src = move & 0xFC0;
-
-    U64 dstBB = 1 << dst;
-    U64 srcBB = 1 << src;
-    U64 whitePawn = getPawnBB(whiteSide);
-    U64 blackPawn = getPawnBB(blackSide);
-    U64 allPcs = getAllBB();
-
-    // If the move is a normal attack
-    if (dstBB & allPcs) {
-        return false;
-    }
-
-    // If the source is not a pawn
-    if (!(srcBB & whitePawn) && !(srcBB & blackPawn)) {
-        return false;
-    }
-
-    // If the pawn doesn't move one space diagonally
-    if (!(dstBB == (srcBB << 9) || 
-        dstBB == (srcBB << 7) || 
-        dstBB == (src >> 9) || 
-        dstBB == (src >> 7))) {
-        return false;
-    }
-
-    return true;
-}
+#pragma endregion

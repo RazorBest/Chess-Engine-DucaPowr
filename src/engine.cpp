@@ -4,7 +4,7 @@
  * Resets the game and makes engine play black.
  */
 void Engine::newGame() {
-    // todo
+    board.init();
 }
 
 /**
@@ -22,6 +22,10 @@ void Engine::userMove(std::string move) {
  * @return san=0 encoding of the move
  */
 std::string Engine::move() {
-    // todo
+    // this only for etapa 1 - generate random pseudo-legal pawn move
+    uint16_t moves[MAX_MOVES_AT_STEP];
+
+    generator.generateMoves(board, moves, 0);
+
     return "e7e5";
 }

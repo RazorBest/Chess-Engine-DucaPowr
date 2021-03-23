@@ -2,6 +2,10 @@
 
 #include <string>
 
+#include "board.h"
+#include "moveGen.h"
+#include "constants.h"
+
 class Engine {
     public:
         /**
@@ -22,4 +26,7 @@ class Engine {
          * @return san=0 encoding of the move; eg: e2e4
          */
         std::string move();
+    private:
+        Board board;
+        Generator generator;
 };

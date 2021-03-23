@@ -3,8 +3,9 @@
 #include <stdint.h>
 
 #include "board.h"
+#include "logger.h"
 
-class generator {
+class Generator {
     /**
      * Generate all possible moves.
      * Moves are encoded as:
@@ -14,18 +15,20 @@ class generator {
      * bits 14-15 flags (0 - none, 1 - promotion, 2 - en passant, 3 - castling)
     */
    public:
-        void generateMoves(Board bb, uint16_t* moves, uint16_t* cnt);
+        void generateMoves(Board board, uint16_t* moves, uint16_t* cnt);
 
     private:
-        void pawnMoves(Board bb, uint16_t* moves, uint16_t* cnt);
+        Logger logger;
 
-        void rookMoves(Board bb, uint16_t* moves, uint16_t* cnt);
+        void pawnMoves(Board board, uint16_t* moves, uint16_t* cnt);
 
-        void bishopMoves(Board bb, uint16_t* moves, uint16_t* cnt);
+        void rookMoves(Board board, uint16_t* moves, uint16_t* cnt);
 
-        void knightMoves(Board bb, uint16_t* moves, uint16_t* cnt);
+        void bishopMoves(Board board, uint16_t* moves, uint16_t* cnt);
 
-        void queenMoves(Board bb, uint16_t* moves, uint16_t* cnt);
+        void knightMoves(Board board, uint16_t* moves, uint16_t* cnt);
 
-        void kingMoves(Board bb, uint16_t* moves, uint16_t* cnt);
+        void queenMoves(Board board, uint16_t* moves, uint16_t* cnt);
+
+        void kingMoves(Board board, uint16_t* moves, uint16_t* cnt);
 };
