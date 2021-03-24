@@ -24,8 +24,8 @@ class Generator {
         Board board;
         Logger logger;
 
-
-        void pawnMoves(Board board, uint16_t* moves, uint16_t* len);
+        void whitePawnMoves(Board board, uint16_t* moves, uint16_t* len);
+        void blackPawnMoves(Board board, uint16_t* moves, uint16_t* len);
 
         void rookMoves(Board board, uint16_t* moves, uint16_t* len);
 
