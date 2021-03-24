@@ -7,8 +7,10 @@ Generator::Generator(Board& board) {
 void Generator::generateMoves(Board board, uint16_t* moves, uint16_t* len) {
     if (board.side_to_move == whiteSide) {
         whitePawnMoves(board, moves, len);
+        whitePawnAttacks(board, moves, len);
     } else {
         blackPawnMoves(board, moves, len);
+        blackPawnAttacks(board, moves, len);
     }
 }
 
@@ -70,3 +72,66 @@ void Generator::blackPawnMoves(Board board, uint16_t* moves, uint16_t* len) {
     }
 }
 
+void Generator::whitePawnAttacks(Board board, uint16_t* moves, uint16_t* len) {
+    U64 opponentBB = board.getPieceBB(blackSide);
+    U64 pawnBB = board.getPawnBB(whiteSide);
+    U64 leftAttacks;
+    U64 rightAttacks;
+
+    leftAttacks = (pawnBB << 7) & (~HFILE) & opponentBB;
+    rightAttacks = (pawnBB << 9) & (~AFILE) & opponentBB;
+
+    std::vector<U64> separated;
+
+    // Generate a move for every left attack
+    separated = getSeparatedBits(leftAttacks);
+    for (U64 attackDst : separated) {
+        uint16_t tmp = getSquareIndex(attackDst);
+        tmp <<= 6;
+        tmp |= getSquareIndex(attackDst >> 7);
+
+        moves[(*len)++] = tmp;
+    }
+    
+    // Generate a move for every right attack
+    separated = getSeparatedBits(rightAttacks);
+    for (U64 attackDst : separated) {
+        uint16_t tmp = getSquareIndex(attackDst);
+        tmp <<= 6;
+        tmp |= getSquareIndex(attackDst >> 9);
+
+        moves[(*len)++] = tmp;
+    }
+}
+
+void Generator::blackPawnAttacks(Board board, uint16_t* moves, uint16_t* len) {
+    U64 opponentBB = board.getPieceBB(whiteSide);
+    U64 pawnBB = board.getPawnBB(blackSide);
+    U64 leftAttacks;
+    U64 rightAttacks;
+
+    leftAttacks = (pawnBB >> 9) & (~HFILE) & opponentBB;
+    rightAttacks = (pawnBB >> 7) & (~AFILE) & opponentBB;
+
+    std::vector<U64> separated;
+
+    // Generate a move for every left attack
+    separated = getSeparatedBits(leftAttacks);
+    for (U64 attackDst : separated) {
+        uint16_t tmp = getSquareIndex(attackDst);
+        tmp <<= 6;
+        tmp |= getSquareIndex(attackDst << 9);
+
+        moves[(*len)++] = tmp;
+    }
+    
+    // Generate a move for every right attack
+    separated = getSeparatedBits(rightAttacks);
+    for (U64 attackDst : separated) {
+        uint16_t tmp = getSquareIndex(attackDst);
+        tmp <<= 6;
+        tmp |= getSquareIndex(attackDst << 7);
+
+        moves[(*len)++] = tmp;
+    }
+}
