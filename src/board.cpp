@@ -116,7 +116,7 @@ uint16_t Board::convertSanToMove(std::string move) {
     res |= ((move[1] - '1') << 3) | (move[0] - 'a');
 
     if (move.size() == 5) {
-        res |= 0x4000;
+        res |= 0x3000;
         switch (move[4]) {
             case 'r':
                 break;
@@ -143,7 +143,7 @@ std::string Board::convertMoveToSan(uint16_t move) {
   res.push_back(((move >> 6) & 7) + 'a');
   res.push_back(((move >> 9) & 7) + '1');
 
-  if (move & 0x4000) {
+  if (move & 0x3000) {
     char prom;
     switch ((move & 0x3000) >> 12) {
     case 0:
