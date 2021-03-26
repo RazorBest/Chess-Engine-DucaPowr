@@ -3,7 +3,7 @@
     {
       "name": "Nume arhiva",
       "setup": "",
-      "run": "unzip Etapa1.zip",
+      "run": "unzip Etapa1.zip -d temp",
       "input": "",
       "output": "",
       "comparison": "included",
@@ -13,7 +13,7 @@
     {
       "name": "Make clean",
       "setup": "",
-      "run": "make clean",
+      "run": "make -C temp clean",
       "input": "",
       "output": "",
       "comparison": "included",
@@ -23,7 +23,7 @@
     {
       "name": "Make build",
       "setup": "",
-      "run": "make build",
+      "run": "make -C temp build",
       "input": "",
       "output": "",
       "comparison": "included",
@@ -33,7 +33,7 @@
     {
       "name": "Make run",
       "setup": "",
-      "run": "timeout -s 9 5 make run; code=$?; test $code -eq 137 || test $code -eq 0",
+      "run": "timeout -s 9 5 make -C temp run; code=$?; test $code -eq 137 || test $code -eq 0",
       "input": "",
       "output": "",
       "comparison": "included",
