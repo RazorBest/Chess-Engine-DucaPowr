@@ -8,6 +8,7 @@
  */
 void Engine::newGame() {
     _board.init();
+    running = true;
 }
 
 /**
@@ -32,8 +33,13 @@ std::string Engine::move() {
     uint16_t movesLen = 0;
 
     // generate moves
-    _logger.raw(_board.toString());
     _generator.generateMoves(moves, &movesLen);
+
+    // if i cant move, resign
+    if (!movesLen) {
+        // resign
+        return "resign";
+    }
 
     // chose random move
     unsigned int seed = static_cast <int64_t> (time(NULL));
@@ -45,4 +51,16 @@ std::string Engine::move() {
 
     // return san representation
     return _board.convertMoveToSan(move);
+}
+
+void Engine::close() {
+    running = false;
+}
+
+bool Engine::isRunning() {
+    return running;
+}
+
+Side Engine::sideToMove() {
+    return _board.sideToMove;
 }

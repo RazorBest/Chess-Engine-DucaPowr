@@ -1,7 +1,15 @@
 /* Copyright 2021 DucaPowr Team */
 #include "./xboardHandler.h"
 
-xBoardHandler::xBoardHandler(Engine& engine) : _engine(engine) { }
+xBoardHandler::xBoardHandler(Engine& engine) : _engine(engine) {
+    std::string line;
+    std::ifstream f(QUOETS_FILE);
+    while (std::getline(f, line))
+    {
+        quotes.push_back(line);
+    }
+    f.close();
+}
 
 void xBoardHandler::init() {
     std::cout.setf(std::ios::unitbuf);
@@ -39,8 +47,8 @@ void xBoardHandler::run() {
     if (firstToken == "new") {
         _engine.newGame();
 
-        // default engineRunning = true
-        engineRunning = true;
+        // default observing = true
+        observing = true;
 
     } else if (firstToken == "usermove") {
         std::string move;
@@ -49,28 +57,42 @@ void xBoardHandler::run() {
         // opponent moved
         _engine.userMove(move);
 
-        if (engineRunning) {
+        if (observing) {
             // engine moves
-            std::string move = "move " + _engine.move();
-            std::cout <<  move << std::endl;
-            _logger.info("xboard <- " + move);
+            engineMove();
         }
 
     } else if (firstToken == "go") {
         // engine moves
-        std::string move = "move " + _engine.move();
-        std::cout <<  move << std::endl;
-        _logger.info("xboard <- " + move);
+        engineMove();
 
-        // default engineRunning = true
-        engineRunning = true;
+        // default observing = true
+        observing = true;
 
     } else if (firstToken == "force") {
         // engine paused, just listen to input
-        engineRunning = false;
+        observing = false;
 
     } else if (firstToken == "quit") {
         // xboard stopped
-        engineRunning = false;
+        _engine.close();
     }
+}
+
+void xBoardHandler::engineMove() {
+    std::string move = _engine.move();
+    if (move == "resign") {
+        move = getResignationString();
+    } else {
+        move = "move " + move;
+    }
+    std::cout <<  move << std::endl;
+    _logger.info("xboard <- " + move);
+}
+
+std::string xBoardHandler::getResignationString() {
+    unsigned int seed = static_cast <int64_t> (time(NULL));
+    int randIndex = rand_r(&seed) % quotes.size();
+    std::string result = (_engine.sideToMove()) ? "1-0" : "0-1";
+    return result + " {" + "Duca resigns. " + quotes[randIndex] + "}";
 }

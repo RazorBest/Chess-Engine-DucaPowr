@@ -17,9 +17,11 @@ int main() {
 
     handler.init();
 
-    while (true) {
+    while (engine.isRunning()) {
         handler.run();
     }
+
+    (Logger::debugFile).close();
 
     return 0;
 }

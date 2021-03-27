@@ -4,8 +4,6 @@
 Generator::Generator(Board& board) : _board(board) { }
 
 void Generator::generateMoves(uint16_t* moves, uint16_t* len) {
-    _logger.error("here");
-    _logger.raw(_board.toString());
     if (_board.sideToMove == whiteSide) {
         whitePawnMoves(moves, len);
         whitePawnAttacks(moves, len);

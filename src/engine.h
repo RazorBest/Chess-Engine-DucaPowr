@@ -29,8 +29,22 @@ class Engine {
      * @return san=0 encoding of the move; eg: e2e4
      */
     std::string move();
+
+    /**
+     * Closes the engines which terminates the program
+     */
+    void close();
+
+    /**
+     * Specifies if the engine is running.
+     */
+    bool isRunning();
+
+    Side sideToMove();
  private:
     Board _board;
     Generator _generator{_board};
     Logger _logger;
+
+    bool running = true;
 };

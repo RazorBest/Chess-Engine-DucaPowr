@@ -13,7 +13,11 @@ class xBoardHandler {
     Engine& _engine;
     Logger _logger;
 
-    bool engineRunning = true;
+    bool observing = true;
+
+    void engineMove();
+    std::vector<std::string> quotes;
+    std::string getResignationString();
  public:
     explicit xBoardHandler(Engine& engine);
     void init();
