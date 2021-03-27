@@ -1,4 +1,5 @@
-#include "utils.h"
+/* Copyright 2021 DucaPowr Team */
+#include "./utils.h"
 
 std::vector<U64> getSeparatedBits(U64 bb) {
     std::vector<U64> moves;
@@ -11,7 +12,7 @@ std::vector<U64> getSeparatedBits(U64 bb) {
     return moves;
 }
 
-// TODO - This is inefficient
+// TODO(razorbest) - This is inefficient
 uint16_t getSquareIndex(U64 bb) {
     int index = 0;
 

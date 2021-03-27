@@ -1,13 +1,14 @@
+/* Copyright 2021 DucaPowr Team */
 #include <iostream>
 #include <string>
 
-#include "engine.h"
-#include "xboardHandler.h"
-#include "logger.h"
-#include "config.h"
+#include "./engine.h"
+#include "./xboardHandler.h"
+#include "./logger.h"
+#include "./config.h"
 
 // init debug file
-std::ofstream Logger::debug_file(DEBUG_FILE_NAME);
+std::ofstream Logger::debugFile(DEBUG_FILE_NAME);
 
 // main
 int main() {

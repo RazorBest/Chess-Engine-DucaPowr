@@ -1,8 +1,7 @@
-#include "xboardHandler.h"
+/* Copyright 2021 DucaPowr Team */
+#include "./xboardHandler.h"
 
-xBoardHandler::xBoardHandler(Engine& engine) {
-    engine = engine;
-}
+xBoardHandler::xBoardHandler(Engine& engine) : _engine(engine) { }
 
 void xBoardHandler::init() {
     std::cout.setf(std::ios::unitbuf);
@@ -11,26 +10,26 @@ void xBoardHandler::init() {
     // RECV xboard
     std::getline(std::cin, buffer);
     if (buffer.compare("xboard") != 0) {
-        logger.error("xboard command expected - got " + buffer);
+        _logger.error("xboard command expected - got " + buffer);
         exit(1);
     }
 
     // RECV protover N
     std::getline(std::cin, buffer);
     if (buffer.find("protover") == std::string::npos) {
-        logger.error("protover N command expected - got " + buffer);
+        _logger.error("protover N command expected - got " + buffer);
         exit(1);
     }
 
     // SEND feature
-    std::cout << "feature sigint=0 san=0 name=DucaPowr colors=0 usermove=1 done=1" << std::endl;
+    std::cout << "feature " + std::string(FEATURE_ARGS) << std::endl;
 }
 
 void xBoardHandler::run() {
     std::string buffer;
     std::getline(std::cin, buffer);
 
-    logger.info("xboard -> " + buffer);
+    _logger.info("xboard -> " + buffer);
 
     std::istringstream iss(buffer);
     std::string firstToken;
@@ -38,7 +37,7 @@ void xBoardHandler::run() {
     std::getline(iss, firstToken, ' ');
 
     if (firstToken == "new") {
-        engine.newGame();
+        _engine.newGame();
 
         // default engineRunning = true
         engineRunning = true;
@@ -48,20 +47,20 @@ void xBoardHandler::run() {
         std::getline(iss, move, ' ');
 
         // opponent moved
-        engine.userMove(move);
+        _engine.userMove(move);
 
         if (engineRunning) {
             // engine moves
-            std::string move = "move " + engine.move();
+            std::string move = "move " + _engine.move();
             std::cout <<  move << std::endl;
-            logger.info("xboard <- " + move);
+            _logger.info("xboard <- " + move);
         }
 
     } else if (firstToken == "go") {
         // engine moves
-        std::string move = "move " + engine.move();
+        std::string move = "move " + _engine.move();
         std::cout <<  move << std::endl;
-        logger.info("xboard <- " + move);
+        _logger.info("xboard <- " + move);
 
         // default engineRunning = true
         engineRunning = true;

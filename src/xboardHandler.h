@@ -1,19 +1,21 @@
+/* Copyright 2021 DucaPowr Team */
 #pragma once
 
-#include <iostream>
 #include <stdio.h>
+#include <iostream>
 #include <sstream>
-#include "engine.h"
-#include "logger.h"
+
+#include "./engine.h"
+#include "./logger.h"
 
 class xBoardHandler {
-    private:
-        Engine engine;
-        Logger logger;
+ private:
+    Engine& _engine;
+    Logger _logger;
 
-        bool engineRunning = true;
-    public:
-        xBoardHandler(Engine& engine);
-        void init();
-        void run();
+    bool engineRunning = true;
+ public:
+    explicit xBoardHandler(Engine& engine);
+    void init();
+    void run();
 };

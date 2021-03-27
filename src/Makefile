@@ -1,17 +1,28 @@
+# Copyright 2021 DucaPowr Team
 CC = g++
-CFLAGS = -Wall -Wextra
+CFLAGS = -Wall -Wextra -Wno-unknown-pragmas
 DEBUG = -g -O0
 
 BINARY = duca
 
-SOURCE_FILES = main.o logger.o xboardHandler.o engine.o board.o moveChecker.o moveGen.o utils.o
+SOURCE_FILES = \
+	main.cpp \
+	logger.cpp \
+	xboardHandler.cpp \
+	engine.cpp \
+	board.cpp \
+	moveChecker.cpp \
+	moveGen.cpp \
+	utils.cpp \
+
+OBJECT_FILES = $(SOURCE_FILES:.cpp=.o)
 
 build: $(BINARY)
 
 %.o: %.cpp
 	$(CC) $(CFLAGS) $(DEBUG) -c $^ -o $@
 
-$(BINARY): $(SOURCE_FILES)
+$(BINARY): $(OBJECT_FILES)
 	$(CC) $(CFLAGS) $(DEBUG) $^ -o $@
 
 run: $(BINARY)

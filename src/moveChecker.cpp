@@ -1,8 +1,7 @@
-#include "moveChecker.h"
+/* Copyright 2021 DucaPowr Team */
+#include "./moveChecker.h"
 
-MoveChecker::MoveChecker(Board& board) {
-    board = board;
-}
+MoveChecker::MoveChecker(Board& board) : _board(board) { }
 
 // This doesn't check the corectness of the move
 bool MoveChecker::isEnPassant(uint16_t move) {
@@ -13,9 +12,9 @@ bool MoveChecker::isEnPassant(uint16_t move) {
 
     U64 dstBB = 1 << dst;
     U64 srcBB = 1 << src;
-    U64 whitePawn = board.getPawnBB(whiteSide);
-    U64 blackPawn = board.getPawnBB(blackSide);
-    U64 allPcs = board.getAllBB();
+    U64 whitePawn = _board.getPawnBB(whiteSide);
+    U64 blackPawn = _board.getPawnBB(blackSide);
+    U64 allPcs = _board.getAllBB();
 
     // If the move is a normal attack
     if (dstBB & allPcs) {
@@ -28,9 +27,9 @@ bool MoveChecker::isEnPassant(uint16_t move) {
     }
 
     // If the pawn doesn't move one space diagonally
-    if (!(dstBB == (srcBB << 9) || 
-        dstBB == (srcBB << 7) || 
-        dstBB == (src >> 9) || 
+    if (!(dstBB == (srcBB << 9) ||
+        dstBB == (srcBB << 7) ||
+        dstBB == (src >> 9) ||
         dstBB == (src >> 7))) {
         return false;
     }

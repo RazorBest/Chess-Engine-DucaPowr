@@ -1,4 +1,8 @@
+/* Copyright 2021 DucaPowr Team */
 #pragma once
+
+// XBOARD ---------------------------------------------------------
+#define FEATURE_ARGS "sigint=0 san=0 name=DucaPowr colors=0 usermove=1 done=1"
 
 // BITBOARDS ------------------------------------------------------
 

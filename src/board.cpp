@@ -1,7 +1,9 @@
+/* Copyright 2021 DucaPowr Team */
+#include "./board.h"
+
 #include <bits/stdint-uintn.h>
 
-#include "board.h"
-#include "constants.h"
+#include "./constants.h"
 
 enum enumPiece {
     nWhitePawn,
@@ -20,20 +22,20 @@ enum enumPiece {
 };
 
 void Board::init() {
-    pieceBB[nWhitePawn] = WHITEPAWNSTART;                                   
-    pieceBB[nBlackPawn] = BLACKPAWNSTART;                                   
-    pieceBB[nWhiteBishop] = WHITEBISHOPSTART;                               
-    pieceBB[nBlackBishop] = BLACKBISHOPSTART;                               
-    pieceBB[nWhiteKnight] = WHITEKNIGHTSTART;                               
-    pieceBB[nBlackKnight] = BLACKKNIGHTSTART;                               
-    pieceBB[nWhiteRook] = WHITEROOKSTART;                                   
-    pieceBB[nBlackRook] = BLACKROOKSTART;                                   
-    pieceBB[nWhiteQueen] = WHITEQUEENSTART;                                 
-    pieceBB[nBlackQueen] = BLACKQUEENSTART;                                 
-    pieceBB[nWhiteKing] = WHITEKINGSTART;                                   
+    pieceBB[nWhitePawn] = WHITEPAWNSTART;
+    pieceBB[nBlackPawn] = BLACKPAWNSTART;
+    pieceBB[nWhiteBishop] = WHITEBISHOPSTART;
+    pieceBB[nBlackBishop] = BLACKBISHOPSTART;
+    pieceBB[nWhiteKnight] = WHITEKNIGHTSTART;
+    pieceBB[nBlackKnight] = BLACKKNIGHTSTART;
+    pieceBB[nWhiteRook] = WHITEROOKSTART;
+    pieceBB[nBlackRook] = BLACKROOKSTART;
+    pieceBB[nWhiteQueen] = WHITEQUEENSTART;
+    pieceBB[nBlackQueen] = BLACKQUEENSTART;
+    pieceBB[nWhiteKing] = WHITEKINGSTART;
     pieceBB[nBlackKing] = BLACKKINGSTART;
 
-    side_to_move = whiteSide;
+    sideToMove = whiteSide;
 }
 
 #pragma region Bitboard getters
@@ -41,11 +43,11 @@ U64 Board::getPieceBB(Side side) {
     U64 *BB = this->pieceBB;
 
     // Perform bitwise OR between all white pieces
-    return  BB[nWhitePawn + side] | 
-            BB[nWhiteBishop + side] | 
-            BB[nWhiteKnight + side] | 
-            BB[nWhiteRook + side] | 
-            BB[nWhiteQueen + side] | 
+    return  BB[nWhitePawn + side] |
+            BB[nWhiteBishop + side] |
+            BB[nWhiteKnight + side] |
+            BB[nWhiteRook + side] |
+            BB[nWhiteQueen + side] |
             BB[nWhiteKing + side];
 }
 
@@ -85,7 +87,7 @@ U64 Board::getEmptyBB() {
 
 #pragma region Helpers
 int Board::getPieceIndexFromSquare(uint16_t sq) {
-    // Convert from index(0-63) to bitboard 
+    // Convert from index(0-63) to bitboard
     U64 sqBB = 1;
     sqBB <<= sq;
 
@@ -93,18 +95,17 @@ int Board::getPieceIndexFromSquare(uint16_t sq) {
     for (size_t i = 0; i < 12; i++) {
         if (pieceBB[i] & sqBB) {
             return i;
-        }  
+        }
     }
 
     return trashPiece;
 }
 
 void Board::switchSide() {
-    logger.info("hereee");
-    if (side_to_move == Side::whiteSide) {
-        side_to_move = Side::blackSide;
+    if (sideToMove == Side::whiteSide) {
+        sideToMove = Side::blackSide;
     } else {
-        side_to_move = Side::whiteSide;
+        sideToMove = Side::whiteSide;
     }
 }
 #pragma endregion
@@ -184,13 +185,13 @@ std::string Board::toString() {
             int sqIndex = getSquareIndex(pieceBB);
 
             board[sqIndex] = pieceSymbol[i];
-        } 
+        }
     }
 
     // Convert to std::string and add a newline after every 8 characters
     std::string output;
     for (int i = 7; i >= 0; i--) {
-        output += std::string(board + i*8, 8) + '\n'; 
+        output += std::string(board + i*8, 8) + '\n';
     }
 
     return output;
@@ -202,14 +203,12 @@ std::string Board::toString() {
  * TODO test function, add legality check
 */
 bool Board::applyMove(uint16_t move) {
-    logger.raw("side to move: " + std::to_string(side_to_move));
-
     uint16_t sourceSquare = move & 0x3f;
     uint16_t destSquare = (move >> 6) & 0x3f;
 
     uint64_t sourcePosBoard = 1;
     sourcePosBoard <<= sourceSquare;
-    uint64_t destPosBoard = 1; 
+    uint64_t destPosBoard = 1;
     destPosBoard <<= destSquare;
 
 
@@ -230,5 +229,6 @@ bool Board::applyMove(uint16_t move) {
 
     logger.raw(toString() + '\n');
 
-    return true; // TODO change later
+    // TODO(all) change later
+    return true;
 }

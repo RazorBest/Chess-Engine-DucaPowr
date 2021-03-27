@@ -1,13 +1,9 @@
-if ! command -v pip &> /dev/null 
-then
-    echo "You must intall pip first"
-    exit
-fi
+#!/bin/bash
 
-if ! pip install cpplint
-then
-    exit
-fi
-
-cpplint --recursive * 
-
+# pip install cpplint
+cpplint --filter=\
+-build/include,\
++build/include_subdir,\
++build/include_order,\
++build/include_what_you_use,\
+-runtime/references --recursive * > checkstyle.txt 2>&1
