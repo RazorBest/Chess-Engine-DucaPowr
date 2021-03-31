@@ -9,9 +9,13 @@ make build
 ```
 
 ### Run
-
+To run the executable
 ```bash
-chmod +x ./run.sh
+make run
+```
+
+To run xboard with Duca Engine
+```bash
 ./run.sh
 ```
 
@@ -25,7 +29,7 @@ Another role of this handler is to feed the processed commands to the engine API
 
 <details>
 <summary>Note to the programmer</summary>
-We have not implemented move legality checks. 
+We have not implemented move legality checks.
 </details>
 
 ### Engine Logic
@@ -88,3 +92,8 @@ At the end of the game, the bot brings to the user's attention an insightful quo
 8. [How Stockfish works](http://rin.io/chess-engine/)
 9. [Bitboard](https://www.chessprogramming.org/Bitboards)
 
+## Each member's duties
+* Andrei IONESCU - bitboards research; movement generator implementation; internal move execution;
+* Dimitrie DAVID - team leader; create xBoardHandler and initial engine flow design and framework; made sure the coding style is correct
+* Matei BARBU - task distribution and schedule planner; research on different chess board representations and algorithms; implementation of internal move representation
+* Razvan PRICOP - in-depth research of different chess aspects, algortighms and data structures; implemented board representation, pawn movement generation and other utils
