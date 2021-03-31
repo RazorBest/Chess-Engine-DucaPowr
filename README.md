@@ -1,4 +1,3 @@
-
 # DucaPowr - Chess engine
 
 ## Usage
@@ -31,11 +30,11 @@ We have not implemented move legality checks.
 
 ### Engine Logic
 
-The main class of this program is `Engine`. It stores internally the board state and a move generator.
+The main class of this program is `Engine`. It internally stores the board state and a move generator.
 
 Receiving a move from XBoard is done through the `userMove()` method. It updates the board state at every move.
 
-A move is chosen from a pool of generated moves randomly, for now. We will add proper selection logic in the future.
+A move is chosen randomly from a pool of generated moves, for now. We will add proper selection logic in the future.
 
 ### Board Logic
 
@@ -58,6 +57,17 @@ At each turn we check which side has to move and call one of the corresponding m
 - `blackPawnAttacks();`
 
 Pawns are non-sliding pieces. Therefore, their generation is easy to implement using bitwise operations. For example, shifting the bitboard by 8, gives us a bitboard in which all the pieces have moved one square forward. (More about pawn pushes [here](https://www.chessprogramming.org/Pawn_Pushes_(Bitboards)).)
+
+### Move encoding
+
+XBoard sends the move to the handler in a Pure Coordinate String Format (eg. "e3f4"). The move is stored on 16 bits encoded as:
+
+- bits 0-5 source square
+- bits 6-11 destination square
+- bits 12-13 promotion (0 - rook, 1 - knight, 2 - bishop, 3 - queen)
+- bits 14-15 flags (0 - none, 1 - promotion, 2 - en passant, 3 - castling)
+
+Stockfish uses the same encoding.
 
 ### Further details
 
