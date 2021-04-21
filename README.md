@@ -8,6 +8,11 @@
 make build
 ```
 
+### Debug
+```bash
+make build DEBUG='-g -O0'
+```
+
 ### Run
 To run the executable
 ```bash
