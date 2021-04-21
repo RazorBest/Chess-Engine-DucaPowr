@@ -1,7 +1,9 @@
 /* Copyright 2021 DucaPowr Team */
 #include "./moveGen.h"
 
-Generator::Generator(Board& board) : _board(board) { }
+Generator::Generator(Board& board) : _board(board) {
+    initFirstRankAttacks();
+}
 
 U8 generateLineAttacks(U8 rook, U8 occ) {
     // If occupant pieces overlap with rook
@@ -9,7 +11,7 @@ U8 generateLineAttacks(U8 rook, U8 occ) {
         return 0;
     }
 
-    return (occ - rook) ^ occ ^ reverse(reverse(occ) - reverse(rook));
+    return (occ - rook) ^ reverse(reverse(occ) - reverse(rook));
 }
 
 void Generator::initFirstRankAttacks() {
@@ -24,7 +26,7 @@ void Generator::initFirstRankAttacks() {
         // If the occupancy rank is empty, the rook can move anywhere
         firstRankAttacks[0][rook_index] = 0xFF;
         // Generate all combinations of the occupancy rank
-        for (U8 occ_index = 0; occ_index < 32; occ_index++) {
+        for (U8 occ_index = 0; occ_index < 64; occ_index++) {
             occ = occ_index << 1;
 
             U8 lineAttacks = generateLineAttacks(rook, occ);

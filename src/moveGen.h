@@ -21,8 +21,9 @@ class Generator {
 
     void generateMoves(uint16_t* moves, uint16_t* len);
 
- private:
     uint8_t firstRankAttacks[64][8];
+
+ private:
     Board& _board;
     Logger _logger;
 
