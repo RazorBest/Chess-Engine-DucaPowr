@@ -6,7 +6,7 @@ U8 getLineAttacks(U8 rook, U8 occ) {
     U8 rook_move = rook;
 
     if (rook & occ) {
-        return 0; 
+        return 0;
     }
 
     // Generate left side attacks
@@ -41,15 +41,16 @@ void testGenerator() {
         U8 rook = 1 << rook_index;
         for (U8 occ_index = 0; occ_index < 64; occ_index++) {
             U8 occ = occ_index << 1;
-            if (generator.firstRankAttacks[occ_index][rook_index] != 
+            if (generator.firstRankAttacks[occ_index][rook_index] !=
                     getLineAttacks(rook, occ)) {
                 std::cerr << "Test failed\n" << "rook_index=" <<
-                    (int)rook_index <<
-                    "\nocc_index=" << (int)occ_index <<
+                    static_cast<int>(rook_index) <<
+                    "\nocc_index=" << static_cast<int>(occ_index) <<
                     "\ngenerator.firstRankAttack[rook_index][occ_index]=" <<
-                    (int)generator.firstRankAttacks[occ_index][rook_index] <<
+                    static_cast<int>
+                    (generator.firstRankAttacks[occ_index][rook_index]) <<
                     "\ngetLineAttacks(rook, occ)=" <<
-                    (int)getLineAttacks(rook, occ) << '\n';
+                    static_cast<int>(getLineAttacks(rook, occ)) << '\n';
                 assert(0);
             }
         }
