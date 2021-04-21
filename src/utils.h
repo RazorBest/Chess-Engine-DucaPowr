@@ -5,7 +5,10 @@
 #include <vector>
 
 typedef uint64_t U64;
+typedef uint8_t  U8;
 
 std::vector<U64> getSeparatedBits(U64 bb);
 
 uint16_t getSquareIndex(U64 bb);
+
+U8 reverse(U8);
