@@ -29,3 +29,25 @@ U8 reverse(U8 byte) {
     byte = (byte & 0xAA) >> 1 | (byte & 0x55) << 1;
     return byte;
 }
+
+U64 rankBB(uint16_t rankIndex) {
+    U64 rank = 1;
+
+    rank <<= (rankIndex * 8);
+    rank |= rank << 1;
+    rank |= rank << 2;
+    rank |= rank << 4;
+    
+    return rank;  
+}
+
+U64 fileBB(uint16_t fileIndex) {
+    U64 file = 1;
+    
+    file <<= fileIndex;
+    file |= file << 8;
+    file |= file << 16;
+    file |= file << 32;
+
+    return fileIndex;  
+}
