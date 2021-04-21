@@ -4,3 +4,4 @@ duca
 .vscode/*
 .vscode
 checkstyle.txt
+*/.cache/*
