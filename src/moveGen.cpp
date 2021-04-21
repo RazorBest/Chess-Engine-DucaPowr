@@ -3,6 +3,36 @@
 
 Generator::Generator(Board& board) : _board(board) { }
 
+U8 generateLineAttacks(U8 rook, U8 occ) {
+    // If occupant pieces overlap with rook
+    if (rook & occ) {
+        return 0;
+    }
+
+    return (occ - rook) ^ occ ^ reverse(reverse(occ) - reverse(rook));
+}
+
+void Generator::initFirstRankAttacks() {
+    // rook = the bitboard of one rook over a rank
+    // occ  = the bitboard of the occupant pieces over a rank
+    U8 rook, occ;
+
+    // Iterate with the rook over the 8 squares of the rank
+    for (int rook_index = 0; rook_index < 8; rook_index++) {
+        rook = 1;
+        rook = rook << rook_index;
+        // If the occupancy rank is empty, the rook can move anywhere
+        firstRankAttacks[0][rook_index] = 0xFF;
+        // Generate all combinations of the occupancy rank
+        for (U8 occ_index = 0; occ_index < 32; occ_index++) {
+            occ = occ_index << 1;
+
+            U8 lineAttacks = generateLineAttacks(rook, occ);
+            firstRankAttacks[occ_index][rook_index] = lineAttacks;
+        }
+    }
+}
+
 void Generator::generateMoves(uint16_t* moves, uint16_t* len) {
     if (_board.sideToMove == whiteSide) {
         whitePawnMoves(moves, len);

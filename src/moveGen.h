@@ -22,8 +22,11 @@ class Generator {
     void generateMoves(uint16_t* moves, uint16_t* len);
 
  private:
+    uint8_t firstRankAttacks[64][8];
     Board& _board;
     Logger _logger;
+
+    void initFirstRankAttacks();
 
     void whitePawnMoves(uint16_t* moves, uint16_t* len);
     void blackPawnMoves(uint16_t* moves, uint16_t* len);
