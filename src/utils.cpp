@@ -41,11 +41,11 @@ U64 flipDiagA1H8(U64 x) {
     const U64 k2 = 0x3333000033330000;
     const U64 k4 = 0x0f0f0f0f00000000;
     t  = k4 & (x ^ (x << 28));
-    x ^=       t ^ (t >> 28) ;
+    x ^=       t ^ (t >> 28);
     t  = k2 & (x ^ (x << 14));
-    x ^=       t ^ (t >> 14) ;
+    x ^=       t ^ (t >> 14);
     t  = k1 & (x ^ (x <<  7));
-    x ^=       t ^ (t >>  7) ;
+    x ^=       t ^ (t >>  7);
     return x;
 }
 
@@ -62,12 +62,12 @@ U64 flipDiagA8H1(U64 x) {
     const U64 k1 = 0xaa00aa00aa00aa00;
     const U64 k2 = 0xcccc0000cccc0000;
     const U64 k4 = 0xf0f0f0f00f0f0f0f;
-    t  =       x ^ (x << 36) ;
+    t  =       x ^ (x << 36);
     x ^= k4 & (t ^ (x >> 36));
     t  = k2 & (x ^ (x << 18));
-    x ^=       t ^ (t >> 18) ;
+    x ^=       t ^ (t >> 18);
     t  = k1 & (x ^ (x <<  9));
-    x ^=       t ^ (t >>  9) ;
+    x ^=       t ^ (t >>  9);
     return x;
 }
 
@@ -93,17 +93,17 @@ U64 rankBB(uint16_t rankIndex) {
     rank |= rank << 1;
     rank |= rank << 2;
     rank |= rank << 4;
-    
-    return rank;  
+
+    return rank;
 }
 
 U64 fileBB(uint16_t fileIndex) {
     U64 file = 1;
-    
+
     file <<= fileIndex;
     file |= file << 8;
     file |= file << 16;
     file |= file << 32;
 
-    return fileIndex;  
+    return fileIndex;
 }

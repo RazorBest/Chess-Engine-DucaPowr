@@ -337,7 +337,7 @@ U64 Generator::getRookFileAttackBB(uint16_t rookRank, uint16_t rookFile,
     // Map File A to Rank 8 in the occupancy bitboard
     occ &= AFILE;
     occ *= MAGICFAR8;
-    
+
     occ >>= 57;
     U8 occ_index = occ;
     occ_index &= ~0x40;
