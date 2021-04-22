@@ -3,9 +3,10 @@
 
 Generator::Generator(Board& board) : _board(board) {
     initFirstRankAttacks();
+    initFirstFileAttacks();
 }
 
-U8 generateLineAttacks(U8 rook, U8 occ) {
+U8 Generator::generateLineAttacks(U8 rook, U8 occ) {
     // If occupant pieces overlap with rook
     if (rook & occ) {
         return 0;
@@ -23,14 +24,34 @@ void Generator::initFirstRankAttacks() {
     for (int rook_index = 0; rook_index < 8; rook_index++) {
         rook = 1;
         rook = rook << rook_index;
-        // If the occupancy rank is empty, the rook can move anywhere
-        firstRankAttacks[0][rook_index] = 0xFF;
         // Generate all combinations of the occupancy rank
         for (U8 occ_index = 0; occ_index < 64; occ_index++) {
             occ = occ_index << 1;
 
             U8 lineAttacks = generateLineAttacks(rook, occ);
             firstRankAttacks[occ_index][rook_index] = lineAttacks;
+        }
+    }
+}
+
+void Generator::initFirstFileAttacks() {
+    // rook = the bitboard of one rook
+    // occ  = the bitboard of the occupant pieces
+    U64 rook, occ;
+
+    // Iterate with the rook over the 8 squares of the rank
+    for (int rook_index = 0; rook_index < 8; rook_index++) {
+        rook = 1;
+        rook = rook << rook_index;
+        // Generate all combinations of the occupancy rank
+        for (U8 occ_index = 0; occ_index < 64; occ_index++) {
+            occ = occ_index << 1;
+
+            U64 lineAttacks = generateLineAttacks(rook, occ);
+            // Move to the 8th rank
+            lineAttacks <<= 56;
+            U64 fileAttacks = rotate90AntiClockwise(lineAttacks);
+            firstFileAttacks[occ_index][rook_index] = fileAttacks;
         }
     }
 }
