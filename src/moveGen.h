@@ -21,13 +21,16 @@ class Generator {
 
     void generateMoves(uint16_t* moves, uint16_t* len);
 
-    uint8_t firstRankAttacks[64][8];
+    U64 firstRankAttacks[64][8];
+    U64 firstFileAttacks[64][8];
 
  private:
     Board& _board;
     Logger _logger;
 
+    U8 generateLineAttacks(U8 rook, U8 occ);
     void initFirstRankAttacks();
+    void initFirstFileAttacks();
 
     void whitePawnMoves(uint16_t* moves, uint16_t* len);
     void blackPawnMoves(uint16_t* moves, uint16_t* len);
