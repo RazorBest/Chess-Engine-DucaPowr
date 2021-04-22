@@ -37,8 +37,14 @@ class Generator {
     void whitePawnAttacks(uint16_t* moves, uint16_t* len);
     void blackPawnAttacks(uint16_t* moves, uint16_t* len);
 
-
-    void rookMoves(uint16_t* moves, uint16_t* len);
+    U64 getRookFileAttackBB(uint16_t rookRank, uint16_t rookFile,
+            U64 occ, U64 friendPieceBB);
+    U64 getRookRankAttackBB(uint16_t rookRank, uint16_t rookFile,
+            U64 occ, U64 friendPieceBB);
+    void rookAttacks(uint16_t *moves, uint16_t *len, U64 rookBB,
+            U64 friendPieceBB);
+    void whiteRookAttacks(uint16_t* moves, uint16_t* len);
+    void blackRookAttacks(uint16_t* moves, uint16_t* len);
 
     void bishopMoves(uint16_t* moves, uint16_t* len);
 

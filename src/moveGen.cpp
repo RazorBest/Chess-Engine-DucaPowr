@@ -60,9 +60,11 @@ void Generator::generateMoves(uint16_t* moves, uint16_t* len) {
     if (_board.sideToMove == whiteSide) {
         whitePawnMoves(moves, len);
         whitePawnAttacks(moves, len);
+        whiteRookAttacks(moves, len);
     } else {
         blackPawnMoves(moves, len);
         blackPawnAttacks(moves, len);
+        blackRookAttacks(moves, len);
     }
 }
 
@@ -306,4 +308,92 @@ void Generator::blackPawnAttacks(uint16_t* moves, uint16_t* len) {
         tmp |= 0x1000;
         moves[(*len)++] = tmp;
     }
+}
+
+U64 Generator::getRookRankAttackBB(uint16_t rookRank, uint16_t rookFile,
+        U64 occ, U64 friendPieceBB) {
+    U64 rankAttacks;
+
+    // Move the occupant pieces to the first rank
+    occ = occ >> (rookRank * 8);
+    U8 occ_index = occ >> 1;
+    occ_index &= ~0x40;
+    rankAttacks = firstRankAttacks[occ_index][rookFile];
+    rankAttacks <<= (rookRank * 8);
+    rankAttacks &= ~friendPieceBB;
+
+    return rankAttacks;
+}
+
+U64 Generator::getRookFileAttackBB(uint16_t rookRank, uint16_t rookFile,
+        U64 occ, U64 friendPieceBB) {
+    U64 fileAttacks;
+
+    // Map the occupancy bitboard to an occupancy index
+    // occ -> occ_index
+
+    // Move the occupant pieces to the first file
+    occ = occ >> rookFile;
+    // Map File A to Rank 8 in the occupancy bitboard
+    occ &= AFILE;
+    occ *= MAGICFAR8;
+    
+    occ >>= 57;
+    U8 occ_index = occ;
+    occ_index &= ~0x40;
+
+    fileAttacks = firstFileAttacks[occ_index][rookRank];
+    fileAttacks <<= rookFile;
+    fileAttacks &= ~friendPieceBB;
+
+    return fileAttacks;
+}
+
+void Generator::rookAttacks(uint16_t *moves, uint16_t *len, U64 rookBB,
+        U64 friendPieceBB) {
+    U64 allBB = _board.getAllBB();
+    U64 occ;
+
+    std::vector<U64> separated = getSeparatedBits(rookBB);
+    for (auto piece : separated) {
+        uint16_t move = getSquareIndex(piece);
+        uint16_t rank = move / 8;
+        uint16_t file = move % 8;
+
+        occ = allBB & (~piece);
+        U64 rankAttacks = getRookRankAttackBB(rank, file, occ, friendPieceBB);
+        std::vector<U64> separatedAttacks = getSeparatedBits(rankAttacks);
+        for (auto atk : separatedAttacks) {
+            uint16_t atkIndex = getSquareIndex(atk);
+            move &= ~(0xFC0);
+            move |= atkIndex << 6;
+            moves[*len] = move;
+            (*len)++;
+        }
+
+        occ = allBB & (~piece);
+        U64 fileAttacks = getRookFileAttackBB(rank, file, occ, friendPieceBB);
+        separatedAttacks = getSeparatedBits(fileAttacks);
+        for (auto atk : separatedAttacks) {
+            uint16_t atkIndex = getSquareIndex(atk);
+            move &= ~(0xFC0);
+            move |= atkIndex << 6;
+            moves[*len] = move;
+            (*len)++;
+        }
+     }
+}
+
+void Generator::whiteRookAttacks(uint16_t *moves, uint16_t *len) {
+    U64 rookBB = _board.getRookBB(whiteSide);
+    U64 friendPieceBB = _board.getPieceBB(whiteSide);
+
+    rookAttacks(moves, len, rookBB, friendPieceBB);
+}
+
+void Generator::blackRookAttacks(uint16_t *moves, uint16_t *len) {
+    U64 rookBB = _board.getRookBB(blackSide);
+    U64 friendPieceBB = _board.getPieceBB(blackSide);
+
+    rookAttacks(moves, len, rookBB, friendPieceBB);
 }
