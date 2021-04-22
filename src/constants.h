@@ -47,3 +47,7 @@
 // MOVE GENERATION ------------------------------------------------
 #define MAX_MOVES_AT_STEP               400
 
+/* Bitboard * MAGICFAR8 will map file A to rank 8
+ * The other files of Bitboard must be empty 
+ */
+#define MAGICFAR8       0x0102040810204080
