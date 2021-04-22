@@ -2,6 +2,7 @@
 #pragma once
 
 #include "./utils.h"
+#include "../src/utils.h"
 #include "../src/moveGen.h"
 #include "../src/board.h"
 
