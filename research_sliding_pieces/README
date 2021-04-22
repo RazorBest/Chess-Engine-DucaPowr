@@ -1,0 +1,6 @@
+
+
+Resources:
+
+1. https://www.chessprogramming.org/Flipping_Mirroring_and_Rotating#Anti-Clockwise (copied some functions from here in src/utils.cpp)
+
