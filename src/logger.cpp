@@ -22,6 +22,18 @@ void Logger::logU16(uint16_t x) {
 }
 
 void Logger::logBB(uint64_t a) {
-    std::bitset<64> x(a);
-    debugFile << x << '\n';
+    for (int i = 7; i >= 0; i--) {
+        uint64_t mask = 1;
+        mask <<= i * 8;
+        for (int j = 0; j < 8; j++) {
+            if (mask & a) {
+                debugFile << "1";
+            } else {
+                debugFile << "0";
+            }
+            mask <<= 1;
+        }
+        debugFile << '\n';
+    }
+    debugFile << '\n';
 }
