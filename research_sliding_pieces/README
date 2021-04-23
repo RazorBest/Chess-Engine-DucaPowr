@@ -205,6 +205,93 @@ Where the tables are indexed liked this:
     firstFileAttacks[occ_index][rook_index]
 
 
+Let's do an example where the rook is marked with R, and the occupants are
+marked with 1:
+
+```text
+    0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0
+    0 0 1 0 0 0 0 0
+    1 0 R 0 0 1 1 1
+    0 0 0 0 0 0 0 0
+    0 0 1 0 0 0 0 0
+    0 0 0 0 0 0 0 0
+    0 0 1 0 0 0 0 0
+
+```
+
+### Generating the rank attacks
+
+We first compute the attacks for the horizontal line. We will shift the
+bitboard by an amount such that the lines is moved to the first rank:
+```text
+    0 0 0 0 0 0 0 0               0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0               0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0               0 0 0 0 0 0 0 0
+    1 0 R 0 0 1 1 1     >> 32  =  0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0               0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0               0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0               0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0               1 0 R 0 0 1 1 1
+
+```
+
+Now, we're playing 1D chess:
+```text
+    1 0 R 0 0 1 1 1
+```
+The rook can be in 8 positions, where the position is given by the file
+of the rook. We will use this to index our rook. In our case:
+    
+    rook_index = rookFile = 2 (a number from 0 to 7)
+
+The occ_index is given by those 8 occupant bits:
+
+```text
+    1 0 0 0 0 1 1 1
+```
+
+But, it can be shown that we don't need the first and the last ones. So we
+shift by 1 and mask:
+
+```text
+    ( 1 0 0 0 0 1 1 1 & 1 1 1 1 1 1 1 0 ) >> 1  =  0 0 0 0 1 1 0 0
+```
+
+And we take into consideration only the first 6 bits: 
+    000011 (MSB is to the right)
+
+So, occ_index = 48.
+
+In our case firstRankAttacks[48][2] will be:
+```text
+    0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0
+    1 1 0 1 1 1 0 0
+
+```
+
+But these are the attacks for the first rank. To get the attacks for our
+rank, we shift back to the left:
+
+```text
+    0 0 0 0 0 0 0 0             0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0             0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0             0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0     << 32 = 1 1 0 1 1 1 0 0 
+    0 0 0 0 0 0 0 0             0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0             0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0             0 0 0 0 0 0 0 0
+    1 1 0 1 1 1 0 0             0 0 0 0 0 0 0 0
+
+```
+
+### Generating the file attacks
 
 Resources:
 
