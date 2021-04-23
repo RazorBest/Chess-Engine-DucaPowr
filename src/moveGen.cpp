@@ -1,5 +1,6 @@
 /* Copyright 2021 DucaPowr Team */
 #include "./moveGen.h"
+#include <string>
 
 Generator::Generator(Board& board) : _board(board) {
     initFirstRankAttacks();
@@ -316,8 +317,10 @@ U64 Generator::getRookRankAttackBB(uint16_t rookRank, uint16_t rookFile,
 
     // Move the occupant pieces to the first rank
     occ = occ >> (rookRank * 8);
-    U8 occ_index = occ >> 1;
+    U8 occ_index = occ;
+    occ_index >>= 1;
     occ_index &= ~0x40;
+    
     rankAttacks = firstRankAttacks[occ_index][rookFile];
     rankAttacks <<= (rookRank * 8);
     rankAttacks &= ~friendPieceBB;
@@ -361,19 +364,12 @@ void Generator::rookAttacks(uint16_t *moves, uint16_t *len, U64 rookBB,
         uint16_t file = move % 8;
 
         occ = allBB & (~piece);
-        U64 rankAttacks = getRookRankAttackBB(rank, file, occ, friendPieceBB);
-        std::vector<U64> separatedAttacks = getSeparatedBits(rankAttacks);
-        for (auto atk : separatedAttacks) {
-            uint16_t atkIndex = getSquareIndex(atk);
-            move &= ~(0xFC0);
-            move |= atkIndex << 6;
-            moves[*len] = move;
-            (*len)++;
-        }
+        U64 attacks = getRookRankAttackBB(rank, file, occ, friendPieceBB);
 
         occ = allBB & (~piece);
-        U64 fileAttacks = getRookFileAttackBB(rank, file, occ, friendPieceBB);
-        separatedAttacks = getSeparatedBits(fileAttacks);
+        attacks |= getRookFileAttackBB(rank, file, occ, friendPieceBB);
+
+        std::vector<U64> separatedAttacks = getSeparatedBits(attacks);
         for (auto atk : separatedAttacks) {
             uint16_t atkIndex = getSquareIndex(atk);
             move &= ~(0xFC0);
