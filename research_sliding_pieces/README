@@ -293,6 +293,33 @@ rank, we shift back to the left:
 
 ### Generating the file attacks
 
+To compute the attacks for the vertical line, we will first shift it to file A:
+
+```text
+    0 0 0 0 0 0 0 0            0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0            0 0 0 0 0 0 0 0
+    0 0 1 0 0 0 0 0            1 0 0 0 0 0 0 0
+    0 0 R 0 0 0 0 0     >> 2 = R 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0            0 0 0 0 0 0 0 0
+    0 0 1 0 0 0 0 0            1 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0            0 0 0 0 0 0 0 0
+    0 0 1 0 0 0 0 0            1 0 0 0 0 0 0 0
+
+```
+
+And use our magic to map file A to rank 8:
+
+```text
+    0 0 0 0 0 0 0 0                 1 0 1 0 R 1 0 0
+    0 0 0 0 0 0 0 0                 ...............
+    1 0 0 0 0 0 0 0                 ...............
+    R 0 0 0 0 0 0 0 * MAGICFAR8  =  ... garbage ...
+    0 0 0 0 0 0 0 0                 ...............
+    1 0 0 0 0 0 0 0                 ...............
+    0 0 0 0 0 0 0 0                 ...............
+    1 0 0 0 0 0 0 0                 ...............
+
+```
 Resources:
 
 1. https://www.chessprogramming.org/Flipping_Mirroring_and_Rotating#Anti-Clockwise (copied some functions from here in src/utils.cpp)
