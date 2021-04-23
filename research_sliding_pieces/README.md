@@ -109,7 +109,7 @@ Worst case, when the rook is in the corner:
     0 0 0 0 0 0 0 0
     x 0 0 0 0 0 0 0
     x 0 0 0 0 0 0 0
-    x 0 0 0 0 0 0 0      -   10 squares used by the occupants
+    x 0 0 0 0 0 0 0      -   12 squares used by the occupants
     x 0 0 0 0 0 0 0
     x 0 0 0 0 0 0 0
     x 0 0 0 0 0 0 0
