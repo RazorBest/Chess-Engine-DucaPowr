@@ -19,8 +19,8 @@ OBJECT_FILES = $(SOURCE_FILES:.cpp=.o)
 
 build: $(BINARY)
 
-%.o: %.cpp
-	$(CC) $(CFLAGS) $(DEBUG) -c $^ -o $@
+%.o: %.cpp %.h
+	$(CC) $(CFLAGS) $(DEBUG) -c $< -o $@
 
 $(BINARY): $(OBJECT_FILES)
 	$(CC) $(CFLAGS) $(DEBUG) $^ -o $@
