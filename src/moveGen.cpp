@@ -5,6 +5,9 @@
 Generator::Generator(Board& board) : _board(board) {
     initFirstRankAttacks();
     initFirstFileAttacks();
+    initDiagMasks();
+    initBishopMask();
+    initBishopAttackTable();
 }
 
 U8 Generator::generateLineAttacks(U8 rook, U8 occ) {
@@ -54,6 +57,186 @@ void Generator::initFirstFileAttacks() {
             U64 fileAttacks = rotate90AntiClockwise(lineAttacks);
             firstFileAttacks[occ_index][rook_index] = fileAttacks;
         }
+    }
+}
+
+static U64 getAscendingDiagonalMask(int fileIndex, int rankIndex) {
+    U64 mask = 0;
+
+    // Generate the bits in positive direction
+    int file = fileIndex + 1;
+    int rank = rankIndex + 1;
+    while (file < 8 && rank < 8) {
+        U64 bit = 1;
+        bit <<= (rank * 8 + file);
+        mask |= bit;
+        rank++; file++;
+    }
+
+    // Generate the bits in negative direction
+    file = fileIndex - 1;
+    rank = rankIndex - 1;
+    while (file >= 0 && rank >= 0) {
+        U64 bit = 1;
+        bit <<= (rank * 8 + file);
+        mask |= bit;
+        rank--; file--;
+    }
+
+    return mask;
+}
+
+static U64 getDescendingDiagonalMask(int fileIndex, int rankIndex) {
+    U64 mask = 0;
+   
+    // Generate the bits in positive direction
+    int file = fileIndex + 1;
+    int rank = rankIndex - 1;
+    while (file < 8 && rank >= 0) {
+        U64 bit = 1;
+        bit <<= (rank * 8 + file);
+        mask |= bit;
+        file++; rank--;
+    }
+
+    // Generate the bits in negative direction
+    file = fileIndex - 1;
+    rank = rankIndex + 1;
+    while (file < 8 && rank >= 0) {
+        U64 bit = 1;
+        bit <<= (rank * 8 + file);
+        mask |= bit;
+        file--; rank++;
+    }
+
+    return mask;
+}
+
+void Generator::initDiagMasks() {
+    int index = 0; 
+   
+    for (int rankIndex = 0; rankIndex < 8; rankIndex++) {
+        ascDiagMask[index] = getAscendingDiagonalMask(rankIndex, 7);
+        desDiagMask[index] = getDescendingDiagonalMask(rankIndex, 0);
+        index++; 
+    }
+    for (int rankIndex = 1; rankIndex < 8; rankIndex++) {
+        ascDiagMask[index] = getAscendingDiagonalMask(rankIndex, 0);
+        desDiagMask[index] = getDescendingDiagonalMask(rankIndex, 7);
+        index++; 
+    }
+}
+
+void Generator::initBishopMask() {
+    for (int sqIndex = 0; sqIndex < 64; sqIndex++) {
+        // Puts the first diagonal
+        bishopMask[sqIndex] = ascDiagMask[sqIndex];
+        // Puts the second diagonal and excludes the bishop square
+        bishopMask[sqIndex] ^= desDiagMask[sqIndex];
+    }
+}
+
+/* Transforms this bitboard:
+ *      00000000
+ *      00000000
+ *      00000000
+ *      00000000
+ *      00000000
+ *      00000000
+ *      00000000
+ *      12345678
+ * To this:
+ *      12345678
+ *      12345678
+ *      12345678
+ *      12345678
+ *      12345678
+ *      12345678
+ *      12345678
+ *      12345678
+ */
+U64 mapRank1ToDiag(U64 bb) {
+    // A magic that maps Rank 1 to the A1-H8 diagonal
+    const U64 magicR1D = 0x0101010101010101;
+
+    bb *= magicR1D;
+
+    return bb;
+}
+
+void Generator::initPositionedBishopAttackTable(int sqIndex) {
+    const U64 marginMask = 0xFF818181818181FF;
+    int rankIndex = sqIndex / 8; 
+    int fileIndex = sqIndex % 8; 
+
+    U8 bishop = 1 << fileIndex;
+    U64 occBB;
+
+    // Generate every possible combination of occupants for the
+    //  ascending diagonal
+    for (int occ1 = 0; occ1 < 256; occ1++) {
+        U8 occ = occ1;
+
+        // If the bishop overlaps with an occupant piece
+        if (occ & bishop) {
+            continue;
+        }
+
+        U64 firstAttackBB;
+        // Generate the attacks as if the pieces were on the first rank
+        firstAttackBB = generateLineAttacks(bishop, occ);
+        // Map the rank attacks to all the diagonals
+        firstAttackBB = mapRank1ToDiag(firstAttackBB);
+        // Mask with the diagonal that we're interested in
+        firstAttackBB &= ascDiagMask[rankIndex - fileIndex + 7]; 
+
+        // Map the rank with the occupants bits to all the diagonals
+        U64 firstDiagBB = mapRank1ToDiag(occ);
+        // Mask with the diagonal that we're interested in
+        firstDiagBB &= ascDiagMask[rankIndex + fileIndex]; 
+
+        // I don't know
+        occBB = firstDiagBB;
+
+        // Generate every possible combination of occupants for the
+        //  descending diagonal
+        for (int occ2 = 0; occ2 < 256; occ2++) {
+            occ = occ1;
+            // If the bishop overlaps with an occupant piece
+            if (occ & bishop) {
+                continue;
+            }
+
+            U64 secondAttackBB;
+            // Generate the attacks as if the pieces were on the first rank
+            secondAttackBB = generateLineAttacks(bishop, occ);
+            // Map the rank attacks to all the diagonals
+            secondAttackBB = mapRank1ToDiag(secondAttackBB);
+            // Mask with the diagonal that we're interested in
+            secondAttackBB &= desDiagMask[rankIndex + fileIndex]; 
+
+            // Map the rank with the occupants bits to all the diagonals
+            U64 secondDiagBB = mapRank1ToDiag(occ);
+            // Mask with the diagonal that we're interested in
+            secondDiagBB &= ascDiagMask[rankIndex + fileIndex]; 
+
+            U64 attackBB = firstAttackBB | secondAttackBB;
+            
+            occBB = firstDiagBB | secondDiagBB;
+            // Eliminate the margins
+            occBB &= ~marginMask;
+
+            U64 indexableBB = (occBB * bishopMagics[sqIndex]) 
+                >> (64 - bishopRelevantBits[sqIndex]);
+            uint16_t occIndex = indexableBB;
+            bishopAttackTable[sqIndex][occIndex] = attackBB;
+        }
+    }
+}
+
+void Generator::initBishopAttackTable() {
+    for (int sqIndex = 0; sqIndex < 64; sqIndex++) {
+        initPositionedBishopAttackTable(sqIndex);
     }
 }
 
@@ -320,7 +503,7 @@ U64 Generator::getRookRankAttackBB(uint16_t rookRank, uint16_t rookFile,
     U8 occ_index = occ;
     occ_index >>= 1;
     occ_index &= ~0x40;
-    
+
     rankAttacks = firstRankAttacks[occ_index][rookFile];
     rankAttacks <<= (rookRank * 8);
     rankAttacks &= ~friendPieceBB;
@@ -392,4 +575,45 @@ void Generator::blackRookAttacks(uint16_t *moves, uint16_t *len) {
     U64 friendPieceBB = _board.getPieceBB(blackSide);
 
     rookAttacks(moves, len, rookBB, friendPieceBB);
+}
+
+void Generator::bishopAttacks(uint16_t *moves, uint16_t *len,
+        U64 bishopBB, U64 friendPieceBB) {
+    U64 allBB = _board.getAllBB();
+    U64 occ, attacks;
+
+    std::vector<U64> separated = getSeparatedBits(bishopBB);
+    for (auto piece : separated) {
+        uint16_t move = getSquareIndex(piece);
+
+        occ = bishopMask[move] & allBB;
+        occ = (occ * bishopMagics[move]) >> (64 - bishopRelevantBits[move]);
+        uint16_t occIndex = occ;
+
+        attacks = bishopAttackTable[move][occIndex];
+        attacks &= ~friendPieceBB;
+
+        std::vector<U64> separatedAttacks = getSeparatedBits(attacks);
+        for (auto atk : separatedAttacks) {
+            uint16_t atkIndex = getSquareIndex(atk);
+            move &= ~(0xFC0);
+            move |= atkIndex << 6;
+            moves[*len] = move;
+            (*len)++;
+        }
+    }
+}
+
+void Generator::whiteBishopAttacks(uint16_t *moves, uint16_t *len) {
+    U64 bishopBB = _board.getBishopBB(whiteSide);
+    U64 friendPieceBB = _board.getPieceBB(whiteSide);
+
+    bishopAttacks(moves, len, bishopBB, friendPieceBB);
+}
+
+void Generator::blackBishopAttacks(uint16_t *moves, uint16_t *len) {
+    U64 bishopBB = _board.getBishopBB(blackSide);
+    U64 friendPieceBB = _board.getPieceBB(blackSide);
+
+    bishopAttacks(moves, len, bishopBB, friendPieceBB);
 }
