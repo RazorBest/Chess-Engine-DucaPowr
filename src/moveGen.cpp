@@ -8,6 +8,8 @@ Generator::Generator(Board& board) : _board(board) {
     initDiagMasks();
     initBishopMask();
     initBishopAttackTable();
+
+    _logger.info("Finished initialising the Generator");
 }
 
 U8 Generator::generateLineAttacks(U8 rook, U8 occ) {
@@ -60,8 +62,9 @@ void Generator::initFirstFileAttacks() {
     }
 }
 
-static U64 getAscendingDiagonalMask(int fileIndex, int rankIndex) {
-    U64 mask = 0;
+static U64 getAscendingDiagonalMask(int rankIndex, int fileIndex)  {
+    U64 mask = 1;
+    mask <<= rankIndex * 8 + fileIndex;
 
     // Generate the bits in positive direction
     int file = fileIndex + 1;
@@ -86,8 +89,9 @@ static U64 getAscendingDiagonalMask(int fileIndex, int rankIndex) {
     return mask;
 }
 
-static U64 getDescendingDiagonalMask(int fileIndex, int rankIndex) {
-    U64 mask = 0;
+static U64 getDescendingDiagonalMask(int rankIndex, int fileIndex) {
+    U64 mask = 1;
+    mask <<= rankIndex * 8 + fileIndex;
    
     // Generate the bits in positive direction
     int file = fileIndex + 1;
@@ -102,7 +106,7 @@ static U64 getDescendingDiagonalMask(int fileIndex, int rankIndex) {
     // Generate the bits in negative direction
     file = fileIndex - 1;
     rank = rankIndex + 1;
-    while (file < 8 && rank >= 0) {
+    while (file >= 0 && rank < 8) {
         U64 bit = 1;
         bit <<= (rank * 8 + file);
         mask |= bit;
@@ -132,10 +136,13 @@ void Generator::initBishopMask() {
     // We won't need them when generating the bishop attacks
     const U64 marginMask = 0xFF818181818181FF;
     for (int sqIndex = 0; sqIndex < 64; sqIndex++) {
+        int rankIndex = sqIndex / 8;
+        int fileIndex = sqIndex % 8;
+
         // Puts the first diagonal
-        bishopMask[sqIndex] = ascDiagMask[sqIndex] & (~marginMask);
+        bishopMask[sqIndex] = ascDiagMask[rankIndex - fileIndex + 7] & (~marginMask);
         // Puts the second diagonal and excludes the bishop square
-        bishopMask[sqIndex] ^= desDiagMask[sqIndex] & (~marginMask);
+        bishopMask[sqIndex] ^= desDiagMask[rankIndex + fileIndex] & (~marginMask);
     }
 }
 
@@ -196,7 +203,7 @@ void Generator::initPositionedBishopAttackTable(int sqIndex) {
         // Map the rank with the occupants bits to all the diagonals
         U64 firstDiagBB = mapRank1ToDiag(occ);
         // Mask with the diagonal that we're interested in
-        firstDiagBB &= ascDiagMask[rankIndex + fileIndex]; 
+        firstDiagBB &= ascDiagMask[rankIndex - fileIndex + 7]; 
 
         occBB = firstDiagBB;
 
@@ -220,7 +227,7 @@ void Generator::initPositionedBishopAttackTable(int sqIndex) {
             // Map the rank with the occupants bits to all the diagonals
             U64 secondDiagBB = mapRank1ToDiag(occ);
             // Mask with the diagonal that we're interested in
-            secondDiagBB &= ascDiagMask[rankIndex + fileIndex]; 
+            secondDiagBB &= desDiagMask[rankIndex + fileIndex]; 
 
             U64 attackBB = firstAttackBB | secondAttackBB;
             
@@ -231,8 +238,8 @@ void Generator::initPositionedBishopAttackTable(int sqIndex) {
             // Index the occupancy bitboard
             U64 indexableBB = (occBB * bishopMagics[sqIndex]) 
                 >> (64 - bishopRelevantBits[sqIndex]);
-            uint16_t occIndex = indexableBB;
-
+            uint16_t occIndex = indexableBB & ((1 << bishopRelevantBits[sqIndex]) - 1);
+    
             bishopAttackTable[sqIndex][occIndex] = attackBB;
         }
     }
@@ -249,10 +256,12 @@ void Generator::generateMoves(uint16_t* moves, uint16_t* len) {
         whitePawnMoves(moves, len);
         whitePawnAttacks(moves, len);
         whiteRookAttacks(moves, len);
+        whiteBishopAttacks(moves, len);
     } else {
         blackPawnMoves(moves, len);
         blackPawnAttacks(moves, len);
         blackRookAttacks(moves, len);
+        blackBishopAttacks(moves, len);
     }
 }
 
@@ -590,10 +599,12 @@ void Generator::bishopAttacks(uint16_t *moves, uint16_t *len,
     for (auto piece : separated) {
         uint16_t move = getSquareIndex(piece);
 
+        // Index the occupancy bitboard
         occ = bishopMask[move] & allBB;
         occ = (occ * bishopMagics[move]) >> (64 - bishopRelevantBits[move]);
-        uint16_t occIndex = occ;
+        uint16_t occIndex = occ & ((1 << bishopRelevantBits[move]) - 1);
 
+        // Get the attacks bitboard
         attacks = bishopAttackTable[move][occIndex];
         attacks &= ~friendPieceBB;
 
