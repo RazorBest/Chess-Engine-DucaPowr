@@ -1,10 +1,16 @@
 /* Copyright 2021 DucaPowr Team */
 #include "./moveGen.h"
+#include "board.h"
+#include "utils.h"
+#include <bits/stdint-uintn.h>
+#include <cstdio>
 #include <string>
+#include <vector>
 
 Generator::Generator(Board& board) : _board(board) {
     initFirstRankAttacks();
     initFirstFileAttacks();
+    initKingNeighbors();
 }
 
 U8 Generator::generateLineAttacks(U8 rook, U8 occ) {
@@ -57,6 +63,14 @@ void Generator::initFirstFileAttacks() {
     }
 }
 
+void Generator::initKingNeighbors() {
+    U64 kingBB = 1;
+    for (size_t i = 0; i < 64; i++) {
+        kingNeighbors[i] = aKingsNeighbors(kingBB);
+        kingBB <<= 1;
+    }
+}
+
 void Generator::generateMoves(uint16_t* moves, uint16_t* len) {
     if (_board.sideToMove == whiteSide) {
         whitePawnMoves(moves, len);
@@ -67,6 +81,8 @@ void Generator::generateMoves(uint16_t* moves, uint16_t* len) {
         blackPawnAttacks(moves, len);
         blackRookAttacks(moves, len);
     }
+    kingMoves(_board.sideToMove, moves, len);
+    kingAttacks(_board.sideToMove, moves, len);
 }
 
 void Generator::whitePawnMoves(uint16_t* moves, uint16_t *len) {
@@ -392,4 +408,40 @@ void Generator::blackRookAttacks(uint16_t *moves, uint16_t *len) {
     U64 friendPieceBB = _board.getPieceBB(blackSide);
 
     rookAttacks(moves, len, rookBB, friendPieceBB);
+}
+
+void Generator::kingMoves(Side side, uint16_t *moves, uint16_t *len) {
+    U64 kingBB = _board.getKingBB(side);
+    U64 emptyPiece = _board.getEmptyBB();
+    U64 possibleMoves;
+    uint16_t kingSquareIndex = getSquareIndex(kingBB);
+
+    possibleMoves = kingNeighbors[kingSquareIndex] & emptyPiece;
+    std::vector<U64> separated = getSeparatedBits(possibleMoves);
+    for (auto dst : separated) {
+      uint16_t tmp = 0;
+      tmp = getSquareIndex(dst);
+      tmp = tmp << 6;
+      tmp |= getSquareIndex(kingBB);
+
+      moves[(*len)++] = tmp;
+    }
+}
+
+void Generator::kingAttacks(Side side, uint16_t *moves, uint16_t *len) {
+    U64 kingBB = _board.getKingBB(side);
+    U64 opponentBB = _board.getPieceBB((Side) (1 - side));
+    U64 possibleMoves;
+    uint16_t kingSquareIndex = getSquareIndex(kingBB);
+
+    possibleMoves = kingNeighbors[kingSquareIndex] & opponentBB;
+    std::vector<U64> separated = getSeparatedBits(possibleMoves);
+    for (auto dst : separated) {
+      uint16_t tmp = 0;
+      tmp = getSquareIndex(dst);
+      tmp = tmp << 6;
+      tmp |= getSquareIndex(kingBB);
+
+      moves[(*len)++] = tmp;
+    }
 }

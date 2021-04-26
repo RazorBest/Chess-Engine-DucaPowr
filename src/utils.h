@@ -35,3 +35,76 @@ U64 rankBB(uint16_t rankIndex);
  * @return - a bitboard with the bits set on the specified file
  */
 U64 fileBB(uint16_t fileIndex);
+
+/**
+ * @brief This functions moves all the pieces on a bitboard south one time.
+ * 
+ * @param b the bitboard
+ * @return U64 the shifted bitboard.
+ */
+U64 southOne(U64 b);
+
+/**
+ * @brief This functions moves all the pieces on a bitboard north one time.
+ * 
+ * @param b the bitboard
+ * @return U64 the shifted bitboard.
+ */
+U64 northOne(U64 b);
+
+/**
+ * @brief This functions moves all the pieces on a bitboard east one time.
+ * 
+ * @param b the bitboard
+ * @return U64 the shifted bitboard.
+ */
+U64 eastOne(U64 b);
+
+/**
+ * @brief This functions moves all the pieces on a bitboard west one time.
+ * 
+ * @param b the bitboard
+ * @return U64 the shifted bitboard.
+ */
+U64 westOne(U64 b);
+
+/**
+ * @brief This functions moves all the pieces on a bitboard northeast one time.
+ * 
+ * @param b the bitboard
+ * @return U64 the shifted bitboard.
+ */
+U64 northEastOne(U64 b);
+
+/**
+ * @brief This functions moves all the pieces on a bitboard southeast one time.
+ * 
+ * @param b the bitboard
+ * @return U64 the shifted bitboard.
+ */
+U64 southEastOne(U64 b);
+
+/**
+ * @brief This functions moves all the pieces on a bitboard northwest one time.
+ * 
+ * @param b the bitboard
+ * @return U64 the shifted bitboard.
+ */
+U64 northWestOne(U64 b);
+
+/**
+ * @brief This functions moves all the pieces on a bitboard southwest one time.
+ * 
+ * @param b the bitboard
+ * @return U64 the shifted bitboard.
+ */
+U64 southWestOne(U64 b);
+
+/**
+ * @brief This function takes a bit board with only the king's position marked
+ * and returns a bitboard with only the king's neighbors marked.
+ *
+ * @param kingBB a bit board with only the king's position marked
+ * @return U64 a bitboard with only the king's neighbors marked.
+ */
+U64 aKingsNeighbors(U64 kingBB);
