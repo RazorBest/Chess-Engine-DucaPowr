@@ -128,11 +128,14 @@ void Generator::initDiagMasks() {
 }
 
 void Generator::initBishopMask() {
+    // Use this mask to ignore the margins
+    // We won't need them when generating the bishop attacks
+    const U64 marginMask = 0xFF818181818181FF;
     for (int sqIndex = 0; sqIndex < 64; sqIndex++) {
         // Puts the first diagonal
-        bishopMask[sqIndex] = ascDiagMask[sqIndex];
+        bishopMask[sqIndex] = ascDiagMask[sqIndex] & (~marginMask);
         // Puts the second diagonal and excludes the bishop square
-        bishopMask[sqIndex] ^= desDiagMask[sqIndex];
+        bishopMask[sqIndex] ^= desDiagMask[sqIndex] & (~marginMask);
     }
 }
 
@@ -174,8 +177,8 @@ void Generator::initPositionedBishopAttackTable(int sqIndex) {
 
     // Generate every possible combination of occupants for the
     //  ascending diagonal
-    for (int occ1 = 0; occ1 < 256; occ1++) {
-        U8 occ = occ1;
+    for (int occ1 = 0; occ1 < 64; occ1++) {
+        U8 occ = occ1 << 1;
 
         // If the bishop overlaps with an occupant piece
         if (occ & bishop) {
@@ -195,13 +198,12 @@ void Generator::initPositionedBishopAttackTable(int sqIndex) {
         // Mask with the diagonal that we're interested in
         firstDiagBB &= ascDiagMask[rankIndex + fileIndex]; 
 
-        // I don't know
         occBB = firstDiagBB;
 
         // Generate every possible combination of occupants for the
         //  descending diagonal
-        for (int occ2 = 0; occ2 < 256; occ2++) {
-            occ = occ1;
+        for (int occ2 = 0; occ2 < 64; occ2++) {
+            occ = occ2 << 1;
             // If the bishop overlaps with an occupant piece
             if (occ & bishop) {
                 continue;
@@ -223,12 +225,14 @@ void Generator::initPositionedBishopAttackTable(int sqIndex) {
             U64 attackBB = firstAttackBB | secondAttackBB;
             
             occBB = firstDiagBB | secondDiagBB;
-            // Eliminate the margins
+            // Eliminate the margins from the occupancy bitboard
             occBB &= ~marginMask;
 
+            // Index the occupancy bitboard
             U64 indexableBB = (occBB * bishopMagics[sqIndex]) 
                 >> (64 - bishopRelevantBits[sqIndex]);
             uint16_t occIndex = indexableBB;
+
             bishopAttackTable[sqIndex][occIndex] = attackBB;
         }
     }
