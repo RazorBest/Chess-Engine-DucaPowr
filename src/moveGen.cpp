@@ -632,3 +632,21 @@ void Generator::blackBishopAttacks(uint16_t *moves, uint16_t *len) {
 
     bishopAttacks(moves, len, bishopBB, friendPieceBB);
 }
+    
+void Generator::queenAttacks(uint16_t* moves, uint16_t* len, U64 queenBB,
+        U64 friendPieceBB) {
+    bishopAttacks(moves, len, queenBB, friendPieceBB); 
+    rookAttacks(moves, len, queenBB, friendPieceBB); 
+}
+void Generator::blackQueenAttacks(uint16_t* moves, uint16_t* len) {
+    U64 queenBB = _board.getQueenBB(blackSide);
+    U64 friendPieceBB = _board.getPieceBB(blackSide);
+
+    queenAttacks(moves, len, queenBB, friendPieceBB);
+}
+void Generator::whiteQueenAttacks(uint16_t* moves, uint16_t* len) {
+    U64 queenBB = _board.getQueenBB(whiteSide);
+    U64 friendPieceBB = _board.getPieceBB(whiteSide);
+
+    queenAttacks(moves, len, queenBB, friendPieceBB);
+}

@@ -89,7 +89,10 @@ class Generator {
 
     void knightMoves(uint16_t* moves, uint16_t* len);
 
-    void queenMoves(uint16_t* moves, uint16_t* len);
+    void queenAttacks(uint16_t* moves, uint16_t* len, U64 queenBBm,
+            U64 friendPieceBB);
+    void blackQueenAttacks(uint16_t* moves, uint16_t* len);
+    void whiteQueenAttacks(uint16_t* moves, uint16_t* len);
 
     void kingMoves(uint16_t* moves, uint16_t* len);
 };
