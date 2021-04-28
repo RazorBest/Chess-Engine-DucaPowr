@@ -257,11 +257,13 @@ void Generator::generateMoves(uint16_t* moves, uint16_t* len) {
         whitePawnAttacks(moves, len);
         whiteRookAttacks(moves, len);
         whiteBishopAttacks(moves, len);
+        whiteQueenAttacks(moves, len);
     } else {
         blackPawnMoves(moves, len);
         blackPawnAttacks(moves, len);
         blackRookAttacks(moves, len);
         blackBishopAttacks(moves, len);
+        blackQueenAttacks(moves, len);
     }
 }
 
