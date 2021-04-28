@@ -21,6 +21,7 @@ class Generator {
 
     void generateMoves(uint16_t* moves, uint16_t* len);
 
+    // vvvvv Perhaps theese should be private?
     U64 firstRankAttacks[64][8];
     U64 firstFileAttacks[64][8];
     U64 bishopAttackTable[64][512];
@@ -60,6 +61,9 @@ class Generator {
     Board& _board;
     Logger _logger;
 
+    // Bitboards off all possible knight moves from square i, 0 <= i < 64
+    U64 knightPosMoves[64];
+
     U8 generateLineAttacks(U8 rook, U8 occ);
     void initFirstRankAttacks();
     void initFirstFileAttacks();
@@ -88,6 +92,7 @@ class Generator {
     void blackBishopAttacks(uint16_t* moves, uint16_t* len);
 
     void knightMoves(uint16_t* moves, uint16_t* len);
+    void initKnightPosMoves();
 
     void queenAttacks(uint16_t* moves, uint16_t* len, U64 queenBBm,
             U64 friendPieceBB);

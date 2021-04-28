@@ -652,3 +652,61 @@ void Generator::whiteQueenAttacks(uint16_t* moves, uint16_t* len) {
 
     queenAttacks(moves, len, queenBB, friendPieceBB);
 }
+
+void Generator::initKnightPosMoves() {
+    int i, j;
+
+    // The bitboard of all the attacks a knight placed at C6 can do. A default position.
+    U64 defAtks = 0xa1100110a000000;
+    const short int defFile = 3; // file C
+    const short int defRank = 6; // rank 6
+
+    // Masks that have all bits 1 save for the extreme 2 files.
+    U64 leftBound = 0x3f3f3f3f3f3f3f3f;
+    U64 rightBound = 0xfcfcfcfcfcfcfcfc;
+
+    /**
+     * Note: I've divided the board into 6 sectors, as follows:
+     * 11222233
+     * 11222233
+     * 11222233
+     * 44555566
+     * 44555566
+     * 44555566
+     * 44555566
+     * 44555566
+     * Theese sectors need different masks and shifts to be obtained from the default position.
+     * 
+     * Also, the knight can be "moved" by (pos is the bitboard of its attacks):
+     *           (pos << 8)
+     *               ^
+     *               |
+     * (pos >> 1) <- K -> (pos << 1)
+     *               |
+     *               v
+     *           (pos >> 8)
+    */
+
+    // Generate all attacks from sector 1.
+    for (i = 0; i < 3; i++) {
+        for (j = 1; j < 3; j++) {
+            knightPosMoves[((defRank + i - 1) << 3) + defFile - j - 1] =
+                ((defAtks >> i) << (j << 3)) & leftBound;
+        }
+    }
+
+    // Generate all attacks from sector 2.
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 3; j++) {
+            knightPosMoves[((defRank + i - 1) << 3) + defFile + j - 1] =
+                (defAtks << i) << (j << 3);
+        }
+    }
+
+    // Generate all attacks from sector 3.
+// TODO Continue...
+
+    // Generate all attacks from sector 4.
+    // Generate all attacks from sector 5.
+    // Generate all attacks from sector 6.
+}
