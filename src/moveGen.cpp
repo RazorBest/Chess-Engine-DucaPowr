@@ -5,6 +5,11 @@
 Generator::Generator(Board& board) : _board(board) {
     initFirstRankAttacks();
     initFirstFileAttacks();
+    initDiagMasks();
+    initBishopMask();
+    initBishopAttackTable();
+
+    _logger.info("Finished initialising the Generator");
 }
 
 U8 Generator::generateLineAttacks(U8 rook, U8 occ) {
@@ -57,15 +62,208 @@ void Generator::initFirstFileAttacks() {
     }
 }
 
+static U64 getAscendingDiagonalMask(int rankIndex, int fileIndex)  {
+    U64 mask = 1;
+    mask <<= rankIndex * 8 + fileIndex;
+
+    // Generate the bits in positive direction
+    int file = fileIndex + 1;
+    int rank = rankIndex + 1;
+    while (file < 8 && rank < 8) {
+        U64 bit = 1;
+        bit <<= (rank * 8 + file);
+        mask |= bit;
+        rank++; file++;
+    }
+
+    // Generate the bits in negative direction
+    file = fileIndex - 1;
+    rank = rankIndex - 1;
+    while (file >= 0 && rank >= 0) {
+        U64 bit = 1;
+        bit <<= (rank * 8 + file);
+        mask |= bit;
+        rank--; file--;
+    }
+
+    return mask;
+}
+
+static U64 getDescendingDiagonalMask(int rankIndex, int fileIndex) {
+    U64 mask = 1;
+    mask <<= rankIndex * 8 + fileIndex;
+   
+    // Generate the bits in positive direction
+    int file = fileIndex + 1;
+    int rank = rankIndex - 1;
+    while (file < 8 && rank >= 0) {
+        U64 bit = 1;
+        bit <<= (rank * 8 + file);
+        mask |= bit;
+        file++; rank--;
+    }
+
+    // Generate the bits in negative direction
+    file = fileIndex - 1;
+    rank = rankIndex + 1;
+    while (file >= 0 && rank < 8) {
+        U64 bit = 1;
+        bit <<= (rank * 8 + file);
+        mask |= bit;
+        file--; rank++;
+    }
+
+    return mask;
+}
+
+void Generator::initDiagMasks() {
+    int index = 0; 
+   
+    for (int rankIndex = 0; rankIndex < 8; rankIndex++) {
+        ascDiagMask[index] = getAscendingDiagonalMask(rankIndex, 7);
+        desDiagMask[index] = getDescendingDiagonalMask(rankIndex, 0);
+        index++; 
+    }
+    for (int rankIndex = 1; rankIndex < 8; rankIndex++) {
+        ascDiagMask[index] = getAscendingDiagonalMask(rankIndex, 0);
+        desDiagMask[index] = getDescendingDiagonalMask(rankIndex, 7);
+        index++; 
+    }
+}
+
+void Generator::initBishopMask() {
+    // Use this mask to ignore the margins
+    // We won't need them when generating the bishop attacks
+    const U64 marginMask = 0xFF818181818181FF;
+    for (int sqIndex = 0; sqIndex < 64; sqIndex++) {
+        int rankIndex = sqIndex / 8;
+        int fileIndex = sqIndex % 8;
+
+        // Puts the first diagonal
+        bishopMask[sqIndex] = ascDiagMask[rankIndex - fileIndex + 7] & (~marginMask);
+        // Puts the second diagonal and excludes the bishop square
+        bishopMask[sqIndex] ^= desDiagMask[rankIndex + fileIndex] & (~marginMask);
+    }
+}
+
+/* Transforms this bitboard:
+ *      00000000
+ *      00000000
+ *      00000000
+ *      00000000
+ *      00000000
+ *      00000000
+ *      00000000
+ *      12345678
+ * To this:
+ *      12345678
+ *      12345678
+ *      12345678
+ *      12345678
+ *      12345678
+ *      12345678
+ *      12345678
+ *      12345678
+ */
+U64 mapRank1ToDiag(U64 bb) {
+    // A magic that maps Rank 1 to the A1-H8 diagonal
+    const U64 magicR1D = 0x0101010101010101;
+
+    bb *= magicR1D;
+
+    return bb;
+}
+
+void Generator::initPositionedBishopAttackTable(int sqIndex) {
+    const U64 marginMask = 0xFF818181818181FF;
+    int rankIndex = sqIndex / 8; 
+    int fileIndex = sqIndex % 8; 
+
+    U8 bishop = 1 << fileIndex;
+    U64 occBB;
+
+    // Generate every possible combination of occupants for the
+    //  ascending diagonal
+    for (int occ1 = 0; occ1 < 64; occ1++) {
+        U8 occ = occ1 << 1;
+
+        // If the bishop overlaps with an occupant piece
+        if (occ & bishop) {
+            continue;
+        }
+
+        U64 firstAttackBB;
+        // Generate the attacks as if the pieces were on the first rank
+        firstAttackBB = generateLineAttacks(bishop, occ);
+        // Map the rank attacks to all the diagonals
+        firstAttackBB = mapRank1ToDiag(firstAttackBB);
+        // Mask with the diagonal that we're interested in
+        firstAttackBB &= ascDiagMask[rankIndex - fileIndex + 7]; 
+
+        // Map the rank with the occupants bits to all the diagonals
+        U64 firstDiagBB = mapRank1ToDiag(occ);
+        // Mask with the diagonal that we're interested in
+        firstDiagBB &= ascDiagMask[rankIndex - fileIndex + 7]; 
+
+        occBB = firstDiagBB;
+
+        // Generate every possible combination of occupants for the
+        //  descending diagonal
+        for (int occ2 = 0; occ2 < 64; occ2++) {
+            occ = occ2 << 1;
+            // If the bishop overlaps with an occupant piece
+            if (occ & bishop) {
+                continue;
+            }
+
+            U64 secondAttackBB;
+            // Generate the attacks as if the pieces were on the first rank
+            secondAttackBB = generateLineAttacks(bishop, occ);
+            // Map the rank attacks to all the diagonals
+            secondAttackBB = mapRank1ToDiag(secondAttackBB);
+            // Mask with the diagonal that we're interested in
+            secondAttackBB &= desDiagMask[rankIndex + fileIndex]; 
+
+            // Map the rank with the occupants bits to all the diagonals
+            U64 secondDiagBB = mapRank1ToDiag(occ);
+            // Mask with the diagonal that we're interested in
+            secondDiagBB &= desDiagMask[rankIndex + fileIndex]; 
+
+            U64 attackBB = firstAttackBB | secondAttackBB;
+            
+            occBB = firstDiagBB | secondDiagBB;
+            // Eliminate the margins from the occupancy bitboard
+            occBB &= ~marginMask;
+
+            // Index the occupancy bitboard
+            U64 indexableBB = (occBB * bishopMagics[sqIndex]) 
+                >> (64 - bishopRelevantBits[sqIndex]);
+            uint16_t occIndex = indexableBB & ((1 << bishopRelevantBits[sqIndex]) - 1);
+    
+            bishopAttackTable[sqIndex][occIndex] = attackBB;
+        }
+    }
+}
+
+void Generator::initBishopAttackTable() {
+    for (int sqIndex = 0; sqIndex < 64; sqIndex++) {
+        initPositionedBishopAttackTable(sqIndex);
+    }
+}
+
 void Generator::generateMoves(uint16_t* moves, uint16_t* len) {
     if (_board.sideToMove == whiteSide) {
         whitePawnMoves(moves, len);
         whitePawnAttacks(moves, len);
         whiteRookAttacks(moves, len);
+        whiteBishopAttacks(moves, len);
+        whiteQueenAttacks(moves, len);
     } else {
         blackPawnMoves(moves, len);
         blackPawnAttacks(moves, len);
         blackRookAttacks(moves, len);
+        blackBishopAttacks(moves, len);
+        blackQueenAttacks(moves, len);
     }
 }
 
@@ -320,7 +518,7 @@ U64 Generator::getRookRankAttackBB(uint16_t rookRank, uint16_t rookFile,
     U8 occ_index = occ;
     occ_index >>= 1;
     occ_index &= ~0x40;
-    
+
     rankAttacks = firstRankAttacks[occ_index][rookFile];
     rankAttacks <<= (rookRank * 8);
     rankAttacks &= ~friendPieceBB;
@@ -392,4 +590,65 @@ void Generator::blackRookAttacks(uint16_t *moves, uint16_t *len) {
     U64 friendPieceBB = _board.getPieceBB(blackSide);
 
     rookAttacks(moves, len, rookBB, friendPieceBB);
+}
+
+void Generator::bishopAttacks(uint16_t *moves, uint16_t *len,
+        U64 bishopBB, U64 friendPieceBB) {
+    U64 allBB = _board.getAllBB();
+    U64 occ, attacks;
+
+    std::vector<U64> separated = getSeparatedBits(bishopBB);
+    for (auto piece : separated) {
+        uint16_t move = getSquareIndex(piece);
+
+        // Index the occupancy bitboard
+        occ = bishopMask[move] & allBB;
+        occ = (occ * bishopMagics[move]) >> (64 - bishopRelevantBits[move]);
+        uint16_t occIndex = occ & ((1 << bishopRelevantBits[move]) - 1);
+
+        // Get the attacks bitboard
+        attacks = bishopAttackTable[move][occIndex];
+        attacks &= ~friendPieceBB;
+
+        std::vector<U64> separatedAttacks = getSeparatedBits(attacks);
+        for (auto atk : separatedAttacks) {
+            uint16_t atkIndex = getSquareIndex(atk);
+            move &= ~(0xFC0);
+            move |= atkIndex << 6;
+            moves[*len] = move;
+            (*len)++;
+        }
+    }
+}
+
+void Generator::whiteBishopAttacks(uint16_t *moves, uint16_t *len) {
+    U64 bishopBB = _board.getBishopBB(whiteSide);
+    U64 friendPieceBB = _board.getPieceBB(whiteSide);
+
+    bishopAttacks(moves, len, bishopBB, friendPieceBB);
+}
+
+void Generator::blackBishopAttacks(uint16_t *moves, uint16_t *len) {
+    U64 bishopBB = _board.getBishopBB(blackSide);
+    U64 friendPieceBB = _board.getPieceBB(blackSide);
+
+    bishopAttacks(moves, len, bishopBB, friendPieceBB);
+}
+    
+void Generator::queenAttacks(uint16_t* moves, uint16_t* len, U64 queenBB,
+        U64 friendPieceBB) {
+    bishopAttacks(moves, len, queenBB, friendPieceBB); 
+    rookAttacks(moves, len, queenBB, friendPieceBB); 
+}
+void Generator::blackQueenAttacks(uint16_t* moves, uint16_t* len) {
+    U64 queenBB = _board.getQueenBB(blackSide);
+    U64 friendPieceBB = _board.getPieceBB(blackSide);
+
+    queenAttacks(moves, len, queenBB, friendPieceBB);
+}
+void Generator::whiteQueenAttacks(uint16_t* moves, uint16_t* len) {
+    U64 queenBB = _board.getQueenBB(whiteSide);
+    U64 friendPieceBB = _board.getPieceBB(whiteSide);
+
+    queenAttacks(moves, len, queenBB, friendPieceBB);
 }
