@@ -656,10 +656,10 @@ void Generator::whiteQueenAttacks(uint16_t* moves, uint16_t* len) {
 void Generator::initKnightPosMoves() {
     int i, j;
 
-    // The bitboard of all the attacks a knight placed at C6 can do. A default position.
-    U64 defAtks = 0xa1100110a000000;
-    const short int defFile = 3; // file C
-    const short int defRank = 6; // rank 6
+    // The bitboard of all the moves a knight placed at C6 can do. A chosen default position.
+    U64 defMoves = 0xa1100110a000000;
+    const short int defFile = 2; // file C
+    const short int defRank = 5; // rank 6
 
     // Masks that have all bits 1 save for the extreme 2 files.
     U64 leftBound = 0x3f3f3f3f3f3f3f3f;
@@ -688,25 +688,50 @@ void Generator::initKnightPosMoves() {
     */
 
     // Generate all attacks from sector 1.
-    for (i = 0; i < 3; i++) {
-        for (j = 1; j < 3; j++) {
-            knightPosMoves[((defRank + i - 1) << 3) + defFile - j - 1] =
-                ((defAtks >> i) << (j << 3)) & leftBound;
+    for (i = 0; i <= 2; i++) {
+        for (j = 1; j <= 2; j++) {
+            knightPosMoves[((defRank + i) << 3) + defFile - j] =
+                ((defMoves >> j) << (i << 3)) & leftBound;
         }
     }
 
     // Generate all attacks from sector 2.
-    for (i = 0; i < 4; i++) {
-        for (j = 0; j < 3; j++) {
-            knightPosMoves[((defRank + i - 1) << 3) + defFile + j - 1] =
-                (defAtks << i) << (j << 3);
+    for (i = 0; i <= 2; i++) {
+        for (j = 0; j <= 3; j++) {
+            knightPosMoves[((defRank + i) << 3) + defFile + j] =
+                (defMoves << j) << (i << 3);
         }
     }
 
     // Generate all attacks from sector 3.
-// TODO Continue...
+    for (i = 0; i <= 3; i++) {
+        for (j = 4; j <= 5; j++) {
+            knightPosMoves[((defRank + i) << 3) + defFile + j] =
+                ((defMoves << j) << (i << 3)) & rightBound;
+        }
+    }
 
     // Generate all attacks from sector 4.
+    for (i = 1; i <= 5; i++) {
+        for (j = 1; j <= 2; j++) {
+            knightPosMoves[((defRank - i) << 3) + defFile - j] =
+                ((defMoves >> j) >> (i << 3)) & leftBound;
+        }
+    }
+
     // Generate all attacks from sector 5.
+    for (i = 1; i <= 5; i++) {
+        for (j = 0; j <= 3; j++) {
+            knightPosMoves[((defRank - i) << 3) + defFile + j] =
+                (defMoves << j) >> (i << 3);
+        }
+    }
+
     // Generate all attacks from sector 6.
+    for (i = 1; i <= 5; i++) {
+        for (j = 4; j <= 5; j++) {
+            knightPosMoves[((defRank - i) << 3) + defFile + j] =
+                ((defMoves << j) >> (i << 3)) & rightBound;
+        }
+    }
 }
