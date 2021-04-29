@@ -8,6 +8,7 @@ Generator::Generator(Board& board) : _board(board) {
     initDiagMasks();
     initBishopMask();
     initBishopAttackTable();
+    initKnightPosMoves();
 
     _logger.info("Finished initialising the Generator");
 }
