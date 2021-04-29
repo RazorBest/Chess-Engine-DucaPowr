@@ -10,7 +10,9 @@ typedef uint8_t  U8;
 std::vector<U64> getSeparatedBits(U64 bb);
 
 /**
- * @param bb - a bitboard where only 1 bit is set
+ * Most Significant Bit bitscan
+ * 
+ * @param bb - a bitboard where at least 1 bit is set
  * @return - the index of the bit in LERF mapping
  */
 uint16_t getSquareIndex(U64 bb);

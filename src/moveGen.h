@@ -56,6 +56,7 @@ class Generator {
      * 01234...
      */
     U64 desDiagMask[15];
+    // ^^^^^ Perhaps theese should be private?
 
  private:
     Board& _board;
@@ -91,8 +92,11 @@ class Generator {
     void whiteBishopAttacks(uint16_t* moves, uint16_t* len);
     void blackBishopAttacks(uint16_t* moves, uint16_t* len);
 
-    void knightMoves(uint16_t* moves, uint16_t* len);
     void initKnightPosMoves();
+    void knightMoves(uint16_t* moves, uint16_t* len, U64 knightBB,
+            U64 friendPieceBB);
+    void whiteKnightMoves(uint16_t* moves, uint16_t* len);
+    void blackKnightMoves(uint16_t* moves, uint16_t* len);
 
     void queenAttacks(uint16_t* moves, uint16_t* len, U64 queenBBm,
             U64 friendPieceBB);
