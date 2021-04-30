@@ -186,9 +186,10 @@ bool Board::applyMove(uint16_t move) {
     uint16_t sourceSquare = move & 0x3f;
     uint16_t destSquare = (move >> 6) & 0x3f;
 
-    uint64_t sourcePosBoard = 1;
+    // Pos = position.
+    U64 sourcePosBoard = 1;
     sourcePosBoard <<= sourceSquare;
-    uint64_t destPosBoard = 1;
+    U64 destPosBoard = 1;
     destPosBoard <<= destSquare;
 
 
@@ -216,5 +217,37 @@ bool Board::applyMove(uint16_t move) {
 }
 
 bool Board::undoMove() {
-    //TODO
+    if (moveHistory.empty()) {
+        return false;
+    }
+
+    uint16_t move = moveHistory.top();
+    moveHistory.pop();
+
+    uint16_t sourceSquare = move & 0x3f;
+    uint16_t destSquare = (move >> 6) & 0x3f;
+
+    // Pos = position.
+    U64 sourcePosBoard = 1;
+    sourcePosBoard <<= sourceSquare;
+    U64 destPosBoard = 1;
+    destPosBoard <<= destSquare;
+
+    enum enumPiece sourceSquareIndex = getPieceIndexFromSquare(destSquare);
+
+    DIE(takeHistory.empty(), "Error in undoMove(): takeHsitory and moveHistory\
+     stacks have different sizes!");
+    enum enumPiece destSquareIndex = takeHistory.top();
+    takeHistory.pop();
+
+    // Remove source piece from the destination position on the source board.
+    pieceBB[sourceSquareIndex] ^= destPosBoard;
+
+    // Add destination piece back to its board.
+    pieceBB[destSquareIndex] |= destPosBoard;
+
+    // Add source piece back to its inital place on its board.
+    pieceBB[sourceSquareIndex] |= sourcePosBoard;
+
+    return true;
 }

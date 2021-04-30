@@ -31,7 +31,7 @@ enum enumPiece {
     nBlackQueen,
     nWhiteKing,
     nBlackKing,
-    // Piece used for optimization. (I think?)
+    // Piece used for applyMove() and undoMove() optimization.
     trashPiece
 };
 
@@ -43,7 +43,7 @@ class Board  {
     U64 pieceBB[13];
 
     /**
-     * It finds the piece that is on that square and it returns the index
+     * It finds the piece that is on that square and it returns the index 
      * to its bitboard in the pieceBB array
      * @param sq is a 0-63 number indicating a board square
      */

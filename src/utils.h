@@ -7,6 +7,15 @@
 typedef uint64_t U64;
 typedef uint8_t  U8;
 
+#define DIE(condition, message) \
+	do { \
+		if ((condition)) { \
+			fprintf(stderr, "[%d]: %s\n", __LINE__, (message)); \
+			perror(""); \
+			exit(1); \
+		} \
+	} while (0)
+
 std::vector<U64> getSeparatedBits(U64 bb);
 
 /**
