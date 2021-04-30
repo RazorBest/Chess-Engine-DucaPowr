@@ -104,7 +104,7 @@ static U64 getAscendingDiagonalMask(int rankIndex, int fileIndex)  {
 static U64 getDescendingDiagonalMask(int rankIndex, int fileIndex) {
     U64 mask = 1;
     mask <<= rankIndex * 8 + fileIndex;
-   
+
     // Generate the bits in positive direction
     int file = fileIndex + 1;
     int rank = rankIndex - 1;
@@ -129,17 +129,17 @@ static U64 getDescendingDiagonalMask(int rankIndex, int fileIndex) {
 }
 
 void Generator::initDiagMasks() {
-    int index = 0; 
-   
+    int index = 0;
+
     for (int rankIndex = 0; rankIndex < 8; rankIndex++) {
         ascDiagMask[index] = getAscendingDiagonalMask(rankIndex, 7);
         desDiagMask[index] = getDescendingDiagonalMask(rankIndex, 0);
-        index++; 
+        index++;
     }
     for (int rankIndex = 1; rankIndex < 8; rankIndex++) {
         ascDiagMask[index] = getAscendingDiagonalMask(rankIndex, 0);
         desDiagMask[index] = getDescendingDiagonalMask(rankIndex, 7);
-        index++; 
+        index++;
     }
 }
 
@@ -188,8 +188,8 @@ U64 mapRank1ToDiag(U64 bb) {
 
 void Generator::initPositionedBishopAttackTable(int sqIndex) {
     const U64 marginMask = 0xFF818181818181FF;
-    int rankIndex = sqIndex / 8; 
-    int fileIndex = sqIndex % 8; 
+    int rankIndex = sqIndex / 8;
+    int fileIndex = sqIndex % 8;
 
     U8 bishop = 1 << fileIndex;
     U64 occBB;
@@ -210,12 +210,12 @@ void Generator::initPositionedBishopAttackTable(int sqIndex) {
         // Map the rank attacks to all the diagonals
         firstAttackBB = mapRank1ToDiag(firstAttackBB);
         // Mask with the diagonal that we're interested in
-        firstAttackBB &= ascDiagMask[rankIndex - fileIndex + 7]; 
+        firstAttackBB &= ascDiagMask[rankIndex - fileIndex + 7];
 
         // Map the rank with the occupants bits to all the diagonals
         U64 firstDiagBB = mapRank1ToDiag(occ);
         // Mask with the diagonal that we're interested in
-        firstDiagBB &= ascDiagMask[rankIndex - fileIndex + 7]; 
+        firstDiagBB &= ascDiagMask[rankIndex - fileIndex + 7];
 
         occBB = firstDiagBB;
 
@@ -234,24 +234,24 @@ void Generator::initPositionedBishopAttackTable(int sqIndex) {
             // Map the rank attacks to all the diagonals
             secondAttackBB = mapRank1ToDiag(secondAttackBB);
             // Mask with the diagonal that we're interested in
-            secondAttackBB &= desDiagMask[rankIndex + fileIndex]; 
+            secondAttackBB &= desDiagMask[rankIndex + fileIndex];
 
             // Map the rank with the occupants bits to all the diagonals
             U64 secondDiagBB = mapRank1ToDiag(occ);
             // Mask with the diagonal that we're interested in
-            secondDiagBB &= desDiagMask[rankIndex + fileIndex]; 
+            secondDiagBB &= desDiagMask[rankIndex + fileIndex];
 
             U64 attackBB = firstAttackBB | secondAttackBB;
-            
+
             occBB = firstDiagBB | secondDiagBB;
             // Eliminate the margins from the occupancy bitboard
             occBB &= ~marginMask;
 
             // Index the occupancy bitboard
-            U64 indexableBB = (occBB * bishopMagics[sqIndex]) 
+            U64 indexableBB = (occBB * bishopMagics[sqIndex])
                 >> (64 - bishopRelevantBits[sqIndex]);
             uint16_t occIndex = indexableBB & ((1 << bishopRelevantBits[sqIndex]) - 1);
-    
+
             bishopAttackTable[sqIndex][occIndex] = attackBB;
         }
     }
@@ -648,11 +648,11 @@ void Generator::blackBishopAttacks(uint16_t *moves, uint16_t *len) {
 
     bishopAttacks(moves, len, bishopBB, friendPieceBB);
 }
-    
+
 void Generator::queenAttacks(uint16_t* moves, uint16_t* len, U64 queenBB,
         U64 friendPieceBB) {
-    bishopAttacks(moves, len, queenBB, friendPieceBB); 
-    rookAttacks(moves, len, queenBB, friendPieceBB); 
+    bishopAttacks(moves, len, queenBB, friendPieceBB);
+    rookAttacks(moves, len, queenBB, friendPieceBB);
 }
 void Generator::blackQueenAttacks(uint16_t* moves, uint16_t* len) {
     U64 queenBB = _board.getQueenBB(blackSide);
@@ -783,10 +783,11 @@ void Generator::knightMoves(uint16_t* moves, uint16_t* len, U64 knightBB,
             moves[(*len)++] = tmpMove;
 
             // Reset the destination for the next move.
-            tmpMove &= 0x3f; 
+            tmpMove &= 0x3f;
         }
 
         // Remove knight from bitboard.
-        knightBB ^= (1 << knightIndex);
+        U64 one = 1;
+        knightBB ^= (one << knightIndex);
     }
 }
