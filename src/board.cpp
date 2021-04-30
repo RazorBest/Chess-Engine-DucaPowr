@@ -5,22 +5,6 @@
 
 #include "./constants.h"
 
-enum enumPiece {
-    nWhitePawn,
-    nBlackPawn,
-    nWhiteBishop,
-    nBlackBishop,
-    nWhiteKnight,
-    nBlackKnight,
-    nWhiteRook,
-    nBlackRook,
-    nWhiteQueen,
-    nBlackQueen,
-    nWhiteKing,
-    nBlackKing,
-    trashPiece
-};
-
 void Board::init() {
     pieceBB[nWhitePawn] = WHITEPAWNSTART;
     pieceBB[nBlackPawn] = BLACKPAWNSTART;
@@ -86,7 +70,7 @@ U64 Board::getEmptyBB() {
 #pragma endregion
 
 #pragma region Helpers
-int Board::getPieceIndexFromSquare(uint16_t sq) {
+enum enumPiece Board::getPieceIndexFromSquare(uint16_t sq) {
     // Convert from index(0-63) to bitboard
     U64 sqBB = 1;
     sqBB <<= sq;
@@ -94,7 +78,7 @@ int Board::getPieceIndexFromSquare(uint16_t sq) {
     // Iterate through every bitboard
     for (size_t i = 0; i < 12; i++) {
         if (pieceBB[i] & sqBB) {
-            return i;
+            return (enum enumPiece) i;
         }
     }
 
@@ -197,11 +181,7 @@ std::string Board::toString() {
     return output;
 }
 
-/**
- * Change bitboards according to given move.
- * Returns whether the move is legal or not
- * TODO test function, add legality check
-*/
+// TODO test function, add legality check.
 bool Board::applyMove(uint16_t move) {
     uint16_t sourceSquare = move & 0x3f;
     uint16_t destSquare = (move >> 6) & 0x3f;
@@ -212,8 +192,8 @@ bool Board::applyMove(uint16_t move) {
     destPosBoard <<= destSquare;
 
 
-    int sourceSquareIndex = getPieceIndexFromSquare(sourceSquare);
-    int destSquareIndex = getPieceIndexFromSquare(destSquare);
+    enum enumPiece sourceSquareIndex = getPieceIndexFromSquare(sourceSquare);
+    enum enumPiece destSquareIndex = getPieceIndexFromSquare(destSquare);
 
     // remove source piece from its bb
     pieceBB[sourceSquareIndex] ^= sourcePosBoard;
@@ -224,11 +204,17 @@ bool Board::applyMove(uint16_t move) {
     // add source piece to dest pos in source bb
     pieceBB[sourceSquareIndex] |= destPosBoard;
 
+    moveHistory.push(move);
+    takeHistory.push(destSquareIndex);
 
     switchSide();
 
     logger.raw(toString() + '\n');
 
-    // TODO(all) change later
+    // TODO(all) change later with move legality.
     return true;
+}
+
+bool Board::undoMove() {
+    //TODO
 }
