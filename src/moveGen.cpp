@@ -8,9 +8,21 @@ Generator::Generator(Board& board) : _board(board) {
     initDiagMasks();
     initBishopMask();
     initBishopAttackTable();
+    initKnightPosMoves();
 
     _logger.info("Finished initialising the Generator");
 }
+
+/**
+ * Note: any piece can be "moved" by one square doing (pos is the bitboard of its position, 1 bit):
+ *           (pos << 8)
+ *               ^
+ *               |
+ * (pos >> 1) <- P -> (pos << 1)
+ *               |
+ *               v
+ *           (pos >> 8)
+*/
 
 U8 Generator::generateLineAttacks(U8 rook, U8 occ) {
     // If occupant pieces overlap with rook
@@ -256,12 +268,14 @@ void Generator::generateMoves(uint16_t* moves, uint16_t* len) {
         whitePawnMoves(moves, len);
         whitePawnAttacks(moves, len);
         whiteRookAttacks(moves, len);
+        whiteKnightMoves(moves, len);
         whiteBishopAttacks(moves, len);
         whiteQueenAttacks(moves, len);
     } else {
         blackPawnMoves(moves, len);
         blackPawnAttacks(moves, len);
         blackRookAttacks(moves, len);
+        blackKnightMoves(moves, len);
         blackBishopAttacks(moves, len);
         blackQueenAttacks(moves, len);
     }
@@ -651,4 +665,128 @@ void Generator::whiteQueenAttacks(uint16_t* moves, uint16_t* len) {
     U64 friendPieceBB = _board.getPieceBB(whiteSide);
 
     queenAttacks(moves, len, queenBB, friendPieceBB);
+}
+
+void Generator::initKnightPosMoves() {
+    int i, j;
+
+    /* The bitboard of all the moves a knight placed at C6 can do. A chosen
+    default position. */
+    U64 defMoves = 0xa1100110a000000;
+    const short int defFile = 2; // file C
+    const short int defRank = 5; // rank 6
+
+    // Masks that have all bits 1 save for the extreme 2 files.
+    U64 leftBound = 0x3f3f3f3f3f3f3f3f;
+    U64 rightBound = 0xfcfcfcfcfcfcfcfc;
+
+   /**
+    * Note: I've divided the board into 6 sectors, as follows:
+    * 11222233
+    * 11222233
+    * 11222233
+    * 44555566
+    * 44555566
+    * 44555566
+    * 44555566
+    * 44555566
+    * Theese sectors need different masks and shifts to be obtained from the
+    * default position.
+   */
+
+    // Generate all moves from sector 1.
+    for (i = 0; i <= 2; i++) {
+        for (j = 1; j <= 2; j++) {
+            knightPosMoves[((defRank + i) << 3) + defFile - j] =
+                ((defMoves >> j) << (i << 3)) & leftBound;
+        }
+    }
+
+    // Generate all moves from sector 2.
+    for (i = 0; i <= 2; i++) {
+        for (j = 0; j <= 3; j++) {
+            knightPosMoves[((defRank + i) << 3) + defFile + j] =
+                (defMoves << j) << (i << 3);
+        }
+    }
+
+    // Generate all moves from sector 3.
+    for (i = 0; i <= 2; i++) {
+        for (j = 4; j <= 5; j++) {
+            knightPosMoves[((defRank + i) << 3) + defFile + j] =
+                ((defMoves << j) << (i << 3)) & rightBound;
+        }
+    }
+
+    // Generate all moves from sector 4.
+    for (i = 1; i <= 5; i++) {
+        for (j = 1; j <= 2; j++) {
+            knightPosMoves[((defRank - i) << 3) + defFile - j] =
+                ((defMoves >> j) >> (i << 3)) & leftBound;
+        }
+    }
+
+    // Generate all moves from sector 5.
+    for (i = 1; i <= 5; i++) {
+        for (j = 0; j <= 3; j++) {
+            knightPosMoves[((defRank - i) << 3) + defFile + j] =
+                (defMoves << j) >> (i << 3);
+        }
+    }
+
+    // Generate all moves from sector 6.
+    for (i = 1; i <= 5; i++) {
+        for (j = 4; j <= 5; j++) {
+            knightPosMoves[((defRank - i) << 3) + defFile + j] =
+                ((defMoves << j) >> (i << 3)) & rightBound;
+        }
+    }
+}
+
+void Generator::whiteKnightMoves(uint16_t* moves, uint16_t* len) {
+    U64 knightBB = _board.getKnightBB(whiteSide);
+    U64 friendPieceBB = _board.getPieceBB(whiteSide);
+
+    knightMoves(moves, len, knightBB, friendPieceBB);
+}
+
+void Generator::blackKnightMoves(uint16_t* moves, uint16_t* len) {
+    U64 knightBB = _board.getKnightBB(blackSide);
+    U64 friendPieceBB = _board.getPieceBB(blackSide);
+
+    knightMoves(moves, len, knightBB, friendPieceBB);
+}
+
+void Generator::knightMoves(uint16_t* moves, uint16_t* len, U64 knightBB,
+            U64 friendPieceBB) {
+    uint16_t tmpMove;
+    uint16_t knightIndex;
+    std::vector<U64> separatedMoves;
+
+    // All possible moves of a given knight.
+    U64 allPosMoves;
+
+    while (knightBB) {
+        // Get knight from bit board.
+        knightIndex = getSquareIndex(knightBB);
+
+        // Set source of moves this knight can do.
+        tmpMove = knightIndex;
+
+        allPosMoves = knightPosMoves[knightIndex] & (~friendPieceBB);
+
+        separatedMoves = getSeparatedBits(allPosMoves);
+        for (auto move : separatedMoves) {
+            // Set the destination of this move.
+            tmpMove |= (getSquareIndex(move) << 6);
+
+            moves[(*len)++] = tmpMove;
+
+            // Reset the destination for the next move.
+            tmpMove &= 0x3f; 
+        }
+
+        // Remove knight from bitboard.
+        knightBB ^= (1 << knightIndex);
+    }
 }

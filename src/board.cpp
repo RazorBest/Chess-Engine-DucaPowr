@@ -5,22 +5,6 @@
 
 #include "./constants.h"
 
-enum enumPiece {
-    nWhitePawn,
-    nBlackPawn,
-    nWhiteBishop,
-    nBlackBishop,
-    nWhiteKnight,
-    nBlackKnight,
-    nWhiteRook,
-    nBlackRook,
-    nWhiteQueen,
-    nBlackQueen,
-    nWhiteKing,
-    nBlackKing,
-    trashPiece
-};
-
 void Board::init() {
     pieceBB[nWhitePawn] = WHITEPAWNSTART;
     pieceBB[nBlackPawn] = BLACKPAWNSTART;
@@ -86,7 +70,7 @@ U64 Board::getEmptyBB() {
 #pragma endregion
 
 #pragma region Helpers
-int Board::getPieceIndexFromSquare(uint16_t sq) {
+enum enumPiece Board::getPieceIndexFromSquare(uint16_t sq) {
     // Convert from index(0-63) to bitboard
     U64 sqBB = 1;
     sqBB <<= sq;
@@ -94,7 +78,7 @@ int Board::getPieceIndexFromSquare(uint16_t sq) {
     // Iterate through every bitboard
     for (size_t i = 0; i < 12; i++) {
         if (pieceBB[i] & sqBB) {
-            return i;
+            return (enum enumPiece) i;
         }
     }
 
@@ -197,23 +181,20 @@ std::string Board::toString() {
     return output;
 }
 
-/**
- * Change bitboards according to given move.
- * Returns whether the move is legal or not
- * TODO test function, add legality check
-*/
+// TODO test function, add legality check.
 bool Board::applyMove(uint16_t move) {
     uint16_t sourceSquare = move & 0x3f;
     uint16_t destSquare = (move >> 6) & 0x3f;
 
-    uint64_t sourcePosBoard = 1;
+    // Pos = position.
+    U64 sourcePosBoard = 1;
     sourcePosBoard <<= sourceSquare;
-    uint64_t destPosBoard = 1;
+    U64 destPosBoard = 1;
     destPosBoard <<= destSquare;
 
 
-    int sourceSquareIndex = getPieceIndexFromSquare(sourceSquare);
-    int destSquareIndex = getPieceIndexFromSquare(destSquare);
+    enum enumPiece sourceSquareIndex = getPieceIndexFromSquare(sourceSquare);
+    enum enumPiece destSquareIndex = getPieceIndexFromSquare(destSquare);
 
     // remove source piece from its bb
     pieceBB[sourceSquareIndex] ^= sourcePosBoard;
@@ -224,11 +205,49 @@ bool Board::applyMove(uint16_t move) {
     // add source piece to dest pos in source bb
     pieceBB[sourceSquareIndex] |= destPosBoard;
 
+    moveHistory.push(move);
+    takeHistory.push(destSquareIndex);
 
     switchSide();
 
     logger.raw(toString() + '\n');
 
-    // TODO(all) change later
+    // TODO(all) change later with move legality.
+    return true;
+}
+
+bool Board::undoMove() {
+    if (moveHistory.empty()) {
+        return false;
+    }
+
+    uint16_t move = moveHistory.top();
+    moveHistory.pop();
+
+    uint16_t sourceSquare = move & 0x3f;
+    uint16_t destSquare = (move >> 6) & 0x3f;
+
+    // Pos = position.
+    U64 sourcePosBoard = 1;
+    sourcePosBoard <<= sourceSquare;
+    U64 destPosBoard = 1;
+    destPosBoard <<= destSquare;
+
+    enum enumPiece sourceSquareIndex = getPieceIndexFromSquare(destSquare);
+
+    DIE(takeHistory.empty(), "Error in undoMove(): takeHsitory and moveHistory\
+     stacks have different sizes!");
+    enum enumPiece destSquareIndex = takeHistory.top();
+    takeHistory.pop();
+
+    // Remove source piece from the destination position on the source board.
+    pieceBB[sourceSquareIndex] ^= destPosBoard;
+
+    // Add destination piece back to its board.
+    pieceBB[destSquareIndex] |= destPosBoard;
+
+    // Add source piece back to its inital place on its board.
+    pieceBB[sourceSquareIndex] |= sourcePosBoard;
+
     return true;
 }

@@ -7,10 +7,21 @@
 typedef uint64_t U64;
 typedef uint8_t  U8;
 
+#define DIE(condition, message) \
+	do { \
+		if ((condition)) { \
+			fprintf(stderr, "[%d]: %s\n", __LINE__, (message)); \
+			perror(""); \
+			exit(1); \
+		} \
+	} while (0)
+
 std::vector<U64> getSeparatedBits(U64 bb);
 
 /**
- * @param bb - a bitboard where only 1 bit is set
+ * Most Significant Bit bitscan
+ * 
+ * @param bb - a bitboard where at least 1 bit is set
  * @return - the index of the bit in LERF mapping
  */
 uint16_t getSquareIndex(U64 bb);

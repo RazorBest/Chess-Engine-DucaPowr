@@ -6,6 +6,7 @@
 #include <cstring>
 #include <string>
 #include <iostream>
+#include <stack>
 
 #include "./logger.h"
 #include "./utils.h"
@@ -17,6 +18,23 @@ enum Side {
     blackSide
 };
 
+enum enumPiece {
+    nWhitePawn,
+    nBlackPawn,
+    nWhiteBishop,
+    nBlackBishop,
+    nWhiteKnight,
+    nBlackKnight,
+    nWhiteRook,
+    nBlackRook,
+    nWhiteQueen,
+    nBlackQueen,
+    nWhiteKing,
+    nBlackKing,
+    // Piece used for applyMove() and undoMove() optimization.
+    trashPiece
+};
+
 class Board  {
  private:
     Logger logger;
@@ -25,11 +43,11 @@ class Board  {
     U64 pieceBB[13];
 
     /**
-     * It finds the piece that is on that square and it returns the index
+     * It finds the piece that is on that square and it returns the index 
      * to its bitboard in the pieceBB array
      * @param sq is a 0-63 number indicating a board square
      */
-    int getPieceIndexFromSquare(uint16_t sq);
+    enum enumPiece getPieceIndexFromSquare(uint16_t sq);
 
  public:
     // state vars
@@ -51,12 +69,30 @@ class Board  {
     U64 getAllBB();
     U64 getEmptyBB();
 
-    // apply move - returns false if move is not legal
+    /**
+     * Applies a move to the bitboards.
+     * @return  Returns false if move is not legal.
+    */
     bool applyMove(uint16_t move);
+    /**
+     * Undoes the last move on the bitboards.
+     * @return Returns whether a move was undone or not.
+    */
+    bool undoMove();
 
     // SAN Move Converters
     uint16_t convertSanToMove(std::string move);
     std::string convertMoveToSan(uint16_t move);
 
     std::string toString();
+
+private:
+    // Moves, as described in "./moveGen.h".
+    std::stack<uint16_t> moveHistory;
+    /**
+     * A history of pieces taken:
+     * 0 - none, 1 - pawn, 2 - rook, 3 - knight, 4 - bishop, 5 - queen.
+     * [6, 255] - unused.
+    */
+    std::stack<enum enumPiece> takeHistory;
 };
