@@ -60,6 +60,16 @@ U64 Board::getKingBB(Side side) {
     return pieceBB[nWhiteKing + side];
 }
 
+U64 Board::getEnPassantablePawnsBB(Side side) {
+    // We should try to remove this branch
+    if (side == whiteSide) {
+        return (flags & 0xff) << 24;
+    }
+   
+    // if (side == blackSide)
+    return (flags & 0xff00) << 24;
+}
+
 U64 Board::getAllBB() {
     return getPieceBB(whiteSide) | getPieceBB(blackSide);
 }

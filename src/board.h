@@ -77,6 +77,7 @@ class Board  {
     U64 getRookBB(Side side);
     U64 getQueenBB(Side side);
     U64 getKingBB(Side side);
+    U64 getEnPassantablePawnsBB(Side side);
     U64 getAllBB();
     U64 getEmptyBB();
 
