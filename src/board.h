@@ -55,10 +55,26 @@ class Board  {
 
     /**
      * It finds the piece that is on that square and it returns the index 
-     * to its bitboard in the pieceBB array
+     * to its bitboard in the pieceBB array 
      * @param sq is a 0-63 number indicating a board square
      */
     enum enumPiece getPieceIndexFromSquare(uint16_t sq);
+
+    // Moves, as described in "./moveGen.h".
+    std::stack<uint16_t> moveHistory;
+    // A history of pieces taken:
+    std::stack<enum enumPiece> takeHistory;
+
+    /**
+     * Helper function, sets all en passant-able flags of the side to move to 
+     * false.
+    */
+    void resetEnPassant();
+    /**
+     * Helper function, sets the en passant-able flag of a specific pawn and 
+     * side to true.
+    */
+    void setEnPassant(uint16_t move);
 
  public:
     // state vars
@@ -77,6 +93,11 @@ class Board  {
     U64 getRookBB(Side side);
     U64 getQueenBB(Side side);
     U64 getKingBB(Side side);
+    /**
+     * @return Returns a bitboard of the pawns that just "jumped" (moved 2
+     * squares as their first move) and can therefore be attacked by an en
+     * passant move.
+    */
     U64 getEnPassantablePawnsBB(Side side);
     U64 getAllBB();
     U64 getEmptyBB();
@@ -97,14 +118,4 @@ class Board  {
     std::string convertMoveToSan(uint16_t move);
 
     std::string toString();
-
-private:
-    // Moves, as described in "./moveGen.h".
-    std::stack<uint16_t> moveHistory;
-    /**
-     * A history of pieces taken:
-     * 0 - none, 1 - pawn, 2 - rook, 3 - knight, 4 - bishop, 5 - queen.
-     * [6, 255] - unused.
-    */
-    std::stack<enum enumPiece> takeHistory;
 };

@@ -61,13 +61,13 @@ U64 Board::getKingBB(Side side) {
 }
 
 U64 Board::getEnPassantablePawnsBB(Side side) {
-    // We should try to remove this branch
-    if (side == whiteSide) {
-        return (flags & 0xff) << 24;
-    }
-   
-    // if (side == blackSide)
-    return (flags & 0xff00) << 24;
+    /**
+     * Note: Side::whiteSide = 0 and Side::blackSide = 1;
+     * << (sideToMove << 3) shifts the flags to match the appropriate side;
+     * Flag bits [0..7] or [8..15] are a side's respective pawns that just
+     * jumped.
+    */
+    return (flags & (0xffLL << (sideToMove << 3))) << 24;
 }
 
 U64 Board::getAllBB() {
@@ -191,8 +191,33 @@ std::string Board::toString() {
     return output;
 }
 
-// TODO test function, add legality check. Also do castling, en passant and promotion.
+// TODO: Add inline if it works.
+void Board::resetEnPassant() {
+    // Note: Side::whiteSide = 0 and Side::blackSide = 1.
+    flags &= (~(0xffLL << (sideToMove << 3)));
+}
+
+// TODO: Add inline if it works.
+void Board::setEnPassant(uint16_t move) {
+    // Get whether a pawn is en passant-able. Also acts as a pseudo if.
+    // Check move format in moveGen.h for more info.
+    const long long enPassant = ((move >> 14) == 2);
+
+    /**
+     * Set side specific, pawn specific flag.
+     * Note: Side::whiteSide = 0 and Side::blackSide = 1;
+     * (move & 0x3f) % 8) gets the file of the pawn (0 is a, 7 is h);
+     * << (sideToMove << 3) shifts the flag to match the appropriate side.
+     * TODO: test if (move % 8) is enough, instead of ((move & 0x3f) % 8).
+    */
+    flags |= ((enPassant << ((move & 0x3f) % 8)) << (sideToMove << 3));
+}
+
+// TODO: test function, add legality check.
+// Also do castling, en passant and promotion.
 bool Board::applyMove(uint16_t move) {
+    resetEnPassant();
+
     uint16_t sourceSquare = move & 0x3f;
     uint16_t destSquare = (move >> 6) & 0x3f;
 
@@ -201,7 +226,6 @@ bool Board::applyMove(uint16_t move) {
     sourcePosBoard <<= sourceSquare;
     U64 destPosBoard = 1;
     destPosBoard <<= destSquare;
-
 
     enum enumPiece sourceSquareIndex = getPieceIndexFromSquare(sourceSquare);
     enum enumPiece destSquareIndex = getPieceIndexFromSquare(destSquare);
@@ -217,6 +241,10 @@ bool Board::applyMove(uint16_t move) {
 
     moveHistory.push(move);
     takeHistory.push(destSquareIndex);
+
+    // Note: this function works with an internal pseudo if of sorts which may
+    // or may not be faster since no jumps are made.
+    setEnPassant(move);
 
     switchSide();
 
