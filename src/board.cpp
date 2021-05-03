@@ -214,7 +214,7 @@ void Board::setEnPassant(uint16_t move) {
 }
 
 // TODO: test function, add legality check.
-// Also do castling, en passant and promotion.
+// Also do castling and promotion.
 bool Board::applyMove(uint16_t move) {
     resetEnPassant();
 
