@@ -325,6 +325,8 @@ void Generator::whitePawnMoves(uint16_t* moves, uint16_t *len) {
         tmp = getSquareIndex(dst);
         tmp = tmp << 6;
         tmp |= getSquareIndex(dst >> 16);
+        // Set "en passant-able" flag.
+        tmp |= 0x8000;
 
         moves[(*len)++] = tmp;
     }

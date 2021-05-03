@@ -43,6 +43,17 @@ class Board  {
     U64 pieceBB[13];
 
     /**
+     * Flag bits used for (1 means move is doable, 0 otherwise):
+     * [0..7] - en passant-able pawns for white side, from file a to h
+     * [8..15] - en passant-able pawns for black side, from file a to h
+     * 16 - castle-able queen side for white
+     * 17 - castle-able king side for white
+     * 18 - castle-able queen side for black
+     * 19 - castle-able king side for black
+    */
+    U64 flags = 0xf0000;
+
+    /**
      * It finds the piece that is on that square and it returns the index 
      * to its bitboard in the pieceBB array
      * @param sq is a 0-63 number indicating a board square

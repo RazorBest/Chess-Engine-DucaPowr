@@ -181,7 +181,7 @@ std::string Board::toString() {
     return output;
 }
 
-// TODO test function, add legality check.
+// TODO test function, add legality check. Also do castling, en passant and promotion.
 bool Board::applyMove(uint16_t move) {
     uint16_t sourceSquare = move & 0x3f;
     uint16_t destSquare = (move >> 6) & 0x3f;
@@ -216,6 +216,7 @@ bool Board::applyMove(uint16_t move) {
     return true;
 }
 
+// TODO do castling, en passant and promotion.
 bool Board::undoMove() {
     if (moveHistory.empty()) {
         return false;
