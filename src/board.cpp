@@ -316,7 +316,7 @@ void Board::promote(uint16_t move) {
     */
     destSquareIndex = (enum enumPiece) (destSquareIndex + sideToMove);
 
-    // Bitboard with only the promoted pawn
+    // Bitboard with only the promoted pawn.
     U64 srcPosBoard = 1LL << srcSquare;
 
     // Remove pawn from its board.
@@ -326,8 +326,59 @@ void Board::promote(uint16_t move) {
     pieceBB[destSquareIndex] |= srcPosBoard;
 }
 
+void Board::demote(uint16_t move) {
+    if (((move >> 14) & 3) != 1) {
+        // Promotion flag was not set, noting to demote.
+        return;
+    }
+
+    U8 promotion = (move >> 12) & 0x3;
+    uint16_t srcSquare = (move >> 6) & 0x3f;
+
+    enum enumPiece srcSquareIndex = getPieceIndexFromSquare(srcSquare);
+    enum enumPiece destSquareIndex;
+
+    // Get the bit board index of the piece the pawn gets promoted to.
+    switch (promotion) {
+    case 0:
+        destSquareIndex = nWhiteRook;
+        break;
+    
+    case 1:
+        destSquareIndex = nWhiteKnight;
+        break;
+
+    case 2:
+        destSquareIndex = nWhiteBishop;
+        break;
+
+    case 3:
+        destSquareIndex = nWhiteQueen;
+        break;
+
+    default:
+        destSquareIndex = trashPiece;
+        break;
+    }
+
+    /**
+     * Get the color of the piece the pawn gets promoted to.
+     * Check promote() for more info.
+    */
+    destSquareIndex = (enum enumPiece) (destSquareIndex + sideToMove);
+
+    // Bitboard with only the promoted pawn.
+    U64 srcPosBoard = 1LL << srcSquare;
+
+    // Remove the new piece.
+    pieceBB[destSquareIndex] ^= srcPosBoard;
+
+    // Add pawn back to its place.
+    pieceBB[srcPosBoard] |= srcPosBoard;
+}
+
 // TODO: test function, add legality check.
-// Also do castling and promotion.
+// Also apply castling.
 
 bool Board::applyMove(uint16_t move) {
     flagsHistory.push(flags);
@@ -377,7 +428,7 @@ bool Board::applyMove(uint16_t move) {
     return true;
 }
 
-// TODO do castling and promotion.
+// TODO undo castling.
 
 bool Board::undoMove() {
     if (moveHistory.empty()) {
@@ -391,6 +442,8 @@ bool Board::undoMove() {
     flags = flagsHistory.top();
 
     uint16_t move = moveHistory.top();
+
+    demote(move);
 
     uint16_t sourceSquare = move & 0x3f;
     uint16_t destSquare = (move >> 6) & 0x3f;

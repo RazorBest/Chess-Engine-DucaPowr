@@ -75,7 +75,7 @@ class Board  {
     void resetEnPassant();
     /**
      * Helper function, sets the en passant-able flag of a specific pawn and 
-     * side to true.
+     * side to true, if necessary.
     */
     void setEnPassant(uint16_t move);
     /**
@@ -86,8 +86,10 @@ class Board  {
     // Helper function for undoMove().
     void undoEnPassantAttackPrep();
 
-    // Promote a pawn to the piece given in the move.
+    // Promote a pawn to the piece given in the move, if necessary.
     void promote(uint16_t move);
+    // Helper function for undoMove(). Undo a pawn promotion, if necessary.
+    void demote(uint16_t move);
 
  public:
     // state vars
