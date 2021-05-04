@@ -457,6 +457,8 @@ void Board::undoCastle() {
     pieceBB[rookIndex] |= rookSrcPosBoard;
 }
 
+// TODO: Add inline if it works.
+
 void Board::resetCastleFlags(enum enumPiece movedPieceIndex,
         U64 srcPosBitboard) {
     /**
