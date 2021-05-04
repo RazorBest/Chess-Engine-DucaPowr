@@ -213,9 +213,48 @@ void Board::setEnPassant(uint16_t move) {
     flags |= ((enPassant << ((move & 0x3f) % 8)) << (sideToMove << 3));
 }
 
+// TODO: Add inline if it works.
+void Board::enPassantAttackPrep(uint16_t move) {
+    uint16_t destSquare = (move >> 6) & 0x3f;
+    U64 destPosBoard = 1;
+    destPosBoard <<= destSquare;
+
+    /**
+     * Get the current possition bitBrd of the attacked pawn, colour dependent: 
+     * White pawns will be one rank higher, black pawns will be one rank lower.
+     * 
+     * Also acts as a pseudo if, checking the en passant-able flag.
+     * Note: flags >> ((1 - sideToMove) << 3) gets the en passant flags for the
+     * side opposite of the one to attack.
+     * Side::whiteSide = 0 and Side::blackSide = 1;
+     * >> (destSquare % 8) gets the file of the pawn being attacked;
+     * & 1 ignores the other flags;
+     * << destSquare transforms the bit into a bitboard.
+    */
+    U64 srcPosBoard = ((( (flags >> ((1 - sideToMove) << 3))
+                        >> (destSquare % 8)) & 1) << destSquare);
+    // Shift in case of a white pawn.
+    srcPosBoard <<= ((1 - sideToMove) << 3);
+    // Shift in case of a black pawn.
+    srcPosBoard >>= ((sideToMove) << 3);
+
+    // Also acts as a pseudo if thanks to the trash piece optimization.
+    enum enumPiece sourceSquareIndex = getPieceIndexFromSquare(
+        getSquareIndex(srcPosBoard));
+
+    // Remove pawn from its current position.
+    pieceBB[sourceSquareIndex] ^= srcPosBoard;
+
+    // Add pawn to its en passant capture position.
+    pieceBB[sourceSquareIndex] |= destPosBoard;
+}
+
 // TODO: test function, add legality check.
 // Also do castling and promotion.
 bool Board::applyMove(uint16_t move) {
+    // Note: this function works with an internal pseudo if of sorts which may
+    // or may not be faster since no jumps are made.
+    enPassantAttackPrep(move);
     resetEnPassant();
 
     uint16_t sourceSquare = move & 0x3f;

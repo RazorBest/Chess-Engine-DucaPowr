@@ -75,6 +75,11 @@ class Board  {
      * side to true.
     */
     void setEnPassant(uint16_t move);
+    /**
+     * Helper function, moves an en passant-able pawn back one square. 
+     * This allows applyMove() to work normally with less checks.
+    */
+    void enPassantAttackPrep(uint16_t move);
 
  public:
     // state vars
