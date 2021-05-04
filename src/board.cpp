@@ -326,7 +326,9 @@ void Board::promote(uint16_t move) {
     pieceBB[destSquareIndex] |= srcPosBoard;
 }
 
-void Board::demote(uint16_t move) {
+void Board::demote() {
+    uint16_t move = moveHistory.top();
+
     if (((move >> 14) & 3) != 1) {
         // Promotion flag was not set, noting to demote.
         return;
@@ -377,8 +379,47 @@ void Board::demote(uint16_t move) {
     pieceBB[srcPosBoard] |= srcPosBoard;
 }
 
+void Board::castle(uint16_t move) {
+    if (((move >> 14) & 3) != 3) {
+        // Castling flag was not set, nothing to do.
+        return;
+    }
+
+    U64 rookSrcPosBoard;
+    U64 rookDestPosBoard;
+    enum enumPiece rookIndex;
+
+    // Get the new position of the rook based on the file the king is in.
+    if (((move >> 6) & 0x3f) % 8 == 2) {
+        // Queen side castle.
+        rookSrcPosBoard = 0x1;
+        rookDestPosBoard = 0x8;
+    } else {
+        // King side castle.
+        rookSrcPosBoard = 0x80;
+        rookDestPosBoard = 0x20;
+    }
+
+    // Get the side specific positions and piece index.
+    if (sideToMove == Side::whiteSide) {
+        rookIndex = nWhiteRook;
+    } else {
+        rookIndex = nBlackRook;
+        // Shift rook positions to be on the black side.
+        rookSrcPosBoard <<= 56;
+        rookDestPosBoard <<= 56;
+    }
+
+    // Remove rook from its original position.
+    pieceBB[rookIndex] ^= rookSrcPosBoard;
+
+    // Add rook to its new position.
+    pieceBB[rookIndex] |= rookDestPosBoard;
+}
+
 // TODO: test function, add legality check.
-// Also apply castling.
+// TODO: Add inline if it works.
+// TODO: Set and reset casling flags accordingly.
 
 bool Board::applyMove(uint16_t move) {
     flagsHistory.push(flags);
@@ -420,6 +461,8 @@ bool Board::applyMove(uint16_t move) {
     // or may not be faster since no jumps are made.
     promote(move);
 
+    castle(move);
+
     switchSide();
 
     logger.raw(toString() + '\n');
@@ -429,6 +472,7 @@ bool Board::applyMove(uint16_t move) {
 }
 
 // TODO undo castling.
+// TODO: Add inline if it works.
 
 bool Board::undoMove() {
     if (moveHistory.empty()) {
@@ -443,7 +487,7 @@ bool Board::undoMove() {
 
     uint16_t move = moveHistory.top();
 
-    demote(move);
+    demote();
 
     uint16_t sourceSquare = move & 0x3f;
     uint16_t destSquare = (move >> 6) & 0x3f;

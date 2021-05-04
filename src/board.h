@@ -89,7 +89,15 @@ class Board  {
     // Promote a pawn to the piece given in the move, if necessary.
     void promote(uint16_t move);
     // Helper function for undoMove(). Undo a pawn promotion, if necessary.
-    void demote(uint16_t move);
+    void demote();
+
+    // Move the rook to its post castle position, if needed.
+    void castle(uint16_t move);
+    /**
+     * Helper function for undoMove(). Move the rook back to its original 
+     * position, if needed.
+    */
+   void undoCastle();
 
  public:
     // state vars
