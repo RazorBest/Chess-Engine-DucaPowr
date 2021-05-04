@@ -99,6 +99,12 @@ class Board  {
     */
    void undoCastle();
 
+    /**
+     * Helper function for applyMove(). 
+     * Sets castling rights flags to false based on the moved piece, if needed.
+    */
+   void resetCastleFlags(enum enumPiece movedPieceIndex, U64 srcPosBitboard);
+
  public:
     // state vars
     Side sideToMove;

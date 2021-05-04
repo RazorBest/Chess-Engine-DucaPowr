@@ -457,9 +457,52 @@ void Board::undoCastle() {
     pieceBB[rookIndex] |= rookSrcPosBoard;
 }
 
+void Board::resetCastleFlags(enum enumPiece movedPieceIndex,
+        U64 srcPosBitboard) {
+    /**
+     * Note: Check board.h to see what each bit in the flags variable
+     * represents, should the following code be unclear.
+    */
+    switch (movedPieceIndex) {
+    case nWhiteKing:
+        // White cannot castle queen nor king side anymore.
+        flags &= 0xfffffffffffcffff;
+        break;
+    
+    case nBlackKing:
+        // Black cannot castle queen side nor king side anymore.
+        flags &= 0xfffffffffff3ffff;
+        break;
+
+    case nWhiteRook:
+        // Check for side.
+        if (srcPosBitboard == 0x1) {
+            // White cannot castle queen side anymore.
+            flags &= 0xfffffffffffeffff;
+        } else if (srcPosBitboard == 0x80) {
+            // White cannot castle king side anymore.
+            flags &= 0xfffffffffffdffff;
+        }
+        break;
+
+    case nBlackRook:
+        // Check for side.
+        if (srcPosBitboard == 0x100000000000000) {
+            // Black cannot castle queen side anymore.
+            flags &= 0xfffffffffffbffff;
+        } else if (srcPosBitboard == 0x8000000000000000) {
+            // Black cannot castle king side anymore.
+            flags &= 0xfffffffffff7ffff;
+        }
+        break;
+
+    default:
+        break;
+    }
+}
+
 // TODO: test function, add legality check.
 // TODO: Add inline if it works.
-// TODO: Set and reset casling flags accordingly.
 
 bool Board::applyMove(uint16_t move) {
     flagsHistory.push(flags);
@@ -502,6 +545,8 @@ bool Board::applyMove(uint16_t move) {
     promote(move);
 
     castle(move);
+
+    resetCastleFlags(sourceSquareIndex, sourcePosBoard);
 
     switchSide();
 
