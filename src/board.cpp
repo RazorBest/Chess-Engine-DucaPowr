@@ -60,6 +60,16 @@ U64 Board::getKingBB(Side side) {
     return pieceBB[nWhiteKing + side];
 }
 
+U64 Board::getEnPassantablePawnsBB(Side side) {
+    /**
+     * Note: Side::whiteSide = 0 and Side::blackSide = 1;
+     * << (sideToMove << 3) shifts the flags to match the appropriate side;
+     * Flag bits [0..7] or [8..15] are a side's respective pawns that just
+     * jumped.
+    */
+    return (flags & (0xffLL << (sideToMove << 3))) << 24;
+}
+
 U64 Board::getAllBB() {
     return getPieceBB(whiteSide) | getPieceBB(blackSide);
 }
@@ -181,8 +191,103 @@ std::string Board::toString() {
     return output;
 }
 
-// TODO test function, add legality check.
+// TODO: Add inline if it works.
+
+void Board::resetEnPassant() {
+    // Note: Side::whiteSide = 0 and Side::blackSide = 1.
+    flags &= (~(0xffLL << (sideToMove << 3)));
+}
+
+// TODO: Add inline if it works.
+
+void Board::setEnPassant(uint16_t move) {
+    // Get whether a pawn is en passant-able. Also acts as a pseudo if.
+    // Check move format in moveGen.h for more info.
+    const long long enPassant = ((move >> 14) == 2);
+
+    /**
+     * Set side specific, pawn specific flag.
+     * Note: Side::whiteSide = 0 and Side::blackSide = 1;
+     * (move & 0x3f) % 8) gets the file of the pawn (0 is a, 7 is h);
+     * << (sideToMove << 3) shifts the flag to match the appropriate side.
+     * TODO: test if (move % 8) is enough, instead of ((move & 0x3f) % 8).
+    */
+    flags |= ((enPassant << ((move & 0x3f) % 8)) << (sideToMove << 3));
+}
+
+// TODO: Add inline if it works.
+
+void Board::enPassantAttackPrep(uint16_t move) {
+    uint16_t destSquare = (move >> 6) & 0x3f;
+    U64 destPosBoard = 1;
+    destPosBoard <<= destSquare;
+
+    /**
+     * Get the current possition bitBrd of the attacked pawn, colour dependent: 
+     * White pawns will be one rank higher, black pawns will be one rank lower.
+     * 
+     * Also acts as a pseudo if, checking the en passant-able flag.
+     * Note: flags >> ((1 - sideToMove) << 3) gets the en passant flags for the
+     * side opposite of the one to attack.
+     * Side::whiteSide = 0 and Side::blackSide = 1;
+     * >> (destSquare % 8) gets the file of the pawn being attacked;
+     * & 1 ignores the other flags;
+     * << destSquare transforms the bit into a bitboard.
+    */
+    U64 srcPosBoard = ((( (flags >> ((1 - sideToMove) << 3))
+                        >> (destSquare % 8)) & 1) << destSquare);
+    // Shift in case of a white pawn.
+    srcPosBoard <<= ((1 - sideToMove) << 3);
+    // Shift in case of a black pawn.
+    srcPosBoard >>= ((sideToMove) << 3);
+
+    // Also acts as a pseudo if thanks to the trash piece optimization.
+    enum enumPiece sourceSquareIndex = getPieceIndexFromSquare(
+        getSquareIndex(srcPosBoard));
+
+    // Remove pawn from its current position.
+    pieceBB[sourceSquareIndex] ^= srcPosBoard;
+
+    // Add pawn to its en passant capture position.
+    pieceBB[sourceSquareIndex] |= destPosBoard;
+}
+
+// TODO: Add inline if it works.
+
+void Board::undoEnPassantAttackPrep() {
+    uint16_t move = moveHistory.top();
+
+    uint16_t destSquare = (move >> 6) & 0x3f;
+    U64 destPosBoard = 1;
+    destPosBoard <<= destSquare;
+
+    // If the following code is unclear, maybe enPassantAttackPrep() comments 
+    // help.
+    U64 srcPosBoard = ((( (flags >> ((1 - sideToMove) << 3))
+                        >> (destSquare % 8)) & 1) << destSquare);
+    srcPosBoard <<= ((1 - sideToMove) << 3);
+    srcPosBoard >>= ((sideToMove) << 3);
+
+    enum enumPiece sourceSquareIndex = takeHistory.top();
+    
+    // Remove pawn from its en passant capture position.
+    pieceBB[sourceSquareIndex] ^= destPosBoard;
+
+    // Add pawn to its original position.
+    pieceBB[sourceSquareIndex] |= srcPosBoard;
+}
+
+// TODO: test function, add legality check.
+// Also do castling and promotion.
+
 bool Board::applyMove(uint16_t move) {
+    flagsHistory.push(flags);
+
+    // Note: this function works with an internal pseudo if of sorts which may
+    // or may not be faster since no jumps are made.
+    enPassantAttackPrep(move);
+    resetEnPassant();
+
     uint16_t sourceSquare = move & 0x3f;
     uint16_t destSquare = (move >> 6) & 0x3f;
 
@@ -191,7 +296,6 @@ bool Board::applyMove(uint16_t move) {
     sourcePosBoard <<= sourceSquare;
     U64 destPosBoard = 1;
     destPosBoard <<= destSquare;
-
 
     enum enumPiece sourceSquareIndex = getPieceIndexFromSquare(sourceSquare);
     enum enumPiece destSquareIndex = getPieceIndexFromSquare(destSquare);
@@ -208,6 +312,10 @@ bool Board::applyMove(uint16_t move) {
     moveHistory.push(move);
     takeHistory.push(destSquareIndex);
 
+    // Note: this function works with an internal pseudo if of sorts which may
+    // or may not be faster since no jumps are made.
+    setEnPassant(move);
+
     switchSide();
 
     logger.raw(toString() + '\n');
@@ -216,13 +324,18 @@ bool Board::applyMove(uint16_t move) {
     return true;
 }
 
+// TODO do castling and promotion.
+
 bool Board::undoMove() {
     if (moveHistory.empty()) {
         return false;
     }
 
+    // Set flags to their previous state.
+    DIE(flagsHistory.empty(), "Error in undoMove(): flagsHistory size!");
+    flags = flagsHistory.top();
+
     uint16_t move = moveHistory.top();
-    moveHistory.pop();
 
     uint16_t sourceSquare = move & 0x3f;
     uint16_t destSquare = (move >> 6) & 0x3f;
@@ -235,10 +348,8 @@ bool Board::undoMove() {
 
     enum enumPiece sourceSquareIndex = getPieceIndexFromSquare(destSquare);
 
-    DIE(takeHistory.empty(), "Error in undoMove(): takeHsitory and moveHistory\
-     stacks have different sizes!");
+    DIE(takeHistory.empty(), "Error in undoMove(): takeHistory size!");
     enum enumPiece destSquareIndex = takeHistory.top();
-    takeHistory.pop();
 
     // Remove source piece from the destination position on the source board.
     pieceBB[sourceSquareIndex] ^= destPosBoard;
@@ -248,6 +359,14 @@ bool Board::undoMove() {
 
     // Add source piece back to its inital place on its board.
     pieceBB[sourceSquareIndex] |= sourcePosBoard;
+
+    // Note: this function works with an internal pseudo if of sorts which may
+    // or may not be faster since no jumps are made.
+    undoEnPassantAttackPrep();
+
+    moveHistory.pop();
+    flagsHistory.pop();
+    takeHistory.pop();
 
     return true;
 }
