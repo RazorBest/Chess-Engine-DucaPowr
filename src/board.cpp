@@ -417,6 +417,46 @@ void Board::castle(uint16_t move) {
     pieceBB[rookIndex] |= rookDestPosBoard;
 }
 
+void Board::undoCastle() {
+    uint16_t move = moveHistory.top();
+
+    if (((move >> 14) & 3) != 3) {
+        // Castling flag was not set, nothing to undo.
+        return;
+    }
+
+    U64 rookSrcPosBoard;
+    U64 rookDestPosBoard;
+    enum enumPiece rookIndex;
+
+    // Get the new position of the rook based on the file the king is in.
+    if (((move >> 6) & 0x3f) % 8 == 2) {
+        // Queen side castle.
+        rookSrcPosBoard = 0x1;
+        rookDestPosBoard = 0x8;
+    } else {
+        // King side castle.
+        rookSrcPosBoard = 0x80;
+        rookDestPosBoard = 0x20;
+    }
+
+    // Get the side specific positions and piece index.
+    if (sideToMove == Side::whiteSide) {
+        rookIndex = nWhiteRook;
+    } else {
+        rookIndex = nBlackRook;
+        // Shift rook positions to be on the black side.
+        rookSrcPosBoard <<= 56;
+        rookDestPosBoard <<= 56;
+    }
+
+    // Remove rook from its new position.
+    pieceBB[rookIndex] ^= rookDestPosBoard;
+
+    // Add rook back to its original position.
+    pieceBB[rookIndex] |= rookSrcPosBoard;
+}
+
 // TODO: test function, add legality check.
 // TODO: Add inline if it works.
 // TODO: Set and reset casling flags accordingly.
@@ -471,7 +511,6 @@ bool Board::applyMove(uint16_t move) {
     return true;
 }
 
-// TODO undo castling.
 // TODO: Add inline if it works.
 
 bool Board::undoMove() {
@@ -486,6 +525,8 @@ bool Board::undoMove() {
     flags = flagsHistory.top();
 
     uint16_t move = moveHistory.top();
+
+    undoCastle();
 
     demote();
 
