@@ -277,6 +277,55 @@ void Board::undoEnPassantAttackPrep() {
     pieceBB[sourceSquareIndex] |= srcPosBoard;
 }
 
+// TODO: Add inline if it works.
+
+void Board::promote(uint16_t move) {
+    U8 promotion = (move >> 12) & 0x3;
+    uint16_t srcSquare = (move >> 6) & 0x3f;
+
+    enum enumPiece srcSquareIndex = getPieceIndexFromSquare(srcSquare);
+    enum enumPiece destSquareIndex;
+
+    // Get the bit board index of the piece the pawn gets promoted to.
+    switch (promotion) {
+    case 0:
+        destSquareIndex = nWhiteRook;
+        break;
+    
+    case 1:
+        destSquareIndex = nWhiteKnight;
+        break;
+
+    case 2:
+        destSquareIndex = nWhiteBishop;
+        break;
+
+    case 3:
+        destSquareIndex = nWhiteQueen;
+        break;
+
+    default:
+        destSquareIndex = trashPiece;
+        break;
+    }
+
+    /**
+     * Get the color of the piece the pawn gets promoted to.
+     * Note: Side::whiteSide = 0 and Side::blackSide = 1;
+     * Black pieces are always right after their white counterpart.
+    */
+    destSquareIndex = (enum enumPiece) (destSquareIndex + sideToMove);
+
+    // Bitboard with only the promoted pawn
+    U64 srcPosBoard = 1LL << srcSquare;
+
+    // Remove pawn from its board.
+    pieceBB[srcSquareIndex] ^= srcPosBoard;
+
+    // Add a new piece in its stead.
+    pieceBB[destSquareIndex] |= srcPosBoard;
+}
+
 // TODO: test function, add legality check.
 // Also do castling and promotion.
 
@@ -316,6 +365,10 @@ bool Board::applyMove(uint16_t move) {
     // or may not be faster since no jumps are made.
     setEnPassant(move);
 
+    // Note: this function works with an internal pseudo if of sorts which may
+    // or may not be faster since no jumps are made.
+    promote(move);
+
     switchSide();
 
     logger.raw(toString() + '\n');
@@ -330,6 +383,8 @@ bool Board::undoMove() {
     if (moveHistory.empty()) {
         return false;
     }
+
+    switchSide();
 
     // Set flags to their previous state.
     DIE(flagsHistory.empty(), "Error in undoMove(): flagsHistory size!");

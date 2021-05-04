@@ -31,8 +31,9 @@ enum enumPiece {
     nBlackQueen,
     nWhiteKing,
     nBlackKing,
-    // Piece used for applyMove() and undoMove() optimization.
-    trashPiece
+    // Pieces used for applyMove() and undoMove() optimization.
+    trashPiece,
+    trashPieceBlack
 };
 
 class Board  {
@@ -40,7 +41,7 @@ class Board  {
     Logger logger;
 
     // An array of piece bitboards
-    U64 pieceBB[13];
+    U64 pieceBB[14];
 
     /**
      * Flag bits used for (1 means move is doable, 0 otherwise):
@@ -84,6 +85,9 @@ class Board  {
     void enPassantAttackPrep(uint16_t move);
     // Helper function for undoMove().
     void undoEnPassantAttackPrep();
+
+    // Promote a pawn to the piece given in the move.
+    void promote(uint16_t move);
 
  public:
     // state vars
