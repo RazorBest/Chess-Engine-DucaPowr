@@ -192,12 +192,14 @@ std::string Board::toString() {
 }
 
 // TODO: Add inline if it works.
+
 void Board::resetEnPassant() {
     // Note: Side::whiteSide = 0 and Side::blackSide = 1.
     flags &= (~(0xffLL << (sideToMove << 3)));
 }
 
 // TODO: Add inline if it works.
+
 void Board::setEnPassant(uint16_t move) {
     // Get whether a pawn is en passant-able. Also acts as a pseudo if.
     // Check move format in moveGen.h for more info.
@@ -214,6 +216,7 @@ void Board::setEnPassant(uint16_t move) {
 }
 
 // TODO: Add inline if it works.
+
 void Board::enPassantAttackPrep(uint16_t move) {
     uint16_t destSquare = (move >> 6) & 0x3f;
     U64 destPosBoard = 1;
@@ -249,9 +252,37 @@ void Board::enPassantAttackPrep(uint16_t move) {
     pieceBB[sourceSquareIndex] |= destPosBoard;
 }
 
+// TODO: Add inline if it works.
+
+void Board::undoEnPassantAttackPrep() {
+    uint16_t move = moveHistory.top();
+
+    uint16_t destSquare = (move >> 6) & 0x3f;
+    U64 destPosBoard = 1;
+    destPosBoard <<= destSquare;
+
+    // If the following code is unclear, maybe enPassantAttackPrep() comments 
+    // help.
+    U64 srcPosBoard = ((( (flags >> ((1 - sideToMove) << 3))
+                        >> (destSquare % 8)) & 1) << destSquare);
+    srcPosBoard <<= ((1 - sideToMove) << 3);
+    srcPosBoard >>= ((sideToMove) << 3);
+
+    enum enumPiece sourceSquareIndex = takeHistory.top();
+    
+    // Remove pawn from its en passant capture position.
+    pieceBB[sourceSquareIndex] ^= destPosBoard;
+
+    // Add pawn to its original position.
+    pieceBB[sourceSquareIndex] |= srcPosBoard;
+}
+
 // TODO: test function, add legality check.
 // Also do castling and promotion.
+
 bool Board::applyMove(uint16_t move) {
+    flagsHistory.push(flags);
+
     // Note: this function works with an internal pseudo if of sorts which may
     // or may not be faster since no jumps are made.
     enPassantAttackPrep(move);
@@ -293,14 +324,18 @@ bool Board::applyMove(uint16_t move) {
     return true;
 }
 
-// TODO do castling, en passant and promotion.
+// TODO do castling and promotion.
+
 bool Board::undoMove() {
     if (moveHistory.empty()) {
         return false;
     }
 
+    // Set flags to their previous state.
+    DIE(flagsHistory.empty(), "Error in undoMove(): flagsHistory size!");
+    flags = flagsHistory.top();
+
     uint16_t move = moveHistory.top();
-    moveHistory.pop();
 
     uint16_t sourceSquare = move & 0x3f;
     uint16_t destSquare = (move >> 6) & 0x3f;
@@ -313,10 +348,8 @@ bool Board::undoMove() {
 
     enum enumPiece sourceSquareIndex = getPieceIndexFromSquare(destSquare);
 
-    DIE(takeHistory.empty(), "Error in undoMove(): takeHsitory and moveHistory\
-     stacks have different sizes!");
+    DIE(takeHistory.empty(), "Error in undoMove(): takeHistory size!");
     enum enumPiece destSquareIndex = takeHistory.top();
-    takeHistory.pop();
 
     // Remove source piece from the destination position on the source board.
     pieceBB[sourceSquareIndex] ^= destPosBoard;
@@ -326,6 +359,14 @@ bool Board::undoMove() {
 
     // Add source piece back to its inital place on its board.
     pieceBB[sourceSquareIndex] |= sourcePosBoard;
+
+    // Note: this function works with an internal pseudo if of sorts which may
+    // or may not be faster since no jumps are made.
+    undoEnPassantAttackPrep();
+
+    moveHistory.pop();
+    flagsHistory.pop();
+    takeHistory.pop();
 
     return true;
 }

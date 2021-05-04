@@ -64,6 +64,8 @@ class Board  {
     std::stack<uint16_t> moveHistory;
     // A history of pieces taken:
     std::stack<enum enumPiece> takeHistory;
+    // A history of the flags before each move:
+    std::stack<U64> flagsHistory;
 
     /**
      * Helper function, sets all en passant-able flags of the side to move to 
@@ -80,6 +82,8 @@ class Board  {
      * This allows applyMove() to work normally with less checks.
     */
     void enPassantAttackPrep(uint16_t move);
+    // Helper function for undoMove().
+    void undoEnPassantAttackPrep();
 
  public:
     // state vars
