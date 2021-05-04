@@ -69,7 +69,7 @@ class Board  {
      * Helper function, sets all en passant-able flags of the side to move to 
      * false.
     */
-    void resetEnPassant();
+    void resetEnPassant(void);
     /**
      * Helper function, sets the en passant-able flag of a specific pawn and 
      * side to true.
@@ -84,7 +84,9 @@ class Board  {
  public:
     // state vars
     Side sideToMove;
-    void switchSide();
+    void switchSide(void);
+
+    U64 getFlags(void);
 
     // Init function that resets the board to initial state
     void init();
@@ -116,11 +118,11 @@ class Board  {
      * Undoes the last move on the bitboards.
      * @return Returns whether a move was undone or not.
     */
-    bool undoMove();
+    bool undoMove(void);
 
     // SAN Move Converters
     uint16_t convertSanToMove(std::string move);
     std::string convertMoveToSan(uint16_t move);
 
-    std::string toString();
+    std::string toString(void);
 };
