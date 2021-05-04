@@ -277,8 +277,234 @@ void Board::undoEnPassantAttackPrep() {
     pieceBB[sourceSquareIndex] |= srcPosBoard;
 }
 
+// TODO: Add inline if it works.
+
+void Board::promote(uint16_t move) {
+    U8 promotion = (move >> 12) & 0x3;
+    uint16_t srcSquare = (move >> 6) & 0x3f;
+
+    enum enumPiece srcSquareIndex = getPieceIndexFromSquare(srcSquare);
+    enum enumPiece destSquareIndex;
+
+    // Get the bit board index of the piece the pawn gets promoted to.
+    switch (promotion) {
+    case 0:
+        destSquareIndex = nWhiteRook;
+        break;
+    
+    case 1:
+        destSquareIndex = nWhiteKnight;
+        break;
+
+    case 2:
+        destSquareIndex = nWhiteBishop;
+        break;
+
+    case 3:
+        destSquareIndex = nWhiteQueen;
+        break;
+
+    default:
+        destSquareIndex = trashPiece;
+        break;
+    }
+
+    /**
+     * Get the color of the piece the pawn gets promoted to.
+     * Note: Side::whiteSide = 0 and Side::blackSide = 1;
+     * Black pieces are always right after their white counterpart.
+    */
+    destSquareIndex = (enum enumPiece) (destSquareIndex + sideToMove);
+
+    // Bitboard with only the promoted pawn.
+    U64 srcPosBoard = 1LL << srcSquare;
+
+    // Remove pawn from its board.
+    pieceBB[srcSquareIndex] ^= srcPosBoard;
+
+    // Add a new piece in its stead.
+    pieceBB[destSquareIndex] |= srcPosBoard;
+}
+
+void Board::demote() {
+    uint16_t move = moveHistory.top();
+
+    if (((move >> 14) & 3) != 1) {
+        // Promotion flag was not set, noting to demote.
+        return;
+    }
+
+    U8 promotion = (move >> 12) & 0x3;
+    uint16_t srcSquare = (move >> 6) & 0x3f;
+
+    enum enumPiece srcSquareIndex = getPieceIndexFromSquare(srcSquare);
+    enum enumPiece destSquareIndex;
+
+    // Get the bit board index of the piece the pawn gets promoted to.
+    switch (promotion) {
+    case 0:
+        destSquareIndex = nWhiteRook;
+        break;
+    
+    case 1:
+        destSquareIndex = nWhiteKnight;
+        break;
+
+    case 2:
+        destSquareIndex = nWhiteBishop;
+        break;
+
+    case 3:
+        destSquareIndex = nWhiteQueen;
+        break;
+
+    default:
+        destSquareIndex = trashPiece;
+        break;
+    }
+
+    /**
+     * Get the color of the piece the pawn gets promoted to.
+     * Check promote() for more info.
+    */
+    destSquareIndex = (enum enumPiece) (destSquareIndex + sideToMove);
+
+    // Bitboard with only the promoted pawn.
+    U64 srcPosBoard = 1LL << srcSquare;
+
+    // Remove the new piece.
+    pieceBB[destSquareIndex] ^= srcPosBoard;
+
+    // Add pawn back to its place.
+    pieceBB[srcPosBoard] |= srcPosBoard;
+}
+
+void Board::castle(uint16_t move) {
+    if (((move >> 14) & 3) != 3) {
+        // Castling flag was not set, nothing to do.
+        return;
+    }
+
+    U64 rookSrcPosBoard;
+    U64 rookDestPosBoard;
+    enum enumPiece rookIndex;
+
+    // Get the new position of the rook based on the file the king is in.
+    if (((move >> 6) & 0x3f) % 8 == 2) {
+        // Queen side castle.
+        rookSrcPosBoard = 0x1;
+        rookDestPosBoard = 0x8;
+    } else {
+        // King side castle.
+        rookSrcPosBoard = 0x80;
+        rookDestPosBoard = 0x20;
+    }
+
+    // Get the side specific positions and piece index.
+    if (sideToMove == Side::whiteSide) {
+        rookIndex = nWhiteRook;
+    } else {
+        rookIndex = nBlackRook;
+        // Shift rook positions to be on the black side.
+        rookSrcPosBoard <<= 56;
+        rookDestPosBoard <<= 56;
+    }
+
+    // Remove rook from its original position.
+    pieceBB[rookIndex] ^= rookSrcPosBoard;
+
+    // Add rook to its new position.
+    pieceBB[rookIndex] |= rookDestPosBoard;
+}
+
+void Board::undoCastle() {
+    uint16_t move = moveHistory.top();
+
+    if (((move >> 14) & 3) != 3) {
+        // Castling flag was not set, nothing to undo.
+        return;
+    }
+
+    U64 rookSrcPosBoard;
+    U64 rookDestPosBoard;
+    enum enumPiece rookIndex;
+
+    // Get the new position of the rook based on the file the king is in.
+    if (((move >> 6) & 0x3f) % 8 == 2) {
+        // Queen side castle.
+        rookSrcPosBoard = 0x1;
+        rookDestPosBoard = 0x8;
+    } else {
+        // King side castle.
+        rookSrcPosBoard = 0x80;
+        rookDestPosBoard = 0x20;
+    }
+
+    // Get the side specific positions and piece index.
+    if (sideToMove == Side::whiteSide) {
+        rookIndex = nWhiteRook;
+    } else {
+        rookIndex = nBlackRook;
+        // Shift rook positions to be on the black side.
+        rookSrcPosBoard <<= 56;
+        rookDestPosBoard <<= 56;
+    }
+
+    // Remove rook from its new position.
+    pieceBB[rookIndex] ^= rookDestPosBoard;
+
+    // Add rook back to its original position.
+    pieceBB[rookIndex] |= rookSrcPosBoard;
+}
+
+// TODO: Add inline if it works.
+
+void Board::resetCastleFlags(enum enumPiece movedPieceIndex,
+        U64 srcPosBitboard) {
+    /**
+     * Note: Check board.h to see what each bit in the flags variable
+     * represents, should the following code be unclear.
+    */
+    switch (movedPieceIndex) {
+    case nWhiteKing:
+        // White cannot castle queen nor king side anymore.
+        flags &= 0xfffffffffffcffff;
+        break;
+    
+    case nBlackKing:
+        // Black cannot castle queen side nor king side anymore.
+        flags &= 0xfffffffffff3ffff;
+        break;
+
+    case nWhiteRook:
+        // Check for side.
+        if (srcPosBitboard == 0x1) {
+            // White cannot castle queen side anymore.
+            flags &= 0xfffffffffffeffff;
+        } else if (srcPosBitboard == 0x80) {
+            // White cannot castle king side anymore.
+            flags &= 0xfffffffffffdffff;
+        }
+        break;
+
+    case nBlackRook:
+        // Check for side.
+        if (srcPosBitboard == 0x100000000000000) {
+            // Black cannot castle queen side anymore.
+            flags &= 0xfffffffffffbffff;
+        } else if (srcPosBitboard == 0x8000000000000000) {
+            // Black cannot castle king side anymore.
+            flags &= 0xfffffffffff7ffff;
+        }
+        break;
+
+    default:
+        break;
+    }
+}
+
 // TODO: test function, add legality check.
-// Also do castling and promotion.
+// TODO: Add inline if it works.
 
 bool Board::applyMove(uint16_t move) {
     flagsHistory.push(flags);
@@ -316,6 +542,14 @@ bool Board::applyMove(uint16_t move) {
     // or may not be faster since no jumps are made.
     setEnPassant(move);
 
+    // Note: this function works with an internal pseudo if of sorts which may
+    // or may not be faster since no jumps are made.
+    promote(move);
+
+    castle(move);
+
+    resetCastleFlags(sourceSquareIndex, sourcePosBoard);
+
     switchSide();
 
     logger.raw(toString() + '\n');
@@ -324,18 +558,24 @@ bool Board::applyMove(uint16_t move) {
     return true;
 }
 
-// TODO do castling and promotion.
+// TODO: Add inline if it works.
 
 bool Board::undoMove() {
     if (moveHistory.empty()) {
         return false;
     }
 
+    switchSide();
+
     // Set flags to their previous state.
     DIE(flagsHistory.empty(), "Error in undoMove(): flagsHistory size!");
     flags = flagsHistory.top();
 
     uint16_t move = moveHistory.top();
+
+    undoCastle();
+
+    demote();
 
     uint16_t sourceSquare = move & 0x3f;
     uint16_t destSquare = (move >> 6) & 0x3f;

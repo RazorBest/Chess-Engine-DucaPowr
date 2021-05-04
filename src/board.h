@@ -31,8 +31,9 @@ enum enumPiece {
     nBlackQueen,
     nWhiteKing,
     nBlackKing,
-    // Piece used for applyMove() and undoMove() optimization.
-    trashPiece
+    // Pieces used for applyMove() and undoMove() optimization.
+    trashPiece,
+    trashPieceBlack
 };
 
 class Board  {
@@ -40,7 +41,7 @@ class Board  {
     Logger logger;
 
     // An array of piece bitboards
-    U64 pieceBB[13];
+    U64 pieceBB[14];
 
     /**
      * Flag bits used for (1 means move is doable, 0 otherwise):
@@ -74,7 +75,7 @@ class Board  {
     void resetEnPassant();
     /**
      * Helper function, sets the en passant-able flag of a specific pawn and 
-     * side to true.
+     * side to true, if necessary.
     */
     void setEnPassant(uint16_t move);
     /**
@@ -84,6 +85,25 @@ class Board  {
     void enPassantAttackPrep(uint16_t move);
     // Helper function for undoMove().
     void undoEnPassantAttackPrep();
+
+    // Promote a pawn to the piece given in the move, if necessary.
+    void promote(uint16_t move);
+    // Helper function for undoMove(). Undo a pawn promotion, if necessary.
+    void demote();
+
+    // Move the rook to its post castle position, if needed.
+    void castle(uint16_t move);
+    /**
+     * Helper function for undoMove(). Move the rook back to its original 
+     * position, if needed.
+    */
+   void undoCastle();
+
+    /**
+     * Helper function for applyMove(). 
+     * Sets castling rights flags to false based on the moved piece, if needed.
+    */
+   void resetCastleFlags(enum enumPiece movedPieceIndex, U64 srcPosBitboard);
 
  public:
     // state vars
