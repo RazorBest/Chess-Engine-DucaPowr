@@ -111,13 +111,23 @@ void Board::switchSide() {
 #pragma endregion
 
 #pragma region SAN Move Converters
+
+/**
+ * @brief This function converts a SAN=0 move to internal representation that
+ * is explained in both README.md and moveGen.h.
+ * 
+ * @param move the source file and rank is written on the first positions of
+ * the array, respectively the destination on the last. On the last position
+ * a promotion is marked.
+ * @return uint16_t an internal encoding.
+ */
 uint16_t Board::convertSanToMove(std::string move) {
     uint16_t res = ((move[3] - '1') << 3) | (move[2] - 'a');
     res <<= 6;
     res |= ((move[1] - '1') << 3) | (move[0] - 'a');
 
     if (move.size() == 5) {
-        res |= 0x3000;
+        res |= 0x4000;
         switch (move[4]) {
             case 'r':
                 break;
@@ -137,32 +147,41 @@ uint16_t Board::convertSanToMove(std::string move) {
     return res;
 }
 
+/**
+ * @brief This function converts an internal representation move encoding to a
+ * SAN=0 one. See README.md and moveGen.h.
+ *
+ * @param uint16_t an internal encoding.
+ * @return std::string the source file and rank is written on the first positions of
+ * the array, respectively the destination on the last. On the last position
+ * a promotion is marked.
+ */
 std::string Board::convertMoveToSan(uint16_t move) {
-  std::string res;
-  res.push_back((move & 7) + 'a');
-  res.push_back(((move >> 3) & 7) + '1');
-  res.push_back(((move >> 6) & 7) + 'a');
-  res.push_back(((move >> 9) & 7) + '1');
+    std::string res;
+    res.push_back((move & 7) + 'a');
+    res.push_back(((move >> 3) & 7) + '1');
+    res.push_back(((move >> 6) & 7) + 'a');
+    res.push_back(((move >> 9) & 7) + '1');
 
-  if (move & 0x3000) {
-    char prom;
-    switch ((move & 0x3000) >> 12) {
-    case 0:
-      prom = 'r';
-      break;
-    case 1:
-      prom = 'n';
-      break;
-    case 2:
-      prom = 'b';
-      break;
-    case 3:
-      prom = 'q';
-      break;
-    default:
-      break;
-    }
-    res.push_back(prom);
+    if (move & 0x4000) {
+        char prom;
+        switch ((move & 0x3000) >> 12) {
+            case 0:
+                prom = 'r';
+                break;
+            case 1:
+                prom = 'n';
+                break;
+            case 2:
+                prom = 'b';
+                break;
+            case 3:
+                prom = 'q';
+                break;
+            default:
+                break;
+        }
+        res.push_back(prom);
     }
     return res;
 }

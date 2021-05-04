@@ -39,7 +39,7 @@ class Board  {
     // Init function that resets the board to initial state
     void init();
 
-    // Get bitboard of pieces on the coresponding side
+    // Get bitboard of pieces on the corresponding side
     /* Side is either 0 (white) or 1 (black) */
     U64 getPieceBB(Side side);
     U64 getPawnBB(Side side);
