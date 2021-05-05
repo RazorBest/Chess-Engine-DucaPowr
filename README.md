@@ -32,11 +32,6 @@ The `xBoardHandler` class is an interface between the Xboard API and the main en
 
 Another role of this handler is to feed the processed commands to the engine API. Also, it awaits a generated move to send back a command.
 
-<details>
-<summary>Note to the programmer</summary>
-We have not implemented move legality checks.
-</details>
-
 ### Engine Logic
 
 The main class of this program is `Engine`. It internally stores the board state and a move generator.
@@ -52,11 +47,6 @@ For this project we chose to use [bitboard](https://www.chessprogramming.org/Bit
 We use 13 bitboards, one for each piece of each color plus one trash piece (required to optimize the code).
 
 ### Generation Logic
-
-<details>
-<summary>Note</summary>
-Until now, we only generated moves for pawns.
-</details>
 
 At each turn we check which side has to move and call one of the corresponding methods
 that generate moves for each piece.
