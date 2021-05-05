@@ -287,7 +287,7 @@ void Generator::generateMoves(uint16_t* moves, uint16_t* len) {
         whiteKnightMoves(moves, len);
         whiteBishopAttacks(moves, len);
         whiteQueenAttacks(moves, len);
-        // whiteCastle(moves, len);
+        whiteCastle(moves, len);
     } else {
         blackPawnMoves(moves, len);
         blackPawnAttacks(moves, len);
@@ -295,7 +295,7 @@ void Generator::generateMoves(uint16_t* moves, uint16_t* len) {
         blackKnightMoves(moves, len);
         blackBishopAttacks(moves, len);
         blackQueenAttacks(moves, len);
-        // blackCastle(moves, len);
+        blackCastle(moves, len);
     }
     kingMoves(_board.sideToMove, moves, len);
     kingAttacks(_board.sideToMove, moves, len);
@@ -883,26 +883,31 @@ void Generator::knightMoves(uint16_t* moves, uint16_t* len, U64 knightBB,
 
 void Generator::whiteCastle(uint16_t* moves, uint16_t* len) {
     if ((_board.getFlags() & WHITEKINGSIDECASTLE) &&
-        (_board.getPieceBB(whiteSide) & 0x6) == 0) {
-    _logger.raw("White Castle!");
-        moves[(*len)++] = 0xc043;
+        (_board.getAllBB() & 0x60) == 0) {
+    _logger.raw("White King Side Castle!");
+        // 0b1100 000110 000100
+        moves[(*len)++] = 0xc184;
     }
+    _logger.raw("Flags Castling " + std::to_string(_board.getFlags()) + "\n");
     if ((_board.getFlags() & WHITEQUEENSIDECASTLE) &&
-        (_board.getPieceBB(whiteSide) & 0x70) == 0) {
-    _logger.raw("White Castle!");
-        moves[(*len)++] = 0xc183;
+        (_board.getAllBB() & 0xe) == 0) {
+    _logger.raw("White Queen Side Castle!");
+        // 0b1100 000010 000100
+        moves[(*len)++] = 0xc084;
     }
 }
 
 void Generator::blackCastle(uint16_t* moves, uint16_t* len) {
     if ((_board.getFlags() & BLACKKINGSIDECASTLE) &&
-        (_board.getPieceBB(blackSide) & 0x6000000000000000) == 0) {
-    _logger.raw("Black Castle!");
+        (_board.getAllBB() & 0x6000000000000000) == 0) {
+    _logger.raw("Black King Side Castle!");
+        // 0b1100 111110 111100
         moves[(*len)++] = 0xcfbc;
     }
-    if ((_board.getFlags() & WHITEQUEENSIDECASTLE) &&
-        (_board.getPieceBB(whiteSide) & 0xe00000000000000) == 0) {
-    _logger.raw("Black Castle!");
-        moves[(*len)++] = 0xce7c;
+    if ((_board.getFlags() & BLACKQUEENSIDECASTLE) &&
+        (_board.getAllBB() & 0xe00000000000000) == 0) {
+    _logger.raw("Black Queen Side Castle!");
+        // 0b1100 111010 111100
+        moves[(*len)++] = 0xcebc;
     }
 }
