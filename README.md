@@ -58,12 +58,8 @@ We use 13 bitboards, one for each piece of each color plus one trash piece (requ
 Until now, we only generated moves for pawns.
 </details>
 
-At each turn we check which side has to move and call one of the corresponding methods:
-
-- `whitePawnMoves();`
-- `whitePawnAttacks();`
-- `blackPawnMoves();`
-- `blackPawnAttacks();`
+At each turn we check which side has to move and call one of the corresponding methods
+that generate moves for each piece.
 
 Pawns are non-sliding pieces. Therefore, their generation is easy to implement using bitwise operations. For example, shifting the bitboard by 8, gives us a bitboard in which all the pieces have moved one square forward. (More about pawn pushes [here](https://www.chessprogramming.org/Pawn_Pushes_(Bitboards)).)
 
@@ -98,7 +94,9 @@ At the end of the game, the bot brings to the user's attention an insightful quo
 9. [Bitboard](https://www.chessprogramming.org/Bitboards)
 
 ## Each member's duties
-* Andrei IONESCU - bitboards research; movement generator implementation; internal move execution;
-* Dimitrie DAVID - team leader; create xBoardHandler and initial engine flow design and framework; made sure the coding style is correct
-* Matei BARBU - task distribution and schedule planner; research on different chess board representations and algorithms; implementation of internal move representation
-* Razvan PRICOP - in-depth research of different chess aspects, algorithms and data structures; implemented board representation, pawn movement generation and other utils
+* Andrei IONESCU - bitboards research; movement generator implementation; internal move execution; internal move undo; knight moves;
+* Dimitrie DAVID - team leader; create xBoardHandler and initial engine flow design and framework; made sure the coding style is correct; move legality checking; xBoardHandler updates;
+* Matei BARBU - task distribution and schedule planner; research on different chess board representations and algorithms; implementation of internal move representation; king moves and castling;
+* Razvan PRICOP - in-depth research of different chess aspects, algorithms and data structures; implemented board representation, pawn movement generation and other utils; queen, bishop and rook moves; perft checking;
+
+** Everyone worked really hard to fix many bugs and to do many imporvements that we did not mention above.
