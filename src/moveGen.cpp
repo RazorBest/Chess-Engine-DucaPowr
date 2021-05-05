@@ -328,6 +328,9 @@ void Generator::whitePawnMoves(uint16_t* moves, uint16_t *len) {
         tmp = tmp << 6;
         tmp |= getSquareIndex(dst >> 8);
 
+        // Set promotion flag
+        tmp |= 0x4000;
+
         // Set bits for queen promotion
         tmp |= 0x3000;
         moves[(*len)++] = tmp;
@@ -378,6 +381,9 @@ void Generator::blackPawnMoves(uint16_t* moves, uint16_t* len) {
         tmp = getSquareIndex(dst);
         tmp = tmp << 6;
         tmp |= getSquareIndex(dst << 8);
+
+        // Set promotion flag
+        tmp |= 0x4000;
 
         // Set bits for queen promotion
         tmp |= 0x3000;
@@ -452,6 +458,9 @@ void Generator::whitePawnAttacks(uint16_t* moves, uint16_t* len) {
         tmp <<= 6;
         tmp |= getSquareIndex(attackDst >> 7);
 
+        // Set promotion flag
+        tmp |= 0x4000;
+
         // Set bits for queen promotion
         tmp |= 0x3000;
         moves[(*len)++] = tmp;
@@ -469,6 +478,9 @@ void Generator::whitePawnAttacks(uint16_t* moves, uint16_t* len) {
         uint16_t tmp = getSquareIndex(attackDst);
         tmp <<= 6;
         tmp |= getSquareIndex(attackDst >> 9);
+
+        // Set promotion flag
+        tmp |= 0x4000;
 
         // Set bits for queen promotion
         tmp |= 0x3000;
@@ -544,6 +556,9 @@ void Generator::blackPawnAttacks(uint16_t* moves, uint16_t* len) {
         tmp <<= 6;
         tmp |= getSquareIndex(attackDst << 9);
 
+        // Set promotion flag
+        tmp |= 0x4000;
+
         // Set bits for queen promotion
         tmp |= 0x3000;
         moves[(*len)++] = tmp;
@@ -561,6 +576,9 @@ void Generator::blackPawnAttacks(uint16_t* moves, uint16_t* len) {
         uint16_t tmp = getSquareIndex(attackDst);
         tmp <<= 6;
         tmp |= getSquareIndex(attackDst << 7);
+
+        // Set promotion flag
+        tmp |= 0x4000;
 
         // Set bits for queen promotion
         tmp |= 0x3000;
