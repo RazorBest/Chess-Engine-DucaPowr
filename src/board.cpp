@@ -292,6 +292,12 @@ void Board::enPassantAttackPrep(uint16_t move) {
 
 void Board::undoEnPassantAttackPrep() {
     uint16_t move = moveHistory.top();
+    uint16_t oldFlags = flagsHistory.top();
+
+    if ((oldFlags & 0xffffLL) == 0) {
+        // No en passant-able pawns existed. Nothing to undo.
+        return;
+    }
 
     uint16_t destSquare = (move >> 6) & 0x3f;
     U64 destPosBoard = 1;
@@ -601,7 +607,6 @@ logger.raw("move at apply: " + std::string(moveBuf) + "\n"); // Debug line
 }
 
 // TODO: Add inline if it works.
-// TODO do castling, en passant and promotion.
 bool Board::undoMove(void) {
 
     if (moveHistory.empty()) {
