@@ -76,7 +76,7 @@ XBoard sends the move to the handler in a Pure Coordinate String Format (eg. "e3
 - bits 12-13 promotion (0 - rook, 1 - knight, 2 - bishop, 3 - queen)
 - bits 14-15 flags (0 - none, 1 - promotion, 2 - en passant, 3 - castling)
 
-Stockfish uses the same encoding.
+Stockfish uses a similar [encoding](https://github.com/official-stockfish/Stockfish/blob/b1c8840f104d4d36b3f9a420b8b26a5e94c6dc18/src/types.h#L112).
 
 ### Further details
 
@@ -101,4 +101,4 @@ At the end of the game, the bot brings to the user's attention an insightful quo
 * Andrei IONESCU - bitboards research; movement generator implementation; internal move execution;
 * Dimitrie DAVID - team leader; create xBoardHandler and initial engine flow design and framework; made sure the coding style is correct
 * Matei BARBU - task distribution and schedule planner; research on different chess board representations and algorithms; implementation of internal move representation
-* Razvan PRICOP - in-depth research of different chess aspects, algortighms and data structures; implemented board representation, pawn movement generation and other utils
+* Razvan PRICOP - in-depth research of different chess aspects, algorithms and data structures; implemented board representation, pawn movement generation and other utils

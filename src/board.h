@@ -31,8 +31,9 @@ enum enumPiece {
     nBlackQueen,
     nWhiteKing,
     nBlackKing,
-    // Piece used for applyMove() and undoMove() optimization.
-    trashPiece
+    // Pieces used for applyMove() and undoMove() optimization.
+    trashPiece,
+    trashPieceBlack
 };
 
 class Board  {
@@ -40,7 +41,7 @@ class Board  {
     Logger logger;
 
     // An array of piece bitboards
-    U64 pieceBB[13];
+    U64 pieceBB[14];
 
     /**
      * Flag bits used for (1 means move is doable, 0 otherwise):
@@ -64,6 +65,8 @@ class Board  {
     std::stack<uint16_t> moveHistory;
     // A history of pieces taken:
     std::stack<enum enumPiece> takeHistory;
+    // A history of the flags before each move:
+    std::stack<U64> flagsHistory;
 
     /**
      * Helper function, sets all en passant-able flags of the side to move to 
@@ -72,7 +75,7 @@ class Board  {
     void resetEnPassant(void);
     /**
      * Helper function, sets the en passant-able flag of a specific pawn and 
-     * side to true.
+     * side to true, if necessary.
     */
     void setEnPassant(uint16_t move);
     /**
@@ -80,6 +83,27 @@ class Board  {
      * This allows applyMove() to work normally with less checks.
     */
     void enPassantAttackPrep(uint16_t move);
+    // Helper function for undoMove().
+    void undoEnPassantAttackPrep();
+
+    // Promote a pawn to the piece given in the move, if necessary.
+    void promote(uint16_t move);
+    // Helper function for undoMove(). Undo a pawn promotion, if necessary.
+    void demote();
+
+    // Move the rook to its post castle position, if needed.
+    void castle(uint16_t move);
+    /**
+     * Helper function for undoMove(). Move the rook back to its original 
+     * position, if needed.
+    */
+   void undoCastle();
+
+    /**
+     * Helper function for applyMove(). 
+     * Sets castling rights flags to false based on the moved piece, if needed.
+    */
+   void resetCastleFlags(enum enumPiece movedPieceIndex, U64 srcPosBitboard);
 
  public:
     // state vars
@@ -91,7 +115,7 @@ class Board  {
     // Init function that resets the board to initial state
     void init();
 
-    // Get bitboard of pieces on the coresponding side
+    // Get bitboard of pieces on the corresponding side
     /* Side is either 0 (white) or 1 (black) */
     U64 getPieceBB(Side side);
     U64 getPawnBB(Side side);

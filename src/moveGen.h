@@ -58,6 +58,13 @@ class Generator {
     U64 desDiagMask[15];
     // ^^^^^ Perhaps these should be private?
 
+    /**
+     * @brief This array contains for each possible position on which the king
+     * might be at, the associated bitboard with all the attack positions
+     * marked.
+     */
+    U64 kingNeighbors[64];
+
  private:
     Board& _board;
     Logger _logger;
@@ -68,6 +75,12 @@ class Generator {
     U8 generateLineAttacks(U8 rook, U8 occ);
     void initFirstRankAttacks();
     void initFirstFileAttacks();
+
+    /**
+     * @brief This functions precomputes the possible moves/attacks for a king
+     * based on his current position. It is called only by the constructor.
+     */
+    void initKingNeighbors();
     void initDiagMasks();
     void initBishopMask();
     void initPositionedBishopAttackTable(int bishopIndex);
@@ -103,7 +116,26 @@ class Generator {
     void blackQueenAttacks(uint16_t* moves, uint16_t* len);
     void whiteQueenAttacks(uint16_t* moves, uint16_t* len);
 
-    void kingMoves(uint16_t* moves, uint16_t* len);
+    /**
+     * @brief This functions adds to an array the possible king moves.
+     * 
+     * @param side which side's king is supposed to move
+     * @param moves a pointer to an array in which to add the new moves
+     * @param len a pointer to the the length of the array, in the end it will
+     * be updated
+     */
+    void kingMoves(Side side, uint16_t* moves, uint16_t* len);
+
+    /**
+     * @brief This functions adds to an array the possible king attacks.
+     * 
+     * @param side which side's king is supposed to move
+     * @param moves a pointer to an array in which to add the new moves
+     * @param len a pointer to the the length of the array, in the end it will
+     * be updated
+     */
+    void kingAttacks(Side side, uint16_t* moves, uint16_t* len);
+  
     void whiteCastle(uint16_t* moves, uint16_t* len);
     void blackCastle(uint16_t* moves, uint16_t* len);
 };

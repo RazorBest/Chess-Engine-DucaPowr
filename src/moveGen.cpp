@@ -2,11 +2,16 @@
 #include "./moveGen.h"
 #include "board.h"
 #include "constants.h"
+#include "utils.h"
+#include <bits/stdint-uintn.h>
+#include <cstdio>
 #include <string>
+#include <vector>
 
 Generator::Generator(Board& board) : _board(board) {
     initFirstRankAttacks();
     initFirstFileAttacks();
+    initKingNeighbors();
     initDiagMasks();
     initBishopMask();
     initBishopAttackTable();
@@ -73,6 +78,15 @@ void Generator::initFirstFileAttacks() {
             U64 fileAttacks = rotate90AntiClockwise(lineAttacks);
             firstFileAttacks[occ_index][rook_index] = fileAttacks;
         }
+    }
+}
+
+
+void Generator::initKingNeighbors() {
+    U64 kingBB = 1;
+    for (size_t i = 0; i < 64; i++) {
+        kingNeighbors[i] = aKingsNeighbors(kingBB);
+        kingBB <<= 1;
     }
 }
 
@@ -283,6 +297,8 @@ void Generator::generateMoves(uint16_t* moves, uint16_t* len) {
         blackQueenAttacks(moves, len);
         // blackCastle(moves, len);
     }
+    kingMoves(_board.sideToMove, moves, len);
+    kingAttacks(_board.sideToMove, moves, len);
 }
 
 void Generator::whitePawnMoves(uint16_t* moves, uint16_t *len) {
@@ -639,6 +655,43 @@ void Generator::blackRookAttacks(uint16_t *moves, uint16_t *len) {
     rookAttacks(moves, len, rookBB, friendPieceBB);
 }
 
+
+void Generator::kingMoves(Side side, uint16_t *moves, uint16_t *len) {
+    U64 kingBB = _board.getKingBB(side);
+    U64 emptyPiece = _board.getEmptyBB();
+    U64 possibleMoves;
+    uint16_t kingSquareIndex = getSquareIndex(kingBB);
+
+    possibleMoves = kingNeighbors[kingSquareIndex] & emptyPiece;
+    std::vector<U64> separated = getSeparatedBits(possibleMoves);
+    for (auto dst : separated) {
+      uint16_t tmp = 0;
+      tmp = getSquareIndex(dst);
+      tmp = tmp << 6;
+      tmp |= getSquareIndex(kingBB);
+
+      moves[(*len)++] = tmp;
+    }
+}
+
+void Generator::kingAttacks(Side side, uint16_t *moves, uint16_t *len) {
+    U64 kingBB = _board.getKingBB(side);
+    U64 opponentBB = _board.getPieceBB((Side) (1 - side));
+    U64 possibleMoves;
+    uint16_t kingSquareIndex = getSquareIndex(kingBB);
+
+    possibleMoves = kingNeighbors[kingSquareIndex] & opponentBB;
+    std::vector<U64> separated = getSeparatedBits(possibleMoves);
+    for (auto dst : separated) {
+      uint16_t tmp = 0;
+      tmp = getSquareIndex(dst);
+      tmp = tmp << 6;
+      tmp |= getSquareIndex(kingBB);
+
+      moves[(*len)++] = tmp;
+    }
+}
+
 void Generator::bishopAttacks(uint16_t *moves, uint16_t *len,
         U64 bishopBB, U64 friendPieceBB) {
     U64 allBB = _board.getAllBB();
@@ -824,6 +877,7 @@ void Generator::knightMoves(uint16_t* moves, uint16_t* len, U64 knightBB,
         knightBB ^= (one << knightIndex);
     }
 }
+
 
 void Generator::whiteCastle(uint16_t* moves, uint16_t* len) {
     if ((_board.getFlags() & WHITEKINGSIDECASTLE) &&
