@@ -21,7 +21,7 @@ class Generator {
 
     void generateMoves(uint16_t* moves, uint16_t* len);
 
-    // vvvvv Perhaps theese should be private?
+    // vvvvv Perhaps these should be private?
     U64 firstRankAttacks[64][8];
     U64 firstFileAttacks[64][8];
     U64 bishopAttackTable[64][512];
@@ -56,7 +56,7 @@ class Generator {
      * 01234...
      */
     U64 desDiagMask[15];
-    // ^^^^^ Perhaps theese should be private?
+    // ^^^^^ Perhaps these should be private?
 
     /**
      * @brief This array contains for each possible position on which the king
@@ -135,4 +135,7 @@ class Generator {
      * be updated
      */
     void kingAttacks(Side side, uint16_t* moves, uint16_t* len);
+  
+    void whiteCastle(uint16_t* moves, uint16_t* len);
+    void blackCastle(uint16_t* moves, uint16_t* len);
 };
