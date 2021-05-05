@@ -21,8 +21,42 @@ class Generator {
 
     void generateMoves(uint16_t* moves, uint16_t* len);
 
+    // vvvvv Perhaps theese should be private?
     U64 firstRankAttacks[64][8];
     U64 firstFileAttacks[64][8];
+    U64 bishopAttackTable[64][512];
+    U64 bishopMask[64];
+    /* Masks for the ascending diagonals
+     * Where ascDiagMask[0] is a mask for the A8-A8 diagonal
+     *   and ascDiag[14]    is a mask for the H1-H1 diagonal.
+     * So the first 5 diagonals are indexed like this:
+     *
+     * ........   
+     * ........   
+     * ........   
+     * .......4
+     * ......43
+     * .....432
+     * ....4321
+     * ...43210
+     */
+    U64 ascDiagMask[15];
+    /* Masks for the descending diagonals
+     * Where desDiagMask[0] is a mask for the A1-A1 diagonal
+     *   and ascDiag[14]    is a mask for the H8-H8 diagonal.
+     * So the first 5 diagonals are indexed like this:
+     *
+     * ........   
+     * ........   
+     * ........   
+     * 4.......
+     * 34......
+     * 234.....
+     * 1234....
+     * 01234...
+     */
+    U64 desDiagMask[15];
+    // ^^^^^ Perhaps theese should be private?
 
     /**
      * @brief This array contains for each possible position on which the king
@@ -35,14 +69,22 @@ class Generator {
     Board& _board;
     Logger _logger;
 
+    // Bitboards off all possible knight moves from square i, 0 <= i < 64
+    U64 knightPosMoves[64];
+
     U8 generateLineAttacks(U8 rook, U8 occ);
     void initFirstRankAttacks();
     void initFirstFileAttacks();
+
     /**
      * @brief This functions precomputes the possible moves/attacks for a king
      * based on his current position. It is called only by the constructor.
      */
     void initKingNeighbors();
+    void initDiagMasks();
+    void initBishopMask();
+    void initPositionedBishopAttackTable(int bishopIndex);
+    void initBishopAttackTable();
 
     void whitePawnMoves(uint16_t* moves, uint16_t* len);
     void blackPawnMoves(uint16_t* moves, uint16_t* len);
@@ -58,11 +100,21 @@ class Generator {
     void whiteRookAttacks(uint16_t* moves, uint16_t* len);
     void blackRookAttacks(uint16_t* moves, uint16_t* len);
 
-    void bishopMoves(uint16_t* moves, uint16_t* len);
+    void bishopAttacks(uint16_t* moves, uint16_t* len, U64 bishopBB,
+            U64 friendPieceBB);
+    void whiteBishopAttacks(uint16_t* moves, uint16_t* len);
+    void blackBishopAttacks(uint16_t* moves, uint16_t* len);
 
-    void knightMoves(uint16_t* moves, uint16_t* len);
+    void initKnightPosMoves();
+    void knightMoves(uint16_t* moves, uint16_t* len, U64 knightBB,
+            U64 friendPieceBB);
+    void whiteKnightMoves(uint16_t* moves, uint16_t* len);
+    void blackKnightMoves(uint16_t* moves, uint16_t* len);
 
-    void queenMoves(uint16_t* moves, uint16_t* len);
+    void queenAttacks(uint16_t* moves, uint16_t* len, U64 queenBBm,
+            U64 friendPieceBB);
+    void blackQueenAttacks(uint16_t* moves, uint16_t* len);
+    void whiteQueenAttacks(uint16_t* moves, uint16_t* len);
 
     /**
      * @brief This functions adds to an array the possible king moves.
