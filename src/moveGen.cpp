@@ -928,4 +928,6 @@ void Generator::generateMovesWithoutKing(uint16_t* moves, uint16_t* len) {
         blackQueenAttacks(moves, len);
         // blackCastle(moves, len);
     }
+    kingMoves(_board.sideToMove, moves, len);
+    kingAttacks(_board.sideToMove, moves, len);
 }
