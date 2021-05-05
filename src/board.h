@@ -129,7 +129,7 @@ class Board  {
      * squares as their first move) and can therefore be attacked by an en
      * passant move.
     */
-    U64 getEnPassantablePawnsBB(Side side);
+    U64 getEnPassantablePawnsBB();
     U64 getAllBB();
     U64 getEmptyBB();
 

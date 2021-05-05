@@ -411,7 +411,7 @@ void Generator::blackPawnMoves(uint16_t* moves, uint16_t* len) {
 
 void Generator::whitePawnAttacks(uint16_t* moves, uint16_t* len) {
     U64 opponentBB = _board.getPieceBB(blackSide);
-    U64 enPassantablePawns = _board.getEnPassantablePawnsBB(blackSide);
+    U64 enPassantablePawns = _board.getEnPassantablePawnsBB();
     U64 pawnBB = _board.getPawnBB(whiteSide);
     U64 leftAttacks;
     U64 rightAttacks;

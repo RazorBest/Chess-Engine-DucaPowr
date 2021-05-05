@@ -67,7 +67,7 @@ U64 Board::getKingBB(Side side) {
     return pieceBB[nWhiteKing + side];
 }
 
-U64 Board::getEnPassantablePawnsBB(Side side) {
+U64 Board::getEnPassantablePawnsBB() {
     /**
      * Note: Side::whiteSide = 0 and Side::blackSide = 1;
      * << (sideToMove << 3) shifts the flags to match the appropriate side;
