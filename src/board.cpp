@@ -313,7 +313,8 @@ logger.raw("En passant prep is being done!\n");
      * & 1 ignores the other flags;
      * << destSquare transforms the bit into a bitboard.
     */
-    U64 srcPosBoard = 1LL << (destSquare - (sideToMove == Side::whiteSide ? 8 : -8));
+    U64 srcPosBoard = 1LL << (destSquare - (sideToMove == Side::whiteSide ? 8
+        : -8));
     // // Shift in case of a white pawn.
     // srcPosBoard <<= ((1 - sideToMove) << 3);
     // // Shift in case of a black pawn.
@@ -339,21 +340,27 @@ void Board::undoEnPassantAttackPrep() {
     uint16_t move = moveHistory.top();
     uint16_t oldFlags = flagsHistory.top();
 
-    if ((oldFlags & 0xffffLL) == 0) {
-        // No en passant-able pawns existed. Nothing to undo.
+    uint16_t srcSquare = move & 0x3f;
+    uint16_t destSquare = (move >> 6) & 0x3f;
+
+    U64 enPassantFlag = ((1LL << (destSquare % 8)) << ((1 - sideToMove) << 3));
+    uint8_t attackedRank = (sideToMove == Side::whiteSide ? 5 : 2);
+    enum enumPiece srcPiece = getPieceIndexFromSquare(srcSquare);
+
+    if (!(flags & enPassantFlag) || !(attackedRank == (destSquare / 8)) ||
+            !(srcPiece == (sideToMove == Side::whiteSide ?
+            nWhitePawn : nBlackPawn))) {
+        // No en passant-able flags set. Nothing to unprep.
         return;
     }
 
-    uint16_t destSquare = (move >> 6) & 0x3f;
     U64 destPosBoard = 1;
     destPosBoard <<= destSquare;
 
     // If the following code is unclear, maybe enPassantAttackPrep() comments
     // help.
-    U64 srcPosBoard = ((( (flags >> ((1 - sideToMove) << 3))
-                        >> (destSquare % 8)) & 1) << destSquare);
-    srcPosBoard <<= ((1 - sideToMove) << 3);
-    srcPosBoard >>= ((sideToMove) << 3);
+    U64 srcPosBoard = 1LL << (destSquare - (sideToMove == Side::whiteSide ? 8
+        : -8));
 
     enum enumPiece sourceSquareIndex = takeHistory.top();
 
