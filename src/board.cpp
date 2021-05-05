@@ -95,13 +95,18 @@ enum enumPiece Board::getPieceIndexFromSquare(uint16_t sq) {
     return trashPiece;
 }
 
-void Board::switchSide() {
+void Board::switchSide(void) {
     if (sideToMove == Side::whiteSide) {
         sideToMove = Side::blackSide;
     } else {
         sideToMove = Side::whiteSide;
     }
 }
+
+U64 Board::getFlags(void) {
+    return flags;
+}
+
 #pragma endregion
 
 #pragma region SAN Move Converters
@@ -116,6 +121,7 @@ void Board::switchSide() {
  * @return uint16_t an internal encoding.
  */
 uint16_t Board::convertSanToMove(std::string move) {
+    logger.raw("Let's see " + move);
     uint16_t res = ((move[3] - '1') << 3) | (move[2] - 'a');
     res <<= 6;
     res |= ((move[1] - '1') << 3) | (move[0] - 'a');
@@ -182,7 +188,7 @@ std::string Board::convertMoveToSan(uint16_t move) {
 
 #pragma endregion
 
-std::string Board::toString() {
+std::string Board::toString(void) {
     static char const pieceSymbol[12] = {'p', 'P', 'b', 'B', 'n', 'N',
         'r', 'R', 'q', 'Q', 'k', 'K'};
     static char const emptySymbol = '.';
@@ -212,7 +218,7 @@ std::string Board::toString() {
 
 // TODO: Add inline if it works.
 
-void Board::resetEnPassant() {
+void Board::resetEnPassant(void) {
     // Note: Side::whiteSide = 0 and Side::blackSide = 1.
     flags &= (~(0xffLL << (sideToMove << 3)));
 }
@@ -247,7 +253,7 @@ void Board::enPassantAttackPrep(uint16_t move) {
     destPosBoard <<= destSquare;
 
     /**
-     * Get the current possition bitBrd of the attacked pawn, colour dependent: 
+     * Get the current position bitBrd of the attacked pawn, colour dependent: 
      * White pawns will be one rank higher, black pawns will be one rank lower.
      * 
      * Also acts as a pseudo if, checking the en passant-able flag.
@@ -586,8 +592,9 @@ bool Board::applyMove(uint16_t move) {
 }
 
 // TODO: Add inline if it works.
+// TODO do castling, en passant and promotion.
+bool Board::undoMove(void) {
 
-bool Board::undoMove() {
     if (moveHistory.empty()) {
         return false;
     }
@@ -615,7 +622,9 @@ bool Board::undoMove() {
 
     enum enumPiece sourceSquareIndex = getPieceIndexFromSquare(destSquare);
 
-    DIE(takeHistory.empty(), "Error in undoMove(): takeHistory size!");
+    DIE(takeHistory.empty(), "Error in undoMove(): takeHistory and moveHistory\
+     stacks have different sizes!");
+  
     enum enumPiece destSquareIndex = takeHistory.top();
 
     // Remove source piece from the destination position on the source board.
@@ -624,7 +633,7 @@ bool Board::undoMove() {
     // Add destination piece back to its board.
     pieceBB[destSquareIndex] |= destPosBoard;
 
-    // Add source piece back to its inital place on its board.
+    // Add source piece back to its initial place on its board.
     pieceBB[sourceSquareIndex] |= sourcePosBoard;
 
     // Note: this function works with an internal pseudo if of sorts which may
