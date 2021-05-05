@@ -52,11 +52,11 @@ class Board  {
      * 18 - castle-able queen side for black
      * 19 - castle-able king side for black
     */
-    U64 flags = 0xf0000;
+    U64 flags;
 
     /**
-     * It finds the piece that is on that square and it returns the index 
-     * to its bitboard in the pieceBB array 
+     * It finds the piece that is on that square and it returns the index
+     * to its bitboard in the pieceBB array
      * @param sq is a 0-63 number indicating a board square
      */
     enum enumPiece getPieceIndexFromSquare(uint16_t sq);
@@ -69,17 +69,17 @@ class Board  {
     std::stack<U64> flagsHistory;
 
     /**
-     * Helper function, sets all en passant-able flags of the side to move to 
+     * Helper function, sets all en passant-able flags of the side to move to
      * false.
     */
     void resetEnPassant(void);
     /**
-     * Helper function, sets the en passant-able flag of a specific pawn and 
+     * Helper function, sets the en passant-able flag of a specific pawn and
      * side to true, if necessary.
     */
     void setEnPassant(uint16_t move);
     /**
-     * Helper function, moves an en passant-able pawn back one square. 
+     * Helper function, moves an en passant-able pawn back one square.
      * This allows applyMove() to work normally with less checks.
     */
     void enPassantAttackPrep(uint16_t move);
@@ -94,13 +94,13 @@ class Board  {
     // Move the rook to its post castle position, if needed.
     void castle(uint16_t move);
     /**
-     * Helper function for undoMove(). Move the rook back to its original 
+     * Helper function for undoMove(). Move the rook back to its original
      * position, if needed.
     */
    void undoCastle();
 
     /**
-     * Helper function for applyMove(). 
+     * Helper function for applyMove().
      * Sets castling rights flags to false based on the moved piece, if needed.
     */
    void resetCastleFlags(enum enumPiece movedPieceIndex, U64 srcPosBitboard);

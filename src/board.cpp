@@ -21,6 +21,12 @@ void Board::init() {
     pieceBB[nBlackKing] = BLACKKINGSTART;
 
     sideToMove = whiteSide;
+
+    flags = FLAGS_INIT_VALUE;
+
+    moveHistory  = std::stack<uint16_t>();
+    takeHistory  = std::stack<enum enumPiece>();
+    flagsHistory = std::stack<U64>();
 }
 
 #pragma region Bitboard getters
@@ -115,7 +121,7 @@ U64 Board::getFlags(void) {
 /**
  * @brief This function converts a SAN=0 move to internal representation that
  * is explained in both README.md and moveGen.h.
- * 
+ *
  * @param move the source file and rank is written on the first positions of
  * the array, respectively the destination on the last. On the last position
  * a promotion is marked.
@@ -297,9 +303,9 @@ logger.raw("En passant prep is being done!\n");
     destPosBoard <<= destSquare;
 
     /**
-     * Get the current position bitBrd of the attacked pawn, colour dependent: 
+     * Get the current position bitBrd of the attacked pawn, colour dependent:
      * White pawns will be one rank higher, black pawns will be one rank lower.
-     * 
+     *
      * Note: flags >> ((1 - sideToMove) << 3) gets the en passant flags for the
      * side opposite of the one to attack.
      * Side::whiteSide = 0 and Side::blackSide = 1;
@@ -342,7 +348,7 @@ void Board::undoEnPassantAttackPrep() {
     U64 destPosBoard = 1;
     destPosBoard <<= destSquare;
 
-    // If the following code is unclear, maybe enPassantAttackPrep() comments 
+    // If the following code is unclear, maybe enPassantAttackPrep() comments
     // help.
     U64 srcPosBoard = ((( (flags >> ((1 - sideToMove) << 3))
                         >> (destSquare % 8)) & 1) << destSquare);
@@ -350,7 +356,7 @@ void Board::undoEnPassantAttackPrep() {
     srcPosBoard >>= ((sideToMove) << 3);
 
     enum enumPiece sourceSquareIndex = takeHistory.top();
-    
+
     // Remove pawn from its en passant capture position.
     pieceBB[sourceSquareIndex] ^= destPosBoard;
 
@@ -377,7 +383,7 @@ void Board::promote(uint16_t move) {
     case 0:
         destSquareIndex = nWhiteRook;
         break;
-    
+
     case 1:
         destSquareIndex = nWhiteKnight;
         break;
@@ -430,7 +436,7 @@ void Board::demote() {
     case 0:
         destSquareIndex = nWhiteRook;
         break;
-    
+
     case 1:
         destSquareIndex = nWhiteKnight;
         break;
@@ -557,7 +563,7 @@ void Board::resetCastleFlags(enum enumPiece movedPieceIndex,
         // White cannot castle queen nor king side anymore.
         flags &= 0xfffffffffffcffff;
         break;
-    
+
     case nBlackKing:
         // Black cannot castle queen side nor king side anymore.
         flags &= 0xfffffffffff3ffff;
@@ -673,7 +679,7 @@ bool Board::undoMove(void) {
 
     DIE(takeHistory.empty(), "Error in undoMove(): takeHistory and moveHistory\
      stacks have different sizes!");
-  
+
     enum enumPiece destSquareIndex = takeHistory.top();
 
     // Remove source piece from the destination position on the source board.

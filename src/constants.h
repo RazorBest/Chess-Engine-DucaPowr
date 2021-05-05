@@ -46,11 +46,14 @@
 #define RANK7            0x00FF000000000000
 #define RANK8            0xFF00000000000000
 
+// BOARD ----------------------------------------------------------
+#define FLAGS_INIT_VALUE 0xf0000
+
 // MOVE GENERATION ------------------------------------------------
 #define MAX_MOVES_AT_STEP               400
 
 /* Bitboard * MAGICFAR8 will map file A to rank 8
- * The other files of Bitboard must be empty 
+ * The other files of Bitboard must be empty
  */
 #define MAGICFAR8       0x0102040810204080
 
