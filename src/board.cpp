@@ -121,7 +121,6 @@ U64 Board::getFlags(void) {
  * @return uint16_t an internal encoding.
  */
 uint16_t Board::convertSanToMove(std::string move) {
-    logger.raw("Let's see " + move);
     uint16_t dst = ((move[3] - '1') << 3) | (move[2] - 'a');
     uint16_t res = dst << 6;
     uint16_t src = ((move[1] - '1') << 3) | (move[0] - 'a');
@@ -229,7 +228,7 @@ std::string Board::toString(void) {
     }
 
 char flagsC[19]; // Debug lines.
-snprintf(flagsC, 18, "0x%llx", flags);
+snprintf(flagsC, 18, "0x%lx", flags);
 output += "\n" + std::string(flagsC) + "\n";
 
     return output;
@@ -247,9 +246,7 @@ void Board::resetEnPassant(void) {
 void Board::setEnPassant(uint16_t move) {
     // Get whether a pawn is en passant-able. Also acts as a pseudo if.
     // Check move format in moveGen.h for more info.
-logger.raw("move: " + std::to_string(move) + "\n"); // Debug lines.
     const U64 enPassant = (((move >> 14) & 3) == 2);
-logger.raw("enPassant variable: " + std::to_string(enPassant));
 
     /**
      * Set side specific, pawn specific flag.
@@ -264,12 +261,36 @@ logger.raw("enPassant variable: " + std::to_string(enPassant));
 // TODO: Add inline if it works.
 
 void Board::enPassantAttackPrep(uint16_t move) {
-    if ((flags & 0xffffLL) == 0) {
-        // No en passant-able flags set, nothing to prep.
+    // TODO: Check if an attack happens and the src and dest are "good".
+    uint16_t srcSquare = move & 0x3f;
+    uint16_t destSquare = (move >> 6) & 0x3f;
+
+    /**
+     * Atentie: Trebuie negata logica!
+     * Verificam daca: 1. Este setat flag-ul x en pasant-able pentru file-ul
+     * destinatie.
+     * 2. Este atacat rank 3 sau 7, in functie de partea care ataca.
+     * 3. Piesa src == pion.
+    */
+    U64 enPassantFlag = ((1LL << (destSquare % 8)) << ((1 - sideToMove) << 3));
+    uint8_t attackedRank = (sideToMove == Side::whiteSide ? 5 : 2);
+    enum enumPiece srcPiece = getPieceIndexFromSquare(srcSquare);
+
+logger.raw("En passant prep conditions:\n");
+logger.raw(std::to_string(!(flags & enPassantFlag)) + "\n");
+logger.raw(std::to_string(!(attackedRank == (destSquare / 8)))
+    + " " + std::to_string(attackedRank) + " " + std::to_string((destSquare / 8)) + "\n");
+logger.raw(std::to_string(!(srcPiece == (sideToMove == Side::whiteSide ? nWhitePawn : nBlackPawn))) + "\n");
+
+    if (!(flags & enPassantFlag) || !(attackedRank == (destSquare / 8)) ||
+            !(srcPiece == (sideToMove == Side::whiteSide ?
+            nWhitePawn : nBlackPawn))) {
+        // No en passant-able flags set. Nothing to prep.
         return;
     }
 
-    uint16_t destSquare = (move >> 6) & 0x3f;
+logger.raw("En passant prep is being done!\n");
+
     U64 destPosBoard = 1;
     destPosBoard <<= destSquare;
 
@@ -277,7 +298,6 @@ void Board::enPassantAttackPrep(uint16_t move) {
      * Get the current position bitBrd of the attacked pawn, colour dependent: 
      * White pawns will be one rank higher, black pawns will be one rank lower.
      * 
-     * Also acts as a pseudo if, checking the en passant-able flag.
      * Note: flags >> ((1 - sideToMove) << 3) gets the en passant flags for the
      * side opposite of the one to attack.
      * Side::whiteSide = 0 and Side::blackSide = 1;
@@ -285,12 +305,13 @@ void Board::enPassantAttackPrep(uint16_t move) {
      * & 1 ignores the other flags;
      * << destSquare transforms the bit into a bitboard.
     */
-    U64 srcPosBoard = ((( (flags >> ((1 - sideToMove) << 3))
-                        >> (destSquare % 8)) & 1) << destSquare);
+    U64 srcPosBoard = 1LL << destSquare;
     // Shift in case of a white pawn.
     srcPosBoard <<= ((1 - sideToMove) << 3);
     // Shift in case of a black pawn.
     srcPosBoard >>= ((sideToMove) << 3);
+
+logger.logBB(srcPosBoard);
 
     // Also acts as a pseudo if thanks to the trash piece optimization.
     enum enumPiece sourceSquareIndex = getPieceIndexFromSquare(
@@ -399,7 +420,6 @@ void Board::demote() {
     U8 promotion = (move >> 12) & 0x3;
     uint16_t srcSquare = (move >> 6) & 0x3f;
 
-    enum enumPiece srcSquareIndex = getPieceIndexFromSquare(srcSquare);
     enum enumPiece destSquareIndex;
 
     // Get the bit board index of the piece the pawn gets promoted to.
@@ -569,13 +589,8 @@ void Board::resetCastleFlags(enum enumPiece movedPieceIndex,
 // TODO: Add inline if it works.
 
 bool Board::applyMove(uint16_t move) {
-char moveBuf[17]; // Debug lines.
-snprintf(moveBuf, 16, "%hx", move);
-logger.raw("move at apply: " + std::string(moveBuf) + "\n"); // Debug line
     flagsHistory.push(flags);
 
-    // Note: this function works with an internal pseudo if of sorts which may
-    // or may not be faster since no jumps are made.
     enPassantAttackPrep(move);
 
     uint16_t sourceSquare = move & 0x3f;
