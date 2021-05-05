@@ -207,6 +207,10 @@ std::string Board::toString() {
         output += std::string(board + i*8, 8) + '\n';
     }
 
+char flagsC[19]; // Debug lines.
+snprintf(flagsC, 18, "0x%llx", flags);
+output += "\n" + std::string(flagsC) + "\n";
+
     return output;
 }
 
@@ -222,7 +226,9 @@ void Board::resetEnPassant() {
 void Board::setEnPassant(uint16_t move) {
     // Get whether a pawn is en passant-able. Also acts as a pseudo if.
     // Check move format in moveGen.h for more info.
-    const long long enPassant = ((move >> 14) == 2);
+logger.raw("move: " + std::to_string(move) + "\n"); // Debug lines.
+    const U64 enPassant = (((move >> 14) & 3) == 2);
+logger.raw("enPassant variable: " + std::to_string(enPassant));
 
     /**
      * Set side specific, pawn specific flag.
@@ -536,6 +542,9 @@ void Board::resetCastleFlags(enum enumPiece movedPieceIndex,
 // TODO: Add inline if it works.
 
 bool Board::applyMove(uint16_t move) {
+char moveBuf[17]; // Debug lines.
+snprintf(moveBuf, 16, "%hx", move);
+logger.raw("move at apply: " + std::string(moveBuf) + "\n"); // Debug line
     flagsHistory.push(flags);
 
     // Note: this function works with an internal pseudo if of sorts which may
