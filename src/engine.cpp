@@ -23,10 +23,10 @@ void Engine::userMove(std::string move) {
 /**
  * Engine thinks and moves the color that has to move this turn
  *
- * @return san=0 encoding of the move
+ * @return SAN=0 encoding of the move
  */
 std::string Engine::move() {
-    // this only for etapa 1 - generate random pseudo-legal pawn move
+    // this only for stage 1 - generate random pseudo-legal pawn move
     // init
     uint16_t moves[MAX_MOVES_AT_STEP];
     memset(moves, 0, sizeof(moves));

@@ -1,5 +1,6 @@
 /* Copyright 2021 DucaPowr Team */
 #include "./utils.h"
+#include "constants.h"
 
 std::vector<U64> getSeparatedBits(U64 bb) {
     std::vector<U64> moves;
@@ -28,7 +29,7 @@ U64 flipVertical(U64 x) {
 }
 
 /**
- * Copied from chessprogramming.com
+ * Copied from chessprogramming.org
  *
  * Flip a bitboard about the diagonal a1-h8.
  * Square h1 is mapped to a8 and vice versa.
@@ -50,7 +51,7 @@ U64 flipDiagA1H8(U64 x) {
 }
 
 /**
- * Copied from chessprogramming.com
+ * Copied from chessprogramming.org
  *
  * Flip a bitboard about the antidiagonal a8-h1.
  * Square a1 is mapped to h8 and vice versa.
@@ -106,4 +107,47 @@ U64 fileBB(uint16_t fileIndex) {
     file |= file << 32;
 
     return fileIndex;
+}
+
+U64 southOne (U64 b) {
+    return b >> 8;
+}
+
+U64 northOne (U64 b) {
+    return b << 8;
+}
+
+U64 eastOne (U64 b) {
+    return (b & (~HFILE)) << 1;
+}
+
+U64 westOne (U64 b) {
+    return (b & (~AFILE)) >> 1;
+}
+
+U64 northEastOne (U64 b) {
+    return (b & (~HFILE)) << 9;
+}
+
+U64 southEastOne (U64 b) {
+    return (b & (~HFILE)) >> 7;
+}
+
+U64 northWestOne (U64 b) {
+    return (b & (~AFILE)) << 7;
+}
+
+U64 southWestOne (U64 b) {
+    return (b & (~AFILE)) >> 9;
+}
+
+U64 aKingsNeighbors(U64 kingBB) {
+    /* Instead of passing through each of the 8 adjacent position, we can mark
+     * the east and west squares. Then we can reunite them in a set with the
+     * king, and move that set north and south. This way is more efficient.
+     */
+    U64 neighbors = eastOne(kingBB) | westOne(kingBB);
+    kingBB |= neighbors;
+    neighbors |= northOne(kingBB) | southOne(kingBB);
+    return neighbors;
 }
