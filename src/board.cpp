@@ -213,6 +213,10 @@ std::string Board::toString(void) {
         output += std::string(board + i*8, 8) + '\n';
     }
 
+char flagsC[19]; // Debug lines.
+snprintf(flagsC, 18, "0x%llx", flags);
+output += "\n" + std::string(flagsC) + "\n";
+
     return output;
 }
 
@@ -228,7 +232,9 @@ void Board::resetEnPassant(void) {
 void Board::setEnPassant(uint16_t move) {
     // Get whether a pawn is en passant-able. Also acts as a pseudo if.
     // Check move format in moveGen.h for more info.
-    const long long enPassant = ((move >> 14) == 2);
+logger.raw("move: " + std::to_string(move) + "\n"); // Debug lines.
+    const U64 enPassant = (((move >> 14) & 3) == 2);
+logger.raw("enPassant variable: " + std::to_string(enPassant));
 
     /**
      * Set side specific, pawn specific flag.
@@ -286,6 +292,12 @@ void Board::enPassantAttackPrep(uint16_t move) {
 
 void Board::undoEnPassantAttackPrep() {
     uint16_t move = moveHistory.top();
+    uint16_t oldFlags = flagsHistory.top();
+
+    if ((oldFlags & 0xffffLL) == 0) {
+        // No en passant-able pawns existed. Nothing to undo.
+        return;
+    }
 
     uint16_t destSquare = (move >> 6) & 0x3f;
     U64 destPosBoard = 1;
@@ -542,6 +554,9 @@ void Board::resetCastleFlags(enum enumPiece movedPieceIndex,
 // TODO: Add inline if it works.
 
 bool Board::applyMove(uint16_t move) {
+char moveBuf[17]; // Debug lines.
+snprintf(moveBuf, 16, "%hx", move);
+logger.raw("move at apply: " + std::string(moveBuf) + "\n"); // Debug line
     flagsHistory.push(flags);
 
     // Note: this function works with an internal pseudo if of sorts which may
@@ -592,7 +607,6 @@ bool Board::applyMove(uint16_t move) {
 }
 
 // TODO: Add inline if it works.
-// TODO do castling, en passant and promotion.
 bool Board::undoMove(void) {
 
     if (moveHistory.empty()) {
@@ -636,8 +650,6 @@ bool Board::undoMove(void) {
     // Add source piece back to its initial place on its board.
     pieceBB[sourceSquareIndex] |= sourcePosBoard;
 
-    // Note: this function works with an internal pseudo if of sorts which may
-    // or may not be faster since no jumps are made.
     undoEnPassantAttackPrep();
 
     moveHistory.pop();
