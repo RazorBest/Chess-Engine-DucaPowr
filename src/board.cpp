@@ -178,7 +178,7 @@ std::string Board::convertMoveToSan(uint16_t move) {
     res.push_back(((move >> 6) & 7) + 'a');
     res.push_back(((move >> 9) & 7) + '1');
 
-    if (move & 0x4000) {
+    if ((move >> 14) == 1) {
         char prom;
         switch ((move & 0x3000) >> 12) {
             case 0:
