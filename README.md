@@ -76,7 +76,7 @@ XBoard sends the move to the handler in a Pure Coordinate String Format (eg. "e3
 - bits 12-13 promotion (0 - rook, 1 - knight, 2 - bishop, 3 - queen)
 - bits 14-15 flags (0 - none, 1 - promotion, 2 - en passant, 3 - castling)
 
-Stockfish uses the same encoding.
+Stockfish uses a similar [encoding](https://github.com/official-stockfish/Stockfish/blob/b1c8840f104d4d36b3f9a420b8b26a5e94c6dc18/src/types.h#L112).
 
 ### Further details
 

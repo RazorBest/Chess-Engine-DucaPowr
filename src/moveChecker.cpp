@@ -3,7 +3,7 @@
 
 MoveChecker::MoveChecker(Board& board) : _board(board) { }
 
-// This doesn't check the corectness of the move
+// This doesn't check the correctness of the move
 bool MoveChecker::isEnPassant(uint16_t move) {
     // Extract the last 3 bits
     uint16_t dst = move & 0x3F;
