@@ -122,10 +122,12 @@ U64 Board::getFlags(void) {
  */
 uint16_t Board::convertSanToMove(std::string move) {
     logger.raw("Let's see " + move);
-    uint16_t res = ((move[3] - '1') << 3) | (move[2] - 'a');
-    res <<= 6;
-    res |= ((move[1] - '1') << 3) | (move[0] - 'a');
+    uint16_t dst = ((move[3] - '1') << 3) | (move[2] - 'a');
+    uint16_t res = dst << 6;
+    uint16_t src = ((move[1] - '1') << 3) | (move[0] - 'a');
+    res |= src;
 
+    // Promotion
     if (move.size() == 5) {
         res |= 0x4000;
         switch (move[4]) {
@@ -144,6 +146,19 @@ uint16_t Board::convertSanToMove(std::string move) {
                 break;
         }
     }
+
+    enum enumPiece piece = getPieceIndexFromSquare(res & 0x3f);
+
+    // En passant-able flag
+    if ((piece == nWhitePawn || piece == nBlackPawn) && abs((char) src - (char) dst) == 16) {
+        res |= 0x8000;
+    }
+
+    // Castling Flag
+    if ((piece == nWhiteKing || piece == nBlackKing) && abs((char) src - (char) dst) == 2) {
+        res |= 0xc000;
+    }
+
     return res;
 }
 
@@ -163,7 +178,7 @@ std::string Board::convertMoveToSan(uint16_t move) {
     res.push_back(((move >> 6) & 7) + 'a');
     res.push_back(((move >> 9) & 7) + '1');
 
-    if (move & 0x4000) {
+    if ((move >> 14) == 1) {
         char prom;
         switch ((move & 0x3000) >> 12) {
             case 0:
