@@ -237,6 +237,11 @@ void Board::setEnPassant(uint16_t move) {
 // TODO: Add inline if it works.
 
 void Board::enPassantAttackPrep(uint16_t move) {
+    if ((flags & 0xffffLL) == 0) {
+        // No en passant-able flags set, nothing to prep.
+        return;
+    }
+
     uint16_t destSquare = (move >> 6) & 0x3f;
     U64 destPosBoard = 1;
     destPosBoard <<= destSquare;
@@ -536,7 +541,6 @@ bool Board::applyMove(uint16_t move) {
     // Note: this function works with an internal pseudo if of sorts which may
     // or may not be faster since no jumps are made.
     enPassantAttackPrep(move);
-    resetEnPassant();
 
     uint16_t sourceSquare = move & 0x3f;
     uint16_t destSquare = (move >> 6) & 0x3f;
@@ -562,6 +566,7 @@ bool Board::applyMove(uint16_t move) {
     moveHistory.push(move);
     takeHistory.push(destSquareIndex);
 
+    resetEnPassant();
     // Note: this function works with an internal pseudo if of sorts which may
     // or may not be faster since no jumps are made.
     setEnPassant(move);
