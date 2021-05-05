@@ -280,6 +280,11 @@ void Board::undoEnPassantAttackPrep() {
 // TODO: Add inline if it works.
 
 void Board::promote(uint16_t move) {
+    if ((move >> 14) != 1) {
+        // Promote flag not set, nothing promote.
+        return;
+    }
+
     U8 promotion = (move >> 12) & 0x3;
     uint16_t srcSquare = (move >> 6) & 0x3f;
 
@@ -542,8 +547,6 @@ bool Board::applyMove(uint16_t move) {
     // or may not be faster since no jumps are made.
     setEnPassant(move);
 
-    // Note: this function works with an internal pseudo if of sorts which may
-    // or may not be faster since no jumps are made.
     promote(move);
 
     castle(move);
