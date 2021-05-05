@@ -461,7 +461,9 @@ void Board::demote() {
     pieceBB[destSquareIndex] ^= srcPosBoard;
 
     // Add pawn back to its place.
-    pieceBB[srcPosBoard] |= srcPosBoard;
+    enum enumPiece srcSquareIndex = (sideToMove == Side::whiteSide ?
+        nWhitePawn : nBlackPawn);
+    pieceBB[srcSquareIndex] |= srcPosBoard;
 }
 
 void Board::castle(uint16_t move) {
