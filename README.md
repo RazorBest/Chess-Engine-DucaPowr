@@ -101,4 +101,4 @@ At the end of the game, the bot brings to the user's attention an insightful quo
 * Andrei IONESCU - bitboards research; movement generator implementation; internal move execution;
 * Dimitrie DAVID - team leader; create xBoardHandler and initial engine flow design and framework; made sure the coding style is correct
 * Matei BARBU - task distribution and schedule planner; research on different chess board representations and algorithms; implementation of internal move representation
-* Razvan PRICOP - in-depth research of different chess aspects, algortighms and data structures; implemented board representation, pawn movement generation and other utils
+* Razvan PRICOP - in-depth research of different chess aspects, algorithms and data structures; implemented board representation, pawn movement generation and other utils
