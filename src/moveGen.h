@@ -66,6 +66,7 @@ class Generator {
     U64 kingNeighbors[64];
 
     void generateMovesWithoutKing(uint16_t* moves, uint16_t* len);
+    void generateCastlingMoves(uint16_t* moves, uint16_t* len);
 
 
  private:

@@ -33,7 +33,38 @@ std::string Engine::move() {
     memset(moves, 0, sizeof(moves));
     uint16_t movesLen = 0, movesOtherSideLen = 0;
 
+    // CASTLING ------------------------
+    _generator.generateCastlingMoves(moves, &movesLen);
+    uint16_t move = 0xffff;
+
+    _logger.raw("Castling moves available: " + std::to_string(movesLen) + "\n");
+
+    for (int i = 0; i < movesLen; i++) {
+        move = moves[i];
+
+        // apply move
+        _board.applyMove(move);
+
+        // generate all moves from enemy
+        movesOtherSideLen = 0;
+        _generator.generateMovesWithoutKing(movesOtherSide, &movesOtherSideLen);
+
+        // check if move is illegal
+        if (_checker.isLegal(move, movesOtherSide, movesOtherSideLen))
+            break;
+
+        _board.undoMove();
+        move = 0xffff;
+    }
+    if (move != 0xffff) {
+        return _board.convertMoveToSan(move);
+    }
+
+
+
+    // REST ----------------------------
     // generate moves
+    movesLen = 0;
     _generator.generateMoves(moves, &movesLen);
 
     // if i cant move, resign
@@ -42,7 +73,7 @@ std::string Engine::move() {
         return "resign";
     }
 
-    uint16_t move = 0xffff;
+    move = 0xffff;
 
     // shuffle moves
     // To obtain a time-based seed

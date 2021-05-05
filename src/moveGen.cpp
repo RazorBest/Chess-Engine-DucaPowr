@@ -954,3 +954,11 @@ void Generator::generateMovesWithoutKing(uint16_t* moves, uint16_t* len) {
     kingMoves(_board.sideToMove, moves, len);
     kingAttacks(_board.sideToMove, moves, len);
 }
+
+void Generator::generateCastlingMoves(uint16_t* moves, uint16_t* len) {
+    if (_board.sideToMove == whiteSide) {
+        whiteCastle(moves, len);
+    } else {
+        blackCastle(moves, len);
+    }
+}
