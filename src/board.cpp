@@ -239,7 +239,8 @@ output += "\n" + std::string(flagsC) + "\n";
 
 void Board::resetEnPassant(void) {
     // Note: Side::whiteSide = 0 and Side::blackSide = 1.
-    flags &= (~(0xffLL << (sideToMove << 3)));
+    flags &= (~0xffffULL);
+    // flags &= (~(0xffLL << (sideToMove << 3)));
 }
 
 // TODO: Add inline if it works.
