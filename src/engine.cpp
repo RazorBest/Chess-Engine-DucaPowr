@@ -29,8 +29,9 @@ std::string Engine::move() {
     // this only for stage 1 - generate random pseudo-legal pawn move
     // init
     uint16_t moves[MAX_MOVES_AT_STEP];
+    uint16_t movesOtherSide[MAX_MOVES_AT_STEP];
     memset(moves, 0, sizeof(moves));
-    uint16_t movesLen = 0;
+    uint16_t movesLen = 0, movesOtherSideLen = 0;
 
     // generate moves
     _generator.generateMoves(moves, &movesLen);
@@ -41,13 +42,37 @@ std::string Engine::move() {
         return "resign";
     }
 
-    // chose random move
-    unsigned int seed = static_cast <int64_t> (time(NULL));
-    int randIndex = rand_r(&seed) % movesLen;
-    uint16_t move = moves[randIndex];
+    uint16_t move = 0xffff;
 
-    // apply move
-    _board.applyMove(move);
+    // shuffle moves
+    // To obtain a time-based seed
+    unsigned int seed = static_cast <int64_t> (time(NULL));
+
+    // Shuffling our array
+    std::shuffle(moves, moves + movesLen, std::default_random_engine(seed));
+
+    for (int i = 0; i < movesLen; i++) {
+        move = moves[i];
+
+        // apply move
+        _board.applyMove(move);
+
+        // generate all moves from enemy
+        movesOtherSideLen = 0;
+        _generator.generateMovesWithoutKing(movesOtherSide, &movesOtherSideLen);
+
+        // check if move is illegal
+        if (_checker.isLegal(move, movesOtherSide, movesOtherSideLen))
+            break;
+
+        _board.undoMove();
+        move = 0xffff;
+    }
+
+    if (move == 0xffff) {
+        // mate
+        return "resign";
+    }
 
     // return san representation
     return _board.convertMoveToSan(move);

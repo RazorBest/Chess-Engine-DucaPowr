@@ -328,6 +328,9 @@ void Generator::whitePawnMoves(uint16_t* moves, uint16_t *len) {
         tmp = tmp << 6;
         tmp |= getSquareIndex(dst >> 8);
 
+        // Set promotion flag
+        tmp |= 0x4000;
+
         // Set bits for queen promotion
         tmp |= 0x3000;
         moves[(*len)++] = tmp;
@@ -379,6 +382,9 @@ void Generator::blackPawnMoves(uint16_t* moves, uint16_t* len) {
         tmp = tmp << 6;
         tmp |= getSquareIndex(dst << 8);
 
+        // Set promotion flag
+        tmp |= 0x4000;
+
         // Set bits for queen promotion
         tmp |= 0x3000;
         moves[(*len)++] = tmp;
@@ -422,7 +428,7 @@ void Generator::whitePawnAttacks(uint16_t* moves, uint16_t* len) {
     leftEnPassant <<= 8;
     rightEnPassant = (pawnBB << 1) & (~AFILE) & enPassantablePawns;
     rightEnPassant <<= 8;
- 
+
     std::vector<U64> separated;
 
     // Generate a move for every left attack
@@ -452,6 +458,9 @@ void Generator::whitePawnAttacks(uint16_t* moves, uint16_t* len) {
         tmp <<= 6;
         tmp |= getSquareIndex(attackDst >> 7);
 
+        // Set promotion flag
+        tmp |= 0x4000;
+
         // Set bits for queen promotion
         tmp |= 0x3000;
         moves[(*len)++] = tmp;
@@ -469,6 +478,9 @@ void Generator::whitePawnAttacks(uint16_t* moves, uint16_t* len) {
         uint16_t tmp = getSquareIndex(attackDst);
         tmp <<= 6;
         tmp |= getSquareIndex(attackDst >> 9);
+
+        // Set promotion flag
+        tmp |= 0x4000;
 
         // Set bits for queen promotion
         tmp |= 0x3000;
@@ -544,6 +556,9 @@ void Generator::blackPawnAttacks(uint16_t* moves, uint16_t* len) {
         tmp <<= 6;
         tmp |= getSquareIndex(attackDst << 9);
 
+        // Set promotion flag
+        tmp |= 0x4000;
+
         // Set bits for queen promotion
         tmp |= 0x3000;
         moves[(*len)++] = tmp;
@@ -561,6 +576,9 @@ void Generator::blackPawnAttacks(uint16_t* moves, uint16_t* len) {
         uint16_t tmp = getSquareIndex(attackDst);
         tmp <<= 6;
         tmp |= getSquareIndex(attackDst << 7);
+
+        // Set promotion flag
+        tmp |= 0x4000;
 
         // Set bits for queen promotion
         tmp |= 0x3000;
@@ -910,4 +928,29 @@ void Generator::blackCastle(uint16_t* moves, uint16_t* len) {
         // 0b1100 111010 111100
         moves[(*len)++] = 0xcebc;
     }
+}
+
+
+
+// To be deleted after etapa 2
+void Generator::generateMovesWithoutKing(uint16_t* moves, uint16_t* len) {
+    if (_board.sideToMove == whiteSide) {
+        whitePawnMoves(moves, len);
+        whitePawnAttacks(moves, len);
+        whiteRookAttacks(moves, len);
+        whiteKnightMoves(moves, len);
+        whiteBishopAttacks(moves, len);
+        whiteQueenAttacks(moves, len);
+        // whiteCastle(moves, len);
+    } else {
+        blackPawnMoves(moves, len);
+        blackPawnAttacks(moves, len);
+        blackRookAttacks(moves, len);
+        blackKnightMoves(moves, len);
+        blackBishopAttacks(moves, len);
+        blackQueenAttacks(moves, len);
+        // blackCastle(moves, len);
+    }
+    kingMoves(_board.sideToMove, moves, len);
+    kingAttacks(_board.sideToMove, moves, len);
 }
