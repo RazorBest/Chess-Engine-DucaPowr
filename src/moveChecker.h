@@ -4,12 +4,13 @@
 #include <stdint.h>
 
 #include "./board.h"
+#include "./utils.h"
 
 class MoveChecker {
  public:
     explicit MoveChecker(Board& board);
 
-    bool isLegal(uint16_t move);
+    bool isLegal(uint16_t move, uint16_t* moves, uint16_t moves_len);
  private:
     Board& _board;
 

@@ -5,9 +5,14 @@
 #include <string>
 #include <bitset>
 
+// todo delete these 2
+#include <algorithm>
+#include <random>
+
 #include "./board.h"
 #include "./moveGen.h"
 #include "./constants.h"
+#include "./moveChecker.h"
 
 class Engine {
  public:
@@ -44,6 +49,7 @@ class Engine {
  private:
     Board _board;
     Generator _generator{_board};
+    MoveChecker _checker{_board};
     Logger _logger;
 
     bool running = true;

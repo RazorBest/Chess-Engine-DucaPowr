@@ -420,7 +420,7 @@ void Generator::whitePawnAttacks(uint16_t* moves, uint16_t* len) {
     leftEnPassant <<= 8;
     rightEnPassant = (pawnBB << 1) & (~AFILE) & enPassantablePawns;
     rightEnPassant <<= 8;
- 
+
     std::vector<U64> separated;
 
     // Generate a move for every left attack
@@ -902,5 +902,28 @@ void Generator::blackCastle(uint16_t* moves, uint16_t* len) {
         (_board.getPieceBB(whiteSide) & 0xe00000000000000) == 0) {
     _logger.raw("Black Castle!");
         moves[(*len)++] = 0xce7c;
+    }
+}
+
+
+
+// To be deleted after etapa 2
+void Generator::generateMovesWithoutKing(uint16_t* moves, uint16_t* len) {
+    if (_board.sideToMove == whiteSide) {
+        whitePawnMoves(moves, len);
+        whitePawnAttacks(moves, len);
+        whiteRookAttacks(moves, len);
+        whiteKnightMoves(moves, len);
+        whiteBishopAttacks(moves, len);
+        whiteQueenAttacks(moves, len);
+        // whiteCastle(moves, len);
+    } else {
+        blackPawnMoves(moves, len);
+        blackPawnAttacks(moves, len);
+        blackRookAttacks(moves, len);
+        blackKnightMoves(moves, len);
+        blackBishopAttacks(moves, len);
+        blackQueenAttacks(moves, len);
+        // blackCastle(moves, len);
     }
 }

@@ -31,9 +31,9 @@ class Generator {
      *   and ascDiag[14]    is a mask for the H1-H1 diagonal.
      * So the first 5 diagonals are indexed like this:
      *
-     * ........   
-     * ........   
-     * ........   
+     * ........
+     * ........
+     * ........
      * .......4
      * ......43
      * .....432
@@ -46,9 +46,9 @@ class Generator {
      *   and ascDiag[14]    is a mask for the H8-H8 diagonal.
      * So the first 5 diagonals are indexed like this:
      *
-     * ........   
-     * ........   
-     * ........   
+     * ........
+     * ........
+     * ........
      * 4.......
      * 34......
      * 234.....
@@ -64,6 +64,9 @@ class Generator {
      * marked.
      */
     U64 kingNeighbors[64];
+
+    void generateMovesWithoutKing(uint16_t* moves, uint16_t* len);
+
 
  private:
     Board& _board;
@@ -118,7 +121,7 @@ class Generator {
 
     /**
      * @brief This functions adds to an array the possible king moves.
-     * 
+     *
      * @param side which side's king is supposed to move
      * @param moves a pointer to an array in which to add the new moves
      * @param len a pointer to the the length of the array, in the end it will
@@ -128,14 +131,14 @@ class Generator {
 
     /**
      * @brief This functions adds to an array the possible king attacks.
-     * 
+     *
      * @param side which side's king is supposed to move
      * @param moves a pointer to an array in which to add the new moves
      * @param len a pointer to the the length of the array, in the end it will
      * be updated
      */
     void kingAttacks(Side side, uint16_t* moves, uint16_t* len);
-  
+
     void whiteCastle(uint16_t* moves, uint16_t* len);
     void blackCastle(uint16_t* moves, uint16_t* len);
 };

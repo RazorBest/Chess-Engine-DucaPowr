@@ -3,6 +3,49 @@
 
 MoveChecker::MoveChecker(Board& board) : _board(board) { }
 
+bool MoveChecker::isLegal(uint16_t move, uint16_t* moves, uint16_t moves_len) {
+    // check if other moves have dest as our king
+    uint16_t kingPos = getSquareIndex(_board.getKingBB(
+                                           _board.sideToMove == Side::blackSide
+                                           ? Side::whiteSide : Side::blackSide));
+    for (int i = 0; i < moves_len; i++) {
+        if (((moves[i] >> 6) & 0x3f) == kingPos)
+            return false;
+    }
+
+    // if our move is castling check if our king gets in check
+    if (((move >> 14) & 3) != 3) {
+        // Castling flag was not set, nothing to do.
+        return true;
+    }
+
+    uint16_t source = move & 0x3f;
+    uint16_t dest = (move >> 6) & 0x3f;
+
+    // check source
+    for (int i = 0; i < moves_len; i++) {
+        if (((moves[i] >> 6) & 0x3f) == source)
+            return false;
+    }
+
+    if (dest > source) {
+        // check source + 1 / dest - 1
+        for (int i = 0; i < moves_len; i++) {
+            if (((moves[i] >> 6) & 0x3f) == source + 1)
+                return false;
+        }
+    } else {
+        // check source - 1 / dest + 1
+        for (int i = 0; i < moves_len; i++) {
+            if (((moves[i] >> 6) & 0x3f) == source - 1)
+                return false;
+        }
+    }
+
+    return true;
+}
+
+
 // This doesn't check the correctness of the move
 bool MoveChecker::isEnPassant(uint16_t move) {
     // Extract the last 3 bits
