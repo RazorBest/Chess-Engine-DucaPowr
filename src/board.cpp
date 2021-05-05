@@ -650,8 +650,6 @@ bool Board::undoMove(void) {
     // Add source piece back to its initial place on its board.
     pieceBB[sourceSquareIndex] |= sourcePosBoard;
 
-    // Note: this function works with an internal pseudo if of sorts which may
-    // or may not be faster since no jumps are made.
     undoEnPassantAttackPrep();
 
     moveHistory.pop();
