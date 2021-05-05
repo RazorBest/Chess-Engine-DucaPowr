@@ -2,6 +2,7 @@
 #include "./board.h"
 
 #include <bits/stdint-uintn.h>
+#include <csetjmp>
 
 #include "./constants.h"
 
@@ -305,15 +306,16 @@ logger.raw("En passant prep is being done!\n");
      * & 1 ignores the other flags;
      * << destSquare transforms the bit into a bitboard.
     */
-    U64 srcPosBoard = 1LL << destSquare;
-    // Shift in case of a white pawn.
-    srcPosBoard <<= ((1 - sideToMove) << 3);
-    // Shift in case of a black pawn.
-    srcPosBoard >>= ((sideToMove) << 3);
+    U64 srcPosBoard = 1LL << (destSquare - (sideToMove == Side::whiteSide ? 8 : -8));
+    // // Shift in case of a white pawn.
+    // srcPosBoard <<= ((1 - sideToMove) << 3);
+    // // Shift in case of a black pawn.
+    // srcPosBoard >>= ((sideToMove) << 3);
 
 logger.logBB(srcPosBoard);
 
     // Also acts as a pseudo if thanks to the trash piece optimization.
+    // Piesa de pe patratul din srcPosBoard
     enum enumPiece sourceSquareIndex = getPieceIndexFromSquare(
         getSquareIndex(srcPosBoard));
 
