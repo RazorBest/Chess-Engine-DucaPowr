@@ -14,15 +14,8 @@ std::vector<U64> getSeparatedBits(U64 bb) {
     return moves;
 }
 
-// TODO(razorbest) - This is inefficient
 uint16_t getSquareIndex(U64 bb) {
-    int index = 0;
-
-    while (bb >>= 1) {
-        index++;
-    }
-
-    return index;
+    return bb == 0 ? 0 : __builtin_ffsll(bb) - 1;
 }
 
 U64 flipVertical(U64 x) {
