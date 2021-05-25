@@ -1,5 +1,6 @@
 /* Copyright 2021 DucaPowr Team */
 #include "./utils.h"
+#include "board.h"
 #include "constants.h"
 
 std::vector<U64> getSeparatedBits(U64 bb) {
@@ -150,4 +151,8 @@ U64 aKingsNeighbors(U64 kingBB) {
     kingBB |= neighbors;
     neighbors |= northOne(kingBB) | southOne(kingBB);
     return neighbors;
+}
+
+Side otherSide(Side side) {
+    return (Side) (1 - side);
 }

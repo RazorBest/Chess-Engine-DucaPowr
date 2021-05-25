@@ -4,6 +4,11 @@
 #include <stdint.h>
 #include <vector>
 
+enum Side {
+    whiteSide,
+    blackSide
+};
+
 typedef uint64_t U64;
 typedef uint8_t  U8;
 
@@ -119,3 +124,5 @@ U64 southWestOne(U64 b);
  * @return U64 a bitboard with only the king's neighbors marked.
  */
 U64 aKingsNeighbors(U64 kingBB);
+
+Side otherSide(Side side);

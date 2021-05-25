@@ -2,7 +2,7 @@
 #include "./moveGen.h"
 #include "board.h"
 #include "constants.h"
-#include "utils.h"
+#include "./utils.h"
 #include "logger.h"
 #include <bits/stdint-uintn.h>
 #include <cstdio>
@@ -43,7 +43,7 @@ U8 Generator::generateLineAttacks(U8 rook, U8 occ) {
     return (occ - rook) ^ reverse(reverse(occ) - reverse(rook));
 }
 
-void Generator::initFirstRankAttacks() {
+void Generator::initFirstRankAttacks(void) {
     // rook = the bitboard of one rook over a rank
     // occ  = the bitboard of the occupant pieces over a rank
     U8 rook, occ;
@@ -62,7 +62,7 @@ void Generator::initFirstRankAttacks() {
     }
 }
 
-void Generator::initFirstFileAttacks() {
+void Generator::initFirstFileAttacks(void) {
     // rook = the bitboard of one rook
     // occ  = the bitboard of the occupant pieces
     U64 rook, occ;
@@ -85,7 +85,7 @@ void Generator::initFirstFileAttacks() {
 }
 
 
-void Generator::initKingNeighbors() {
+void Generator::initKingNeighbors(void) {
     U64 kingBB = 1;
     for (size_t i = 0; i < 64; i++) {
         kingNeighbors[i] = aKingsNeighbors(kingBB);
@@ -147,7 +147,7 @@ static U64 getDescendingDiagonalMask(int rankIndex, int fileIndex) {
     return mask;
 }
 
-void Generator::initDiagMasks() {
+void Generator::initDiagMasks(void) {
     int index = 0;
 
     for (int rankIndex = 0; rankIndex < 8; rankIndex++) {
@@ -162,7 +162,7 @@ void Generator::initDiagMasks() {
     }
 }
 
-void Generator::initBishopMask() {
+void Generator::initBishopMask(void) {
     // Use this mask to ignore the margins
     // We won't need them when generating the bishop attacks
     const U64 marginMask = 0xFF818181818181FF;
@@ -276,7 +276,7 @@ void Generator::initPositionedBishopAttackTable(int sqIndex) {
     }
 }
 
-void Generator::initBishopAttackTable() {
+void Generator::initBishopAttackTable(void) {
     for (int sqIndex = 0; sqIndex < 64; sqIndex++) {
         initPositionedBishopAttackTable(sqIndex);
     }
@@ -699,7 +699,7 @@ void Generator::kingMoves(Side side, uint16_t *moves, uint16_t *len) {
 
 void Generator::kingAttacks(Side side, uint16_t *moves, uint16_t *len) {
     U64 kingBB = _board.getKingBB(side);
-    U64 opponentBB = _board.getPieceBB((Side) (1 - side));
+    U64 opponentBB = _board.getPieceBB(otherSide(side));
     U64 possibleMoves;
     uint16_t kingSquareIndex = getSquareIndex(kingBB);
 
@@ -776,7 +776,7 @@ void Generator::whiteQueenAttacks(uint16_t* moves, uint16_t* len) {
     queenAttacks(moves, len, queenBB, friendPieceBB);
 }
 
-void Generator::initKnightPosMoves() {
+void Generator::initKnightPosMoves(void) {
     int i, j;
 
     /* The bitboard of all the moves a knight placed at C6 can do. A chosen

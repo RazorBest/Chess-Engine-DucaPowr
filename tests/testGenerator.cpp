@@ -108,7 +108,7 @@ static void testFirstFileAttacks(Generator &generator) {
     }
 }
 
-void testGenerator() {
+void testGenerator(void) {
     Board board;
     Generator generator(board);
 
