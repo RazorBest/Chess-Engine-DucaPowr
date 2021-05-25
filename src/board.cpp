@@ -5,6 +5,7 @@
 #include <csetjmp>
 
 #include "./constants.h"
+#include "./logger.h"
 
 void Board::init() {
     pieceBB[nWhitePawn] = WHITEPAWNSTART;
@@ -234,9 +235,10 @@ std::string Board::toString(void) {
         output += std::string(board + i*8, 8) + '\n';
     }
 
-char flagsC[19]; // Debug lines.
-snprintf(flagsC, 18, "0x%lx", flags);
-output += "\n" + std::string(flagsC) + "\n";
+
+    char flagsC[26]; // Debug lines.
+    snprintf(flagsC, 18, "Flags: 0x%lx", flags);
+    output += "\n" + std::string(flagsC);
 
     return output;
 }
@@ -284,20 +286,12 @@ void Board::enPassantAttackPrep(uint16_t move) {
     uint8_t attackedRank = (sideToMove == Side::whiteSide ? 5 : 2);
     enum enumPiece srcPiece = getPieceIndexFromSquare(srcSquare);
 
-logger.raw("En passant prep conditions:\n");
-logger.raw(std::to_string(!(flags & enPassantFlag)) + "\n");
-logger.raw(std::to_string(!(attackedRank == (destSquare / 8)))
-    + " " + std::to_string(attackedRank) + " " + std::to_string((destSquare / 8)) + "\n");
-logger.raw(std::to_string(!(srcPiece == (sideToMove == Side::whiteSide ? nWhitePawn : nBlackPawn))) + "\n");
-
     if (!(flags & enPassantFlag) || !(attackedRank == (destSquare / 8)) ||
             !(srcPiece == (sideToMove == Side::whiteSide ?
             nWhitePawn : nBlackPawn))) {
         // No en passant-able flags set. Nothing to prep.
         return;
     }
-
-logger.raw("En passant prep is being done!\n");
 
     U64 destPosBoard = 1;
     destPosBoard <<= destSquare;
@@ -320,7 +314,9 @@ logger.raw("En passant prep is being done!\n");
     // // Shift in case of a black pawn.
     // srcPosBoard >>= ((sideToMove) << 3);
 
-logger.logBB(srcPosBoard);
+    if (DEBUG) {
+        logger.logBB(srcPosBoard);
+    }
 
     // Also acts as a pseudo if thanks to the trash piece optimization.
     // Piesa de pe patratul din srcPosBoard
@@ -338,7 +334,6 @@ logger.logBB(srcPosBoard);
 
 void Board::undoEnPassantAttackPrep() {
     uint16_t move = moveHistory.top();
-    uint16_t oldFlags = flagsHistory.top();
 
     uint16_t srcSquare = move & 0x3f;
     uint16_t destSquare = (move >> 6) & 0x3f;
@@ -648,7 +643,9 @@ bool Board::applyMove(uint16_t move) {
 
     switchSide();
 
-    logger.raw(toString() + '\n');
+    if (DEBUG) {
+        logger.raw(toString() + '\n');
+    }
 
     // TODO(all) change later with move legality.
     return true;

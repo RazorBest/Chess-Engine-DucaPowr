@@ -3,6 +3,7 @@
 #include "board.h"
 #include "constants.h"
 #include "utils.h"
+#include "logger.h"
 #include <bits/stdint-uintn.h>
 #include <cstdio>
 #include <string>
@@ -17,7 +18,9 @@ Generator::Generator(Board& board) : _board(board) {
     initBishopAttackTable();
     initKnightPosMoves();
 
-    _logger.info("Finished initialising the Generator");
+    if (DEBUG) {
+        _logger.info("Finished initialising the Generator");
+    }
 }
 
 /**
@@ -902,14 +905,11 @@ void Generator::knightMoves(uint16_t* moves, uint16_t* len, U64 knightBB,
 void Generator::whiteCastle(uint16_t* moves, uint16_t* len) {
     if ((_board.getFlags() & WHITEKINGSIDECASTLE) &&
         (_board.getAllBB() & 0x60) == 0) {
-    _logger.raw("White King Side Castle!");
         // 0b1100 000110 000100
         moves[(*len)++] = 0xc184;
     }
-    _logger.raw("Flags Castling " + std::to_string(_board.getFlags()) + "\n");
     if ((_board.getFlags() & WHITEQUEENSIDECASTLE) &&
         (_board.getAllBB() & 0xe) == 0) {
-    _logger.raw("White Queen Side Castle!");
         // 0b1100 000010 000100
         moves[(*len)++] = 0xc084;
     }
@@ -918,13 +918,11 @@ void Generator::whiteCastle(uint16_t* moves, uint16_t* len) {
 void Generator::blackCastle(uint16_t* moves, uint16_t* len) {
     if ((_board.getFlags() & BLACKKINGSIDECASTLE) &&
         (_board.getAllBB() & 0x6000000000000000) == 0) {
-    _logger.raw("Black King Side Castle!");
         // 0b1100 111110 111100
         moves[(*len)++] = 0xcfbc;
     }
     if ((_board.getFlags() & BLACKQUEENSIDECASTLE) &&
         (_board.getAllBB() & 0xe00000000000000) == 0) {
-    _logger.raw("Black Queen Side Castle!");
         // 0b1100 111010 111100
         moves[(*len)++] = 0xcebc;
     }

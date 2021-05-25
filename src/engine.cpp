@@ -1,5 +1,6 @@
 /* Copyright 2021 DucaPowr Team */
 #include "./engine.h"
+#include "./logger.h"
 
 #include <time.h>
 
@@ -36,8 +37,6 @@ std::string Engine::move() {
     // CASTLING ------------------------
     _generator.generateCastlingMoves(moves, &movesLen);
     uint16_t move = 0xffff;
-
-    _logger.raw("Castling moves available: " + std::to_string(movesLen) + "\n");
 
     for (int i = 0; i < movesLen; i++) {
         move = moves[i];
