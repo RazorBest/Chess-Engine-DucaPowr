@@ -30,8 +30,8 @@ void Board::init(void) {
     takeHistory  = std::stack<enum enumPiece>();
     flagsHistory = std::stack<U64>();
 
-    whiteChecks = 0;
-    blackChecks = 0;
+    checkCount[0] = 0;
+    checkCount[1] = 0;
 }
 
 #pragma region Bitboard getters
@@ -672,6 +672,9 @@ int Board::eval() {
     int score = 0;
     int bishopCount = bitCount(getBishopBB(sideToMove));
     int knightCount = bitCount(getKnightBB(sideToMove));
+    int checkDiff = checkCount[sideToMove] - 
+        checkCount[otherSide(sideToMove)];
+    U64 friendPieceBB = getPieceBB(sideToMove);
 
     score += pawnWeight * bitCount(getPawnBB(sideToMove));
     score += bishopWeight * bishopCount;
@@ -682,14 +685,12 @@ int Board::eval() {
 
     score += bishopPairWeight * ((bishopCount + 2) >> 2);
 
- 
+    // Score high if king is near friend pieces
+    score += kingFriendsWeight * (aKingsNeighbors(getKingBB(sideToMove)) &
+            friendPieceBB);
 
-    // score += (1 << (whiteChecks * 1.0 / 4)) * (-1)
-    /*if (in functie de side whiteChecks == 1) {
-        score += 220; 
-    } else if (whiteChecks == 2) {
-        score += 1000;
-    }*/
+    // Scoring that depends on number of checks
+    score -= (1<<(6+checkDiff*checkDiff)) + 100;
 
     // Move number dependent scoring
     // Knights are more valuable at the beggining
@@ -697,7 +698,8 @@ int Board::eval() {
     // Bishops are more valuable at the end
     score += (moveHistory.size() - 30) * 5.0 / 3 * bishopCount;
 
-
+    // Make score negative if sideToMove == blackSide
+    score *= ((1 - sideToMove) << 1) - 1;
 
     return score;
 }

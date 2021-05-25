@@ -38,9 +38,12 @@ class Board  {
     const int queenWeight = 1000;
     const int kingWeight = 50000;
     const int bishopPairWeight = 50;
+    const int kingFriendsWeight = 50;
 
-    uint8_t whiteChecks;
-    uint8_t blackChecks;
+    // Two check counters for the two sides
+    // checkCount[0] counts the number of checks on the white king
+    // checkCount[1] counts the number of checks on the black king
+    uint8_t checkCount[2]; 
 
     Logger logger;
 
