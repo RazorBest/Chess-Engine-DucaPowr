@@ -11,7 +11,7 @@ xBoardHandler::xBoardHandler(Engine& engine) : _engine(engine) {
     f.close();
 }
 
-void xBoardHandler::init() {
+void xBoardHandler::init(void) {
     std::cout.setf(std::ios::unitbuf);
     std::string buffer;
 
@@ -33,7 +33,7 @@ void xBoardHandler::init() {
     std::cout << "feature " + std::string(FEATURE_ARGS) << std::endl;
 }
 
-void xBoardHandler::run() {
+void xBoardHandler::run(void) {
     std::string buffer;
     std::getline(std::cin, buffer);
 
@@ -79,7 +79,7 @@ void xBoardHandler::run() {
     }
 }
 
-void xBoardHandler::engineMove() {
+void xBoardHandler::engineMove(void) {
     std::string move = _engine.move();
     if (move == "resign") {
         move = getResignationString();
@@ -90,7 +90,7 @@ void xBoardHandler::engineMove() {
     _logger.info("xboard <- " + move);
 }
 
-std::string xBoardHandler::getResignationString() {
+std::string xBoardHandler::getResignationString(void) {
     unsigned int seed = static_cast <int64_t> (time(NULL));
     int randIndex = rand_r(&seed) % quotes.size();
     std::string result = (_engine.sideToMove()) ? "1-0" : "0-1";

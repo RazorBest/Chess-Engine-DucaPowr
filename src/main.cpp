@@ -11,7 +11,7 @@
 std::ofstream Logger::debugFile(DEBUG_FILE_NAME);
 
 // main
-int main() {
+int main(void) {
     Engine engine;
     xBoardHandler handler(engine);
 

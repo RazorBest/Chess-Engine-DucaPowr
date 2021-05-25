@@ -5,8 +5,10 @@
 #include <csetjmp>
 
 #include "./constants.h"
+#include "./logger.h"
+#include "./utils.h"
 
-void Board::init() {
+void Board::init(void) {
     pieceBB[nWhitePawn] = WHITEPAWNSTART;
     pieceBB[nBlackPawn] = BLACKPAWNSTART;
     pieceBB[nWhiteBishop] = WHITEBISHOPSTART;
@@ -77,11 +79,11 @@ U64 Board::getEnPassantablePawnsBB(Side side) {
     return (flags & (0xffLL << (side << 3))) << 24;
 }
 
-U64 Board::getAllBB() {
+U64 Board::getAllBB(void) {
     return getPieceBB(whiteSide) | getPieceBB(blackSide);
 }
 
-U64 Board::getEmptyBB() {
+U64 Board::getEmptyBB(void) {
     return ~getAllBB();
 }
 #pragma endregion
@@ -103,11 +105,7 @@ enum enumPiece Board::getPieceIndexFromSquare(uint16_t sq) {
 }
 
 void Board::switchSide(void) {
-    if (sideToMove == Side::whiteSide) {
-        sideToMove = Side::blackSide;
-    } else {
-        sideToMove = Side::whiteSide;
-    }
+    sideToMove = otherSide(sideToMove);
 }
 
 U64 Board::getFlags(void) {
@@ -216,7 +214,7 @@ std::string Board::toString(void) {
     // char array map
     char board[64];
 
-    memeset(board, emptySymbol, 64);
+    memset(board, emptySymbol, 64);
 
     // Store the pieces in the char array map
     for (size_t i = 0; i < 12; i++) {
@@ -234,22 +232,19 @@ std::string Board::toString(void) {
         output += std::string(board + i*8, 8) + '\n';
     }
 
-char flagsC[19]; // Debug lines.
-snprintf(flagsC, 18, "0x%lx", flags);
-output += "\n" + std::string(flagsC) + "\n";
+
+    char flagsC[26]; // Debug lines.
+    snprintf(flagsC, 18, "Flags: 0x%lx", flags);
+    output += "\n" + std::string(flagsC);
 
     return output;
 }
-
-// TODO: Add inline if it works.
 
 void Board::resetEnPassant(void) {
     // Note: Side::whiteSide = 0 and Side::blackSide = 1.
     flags &= (~0xffffULL);
     // flags &= (~(0xffLL << (sideToMove << 3)));
 }
-
-// TODO: Add inline if it works.
 
 void Board::setEnPassant(uint16_t move) {
     // Get whether a pawn is en passant-able. Also acts as a pseudo if.
@@ -261,69 +256,40 @@ void Board::setEnPassant(uint16_t move) {
      * Note: Side::whiteSide = 0 and Side::blackSide = 1;
      * (move & 0x3f) % 8) gets the file of the pawn (0 is a, 7 is h);
      * << (sideToMove << 3) shifts the flag to match the appropriate side.
-     * TODO: test if (move % 8) is enough, instead of ((move & 0x3f) % 8).
     */
-    flags |= ((enPassant << ((move & 0x3f) % 8)) << (sideToMove << 3));
+    flags |= (enPassant << ((move & 0x3f) & 7)) << (sideToMove << 3);
 }
 
-// TODO: Add inline if it works.
-
 void Board::enPassantAttackPrep(uint16_t move) {
-    // TODO: Check if an attack happens and the src and dest are "good".
     uint16_t srcSquare = move & 0x3f;
     uint16_t destSquare = (move >> 6) & 0x3f;
-
-    /**
-     * Atentie: Trebuie negata logica!
-     * Verificam daca: 1. Este setat flag-ul x en pasant-able pentru file-ul
-     * destinatie.
-     * 2. Este atacat rank 3 sau 7, in functie de partea care ataca.
-     * 3. Piesa src == pion.
-    */
-    U64 enPassantFlag = ((1LL << (destSquare % 8)) << ((1 - sideToMove) << 3));
-    uint8_t attackedRank = (sideToMove == Side::whiteSide ? 5 : 2);
-    enum enumPiece srcPiece = getPieceIndexFromSquare(srcSquare);
-
-logger.raw("En passant prep conditions:\n");
-logger.raw(std::to_string(!(flags & enPassantFlag)) + "\n");
-logger.raw(std::to_string(!(attackedRank == (destSquare / 8)))
-    + " " + std::to_string(attackedRank) + " " + std::to_string((destSquare / 8)) + "\n");
-logger.raw(std::to_string(!(srcPiece == (sideToMove == Side::whiteSide ? nWhitePawn : nBlackPawn))) + "\n");
-
-    if (!(flags & enPassantFlag) || !(attackedRank == (destSquare / 8)) ||
-            !(srcPiece == (sideToMove == Side::whiteSide ?
-            nWhitePawn : nBlackPawn))) {
-        // No en passant-able flags set. Nothing to prep.
-        return;
-    }
-
-logger.raw("En passant prep is being done!\n");
-
-    U64 destPosBoard = 1;
-    destPosBoard <<= destSquare;
 
     /**
      * Get the current position bitBrd of the attacked pawn, colour dependent:
      * White pawns will be one rank higher, black pawns will be one rank lower.
      *
-     * Note: flags >> ((1 - sideToMove) << 3) gets the en passant flags for the
-     * side opposite of the one to attack.
-     * Side::whiteSide = 0 and Side::blackSide = 1;
-     * >> (destSquare % 8) gets the file of the pawn being attacked;
-     * & 1 ignores the other flags;
-     * << destSquare transforms the bit into a bitboard.
-    */
+     */
+    U64 enPassantFlag = (1LL << (destSquare & 7)) << (otherSide(sideToMove) << 3);
+    uint8_t attackedRank = (sideToMove == Side::whiteSide ? 5 : 2);
+    enum enumPiece srcPiece = getPieceIndexFromSquare(srcSquare);
+
+    if (!(flags & enPassantFlag) || !(attackedRank == (destSquare >> 3)) ||
+            !(srcPiece == (sideToMove == Side::whiteSide ?
+            nWhitePawn : nBlackPawn))) {
+        // No en passant-able flags set. Nothing to prep.
+        // If the pawn is not involved in the move, there is nothing to prep
+        return;
+    }
+
+    U64 destPosBoard = 1LL << destSquare;
+
     U64 srcPosBoard = 1LL << (destSquare - (sideToMove == Side::whiteSide ? 8
         : -8));
-    // // Shift in case of a white pawn.
-    // srcPosBoard <<= ((1 - sideToMove) << 3);
-    // // Shift in case of a black pawn.
-    // srcPosBoard >>= ((sideToMove) << 3);
 
-logger.logBB(srcPosBoard);
+    if (DEBUG) {
+        logger.logBB(srcPosBoard);
+    }
 
-    // Also acts as a pseudo if thanks to the trash piece optimization.
-    // Piesa de pe patratul din srcPosBoard
     enum enumPiece sourceSquareIndex = getPieceIndexFromSquare(
         getSquareIndex(srcPosBoard));
 
@@ -334,22 +300,21 @@ logger.logBB(srcPosBoard);
     pieceBB[sourceSquareIndex] |= destPosBoard;
 }
 
-// TODO: Add inline if it works.
-
-void Board::undoEnPassantAttackPrep() {
+void Board::undoEnPassantAttackPrep(void) {
     uint16_t move = moveHistory.top();
 
     uint16_t srcSquare = move & 0x3f;
     uint16_t destSquare = (move >> 6) & 0x3f;
 
-    U64 enPassantFlag = ((1LL << (destSquare % 8)) << ((1 - sideToMove) << 3));
+    U64 enPassantFlag = (1LL << (destSquare & 7)) << (otherSide(sideToMove) << 3);
     uint8_t attackedRank = (sideToMove == Side::whiteSide ? 5 : 2);
     enum enumPiece srcPiece = getPieceIndexFromSquare(srcSquare);
 
-    if (!(flags & enPassantFlag) || !(attackedRank == (destSquare / 8)) ||
+    if (!(flags & enPassantFlag) || !(attackedRank == (destSquare >> 3)) ||
             !(srcPiece == (sideToMove == Side::whiteSide ?
             nWhitePawn : nBlackPawn))) {
         // No en passant-able flags set. Nothing to unprep.
+        // If the pawn is not involved in the move, there is nothing to unprep
         return;
     }
 
@@ -369,8 +334,6 @@ void Board::undoEnPassantAttackPrep() {
     // Add pawn to its original position.
     pieceBB[sourceSquareIndex] |= srcPosBoard;
 }
-
-// TODO: Add inline if it works.
 
 void Board::promote(uint16_t move) {
     if ((move >> 14) != 1) {
@@ -424,7 +387,7 @@ void Board::promote(uint16_t move) {
     pieceBB[destSquareIndex] |= srcPosBoard;
 }
 
-void Board::demote() {
+void Board::demote(void) {
     uint16_t move = moveHistory.top();
 
     if (((move >> 14) & 3) != 1) {
@@ -516,7 +479,7 @@ void Board::castle(uint16_t move) {
     pieceBB[rookIndex] |= rookDestPosBoard;
 }
 
-void Board::undoCastle() {
+void Board::undoCastle(void) {
     uint16_t move = moveHistory.top();
 
     if (((move >> 14) & 3) != 3) {
@@ -555,8 +518,6 @@ void Board::undoCastle() {
     // Add rook back to its original position.
     pieceBB[rookIndex] |= rookSrcPosBoard;
 }
-
-// TODO: Add inline if it works.
 
 void Board::resetCastleFlags(enum enumPiece movedPieceIndex,
         U64 srcPosBitboard) {
@@ -602,9 +563,6 @@ void Board::resetCastleFlags(enum enumPiece movedPieceIndex,
     }
 }
 
-// TODO: test function, add legality check.
-// TODO: Add inline if it works.
-
 bool Board::applyMove(uint16_t move) {
     flagsHistory.push(flags);
 
@@ -647,13 +605,14 @@ bool Board::applyMove(uint16_t move) {
 
     switchSide();
 
-    logger.raw(toString() + '\n');
+    if (DEBUG) {
+        logger.raw(toString() + '\n');
+    }
 
     // TODO(all) change later with move legality.
     return true;
 }
 
-// TODO: Add inline if it works.
 bool Board::undoMove(void) {
 
     if (moveHistory.empty()) {

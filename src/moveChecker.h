@@ -14,5 +14,5 @@ class MoveChecker {
  private:
     Board& _board;
 
-    bool isEnPassant(uint16_t move);
+    // bool isEnPassant(uint16_t move);
 };

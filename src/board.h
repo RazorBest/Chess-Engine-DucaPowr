@@ -11,13 +11,6 @@
 #include "./logger.h"
 #include "./utils.h"
 
-#define memeset memset
-
-enum Side {
-    whiteSide,
-    blackSide
-};
-
 enum enumPiece {
     nWhitePawn,
     nBlackPawn,

@@ -1,12 +1,13 @@
 /* Copyright 2021 DucaPowr Team */
 #include "./engine.h"
+#include "./logger.h"
 
 #include <time.h>
 
 /**
  * Resets the game and makes engine play black.
  */
-void Engine::newGame() {
+void Engine::newGame(void) {
     _board.init();
     running = true;
 }
@@ -25,7 +26,7 @@ void Engine::userMove(std::string move) {
  *
  * @return SAN=0 encoding of the move
  */
-std::string Engine::move() {
+std::string Engine::move(void) {
     // this only for stage 1 - generate random pseudo-legal pawn move
     // init
     uint16_t moves[MAX_MOVES_AT_STEP];
@@ -36,8 +37,6 @@ std::string Engine::move() {
     // CASTLING ------------------------
     _generator.generateCastlingMoves(moves, &movesLen);
     uint16_t move = 0xffff;
-
-    _logger.raw("Castling moves available: " + std::to_string(movesLen) + "\n");
 
     for (int i = 0; i < movesLen; i++) {
         move = moves[i];
@@ -109,14 +108,14 @@ std::string Engine::move() {
     return _board.convertMoveToSan(move);
 }
 
-void Engine::close() {
+void Engine::close(void) {
     running = false;
 }
 
-bool Engine::isRunning() {
+bool Engine::isRunning(void) {
     return running;
 }
 
-Side Engine::sideToMove() {
+Side Engine::sideToMove(void) {
     return _board.sideToMove;
 }
