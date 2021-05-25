@@ -14,6 +14,10 @@ std::vector<U64> getSeparatedBits(U64 bb) {
     return moves;
 }
 
+unsigned int bitCount(U64 x) {
+    return __builtin_popcountll(x);
+}
+
 // TODO(razorbest) - This is inefficient
 uint16_t getSquareIndex(U64 bb) {
     int index = 0;

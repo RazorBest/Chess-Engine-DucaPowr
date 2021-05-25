@@ -31,6 +31,17 @@ enum enumPiece {
 
 class Board  {
  private:
+    const int pawnWeight = 100;
+    const int bishopWeight = 350;
+    const int knightWeight = 350;
+    const int rookWeight = 525;
+    const int queenWeight = 1000;
+    const int kingWeight = 50000;
+    const int bishopPairWeight = 50;
+
+    uint8_t whiteChecks;
+    uint8_t blackChecks;
+
     Logger logger;
 
     // An array of piece bitboards
@@ -136,6 +147,8 @@ class Board  {
      * @return Returns whether a move was undone or not.
     */
     bool undoMove(void);
+
+    int eval();
 
     // SAN Move Converters
     uint16_t convertSanToMove(std::string move);

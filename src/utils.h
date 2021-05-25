@@ -23,6 +23,8 @@ typedef uint8_t  U8;
 
 std::vector<U64> getSeparatedBits(U64 bb);
 
+unsigned int bitCount(U64 x);
+
 /**
  * Most Significant Bit bitscan
  * 

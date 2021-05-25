@@ -29,6 +29,9 @@ void Board::init(void) {
     moveHistory  = std::stack<uint16_t>();
     takeHistory  = std::stack<enum enumPiece>();
     flagsHistory = std::stack<U64>();
+
+    whiteChecks = 0;
+    blackChecks = 0;
 }
 
 #pragma region Bitboard getters
@@ -663,4 +666,38 @@ bool Board::undoMove(void) {
     takeHistory.pop();
 
     return true;
+}
+
+int Board::eval() {
+    int score = 0;
+    int bishopCount = bitCount(getBishopBB(sideToMove));
+    int knightCount = bitCount(getKnightBB(sideToMove));
+
+    score += pawnWeight * bitCount(getPawnBB(sideToMove));
+    score += bishopWeight * bishopCount;
+    score += knightWeight * knightCount;
+    score += rookWeight * bitCount(getRookBB(sideToMove));
+    score += queenWeight * bitCount(getQueenBB(sideToMove));
+    score += kingWeight * bitCount(getKingBB(sideToMove));
+
+    score += bishopPairWeight * ((bishopCount + 2) >> 2);
+
+ 
+
+    // score += (1 << (whiteChecks * 1.0 / 4)) * (-1)
+    /*if (in functie de side whiteChecks == 1) {
+        score += 220; 
+    } else if (whiteChecks == 2) {
+        score += 1000;
+    }*/
+
+    // Move number dependent scoring
+    // Knights are more valuable at the beggining
+    score += (30 - moveHistory.size()) * 5.0 / 3 * knightCount;
+    // Bishops are more valuable at the end
+    score += (moveHistory.size() - 30) * 5.0 / 3 * bishopCount;
+
+
+
+    return score;
 }
