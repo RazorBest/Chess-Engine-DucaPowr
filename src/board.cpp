@@ -338,7 +338,6 @@ logger.logBB(srcPosBoard);
 
 void Board::undoEnPassantAttackPrep() {
     uint16_t move = moveHistory.top();
-    uint16_t oldFlags = flagsHistory.top();
 
     uint16_t srcSquare = move & 0x3f;
     uint16_t destSquare = (move >> 6) & 0x3f;
