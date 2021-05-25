@@ -84,12 +84,12 @@ class Board  {
     */
     void enPassantAttackPrep(uint16_t move);
     // Helper function for undoMove().
-    void undoEnPassantAttackPrep();
+    void undoEnPassantAttackPrep(void);
 
     // Promote a pawn to the piece given in the move, if necessary.
     void promote(uint16_t move);
     // Helper function for undoMove(). Undo a pawn promotion, if necessary.
-    void demote();
+    void demote(void);
 
     // Move the rook to its post castle position, if needed.
     void castle(uint16_t move);
@@ -97,7 +97,7 @@ class Board  {
      * Helper function for undoMove(). Move the rook back to its original
      * position, if needed.
     */
-   void undoCastle();
+   void undoCastle(void);
 
     /**
      * Helper function for applyMove().
@@ -113,7 +113,7 @@ class Board  {
     U64 getFlags(void);
 
     // Init function that resets the board to initial state
-    void init();
+    void init(void);
 
     // Get bitboard of pieces on the corresponding side
     /* Side is either 0 (white) or 1 (black) */
@@ -129,9 +129,9 @@ class Board  {
      * squares as their first move) and can therefore be attacked by an en
      * passant move.
     */
-    U64 getEnPassantablePawnsBB();
-    U64 getAllBB();
-    U64 getEmptyBB();
+    U64 getEnPassantablePawnsBB(Side side);
+    U64 getAllBB(void);
+    U64 getEmptyBB(void);
 
     /**
      * Applies a move to the bitboards.

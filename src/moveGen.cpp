@@ -411,7 +411,7 @@ void Generator::blackPawnMoves(uint16_t* moves, uint16_t* len) {
 
 void Generator::whitePawnAttacks(uint16_t* moves, uint16_t* len) {
     U64 opponentBB = _board.getPieceBB(blackSide);
-    U64 enPassantablePawns = _board.getEnPassantablePawnsBB();
+    U64 enPassantablePawns = _board.getEnPassantablePawnsBB(blackSide);
     U64 pawnBB = _board.getPawnBB(whiteSide);
     U64 leftAttacks;
     U64 rightAttacks;
@@ -516,16 +516,23 @@ void Generator::whitePawnAttacks(uint16_t* moves, uint16_t* len) {
 
 void Generator::blackPawnAttacks(uint16_t* moves, uint16_t* len) {
     U64 opponentBB = _board.getPieceBB(whiteSide);
+    U64 enPassantablePawns = _board.getEnPassantablePawnsBB(whiteSide);
     U64 pawnBB = _board.getPawnBB(blackSide);
     U64 leftAttacks;
     U64 rightAttacks;
     U64 leftPromotions;
     U64 rightPromotions;
+    U64 leftEnPassant;
+    U64 rightEnPassant;
 
     leftAttacks = (pawnBB >> 9) & (~HFILE) & opponentBB & (~RANK1);
     rightAttacks = (pawnBB >> 7) & (~AFILE) & opponentBB & (~RANK1);
     leftPromotions = (pawnBB >> 9) & (~HFILE) & opponentBB & RANK1;
     rightPromotions = (pawnBB >> 7) & (~AFILE) & opponentBB & RANK1;
+    leftEnPassant = (pawnBB >> 1) & (~HFILE) & enPassantablePawns;
+    leftEnPassant >>= 8;
+    rightEnPassant = (pawnBB << 1) & (~AFILE) & enPassantablePawns;
+    rightEnPassant >>= 8;
 
     std::vector<U64> separated;
 
@@ -588,6 +595,26 @@ void Generator::blackPawnAttacks(uint16_t* moves, uint16_t* len) {
         tmp ^= 0x3000;
         // Set bits for knight promotion
         tmp |= 0x1000;
+        moves[(*len)++] = tmp;
+    }
+
+    // Generate a move for every left en passant
+    separated = getSeparatedBits(leftEnPassant);
+    for (U64 attackDst : separated) {
+        uint16_t tmp = getSquareIndex(attackDst);
+        tmp <<= 6;
+        tmp |= getSquareIndex(attackDst << 9);
+
+        moves[(*len)++] = tmp;
+    }
+
+    // Generate a move for every right en passant
+    separated = getSeparatedBits(rightEnPassant);
+    for (U64 attackDst : separated) {
+        uint16_t tmp = getSquareIndex(attackDst);
+        tmp <<= 6;
+        tmp |= getSquareIndex(attackDst << 7);
+
         moves[(*len)++] = tmp;
     }
 }
