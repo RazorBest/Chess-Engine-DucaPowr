@@ -69,14 +69,14 @@ U64 Board::getKingBB(Side side) {
     return pieceBB[nWhiteKing + side];
 }
 
-U64 Board::getEnPassantablePawnsBB(void) {
+U64 Board::getEnPassantablePawnsBB(Side side) {
     /**
      * Note: Side::whiteSide = 0 and Side::blackSide = 1;
      * << (sideToMove << 3) shifts the flags to match the appropriate side;
      * Flag bits [0..7] or [8..15] are a side's respective pawns that just
      * jumped.
     */
-    return (flags & (0xffLL << (sideToMove << 3))) << 24;
+    return (flags & (0xffLL << (side << 3))) << 24;
 }
 
 U64 Board::getAllBB(void) {
