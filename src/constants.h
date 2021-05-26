@@ -145,3 +145,19 @@ const U64 bishopMagics[64] = {
 #define BLACKQUEENSIDECASTLE 0x40000
 #define WHITEKINGSIDECASTLE  0x20000
 #define WHITEQUEENSIDECASTLE 0x10000
+
+// EVAL
+enum PieceConstants : int {
+    PawnValueMg = 126, PawnValueEg = 208,
+    KnightValueMg = 781, KnightValueEg = 854,
+    BishopValueMg = 825, BishopValueEg = 915,
+    RookValueMg = 1276, RookValueEg = 1380,
+    QueenValueMg = 2538, QueenValueEg = 2682
+};
+
+#define PawnPhase   0
+#define KnightPhase 1
+#define BishopPhase 2
+#define RookPhase   2
+#define QueenPhase  4
+#define TotalPhase  24

@@ -35,7 +35,7 @@ void Engine::userMove(std::string move) {
 std::string Engine::move(void) {
     uint16_t move = 0xffff;
 
-    int depth = 6;
+    int depth = 7;
 
     int score = alphaBetaMax(INT_MIN, INT_MAX, depth, &move);
 

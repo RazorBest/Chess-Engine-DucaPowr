@@ -30,20 +30,12 @@ enum enumPiece {
     trashPieceBlack
 };
 
-enum PieceConstants : int {
-    PawnValueMg = 126, PawnValueEg = 208,
-    KnightValueMg = 781, KnightValueEg = 854,
-    BishopValueMg = 825, BishopValueEg = 915,
-    RookValueMg = 1276, RookValueEg = 1380,
-    QueenValueMg = 2538, QueenValueEg = 2682
-};
-
 class Board  {
  private:
     // Two check counters for the two sides
     // checkCount[0] counts the number of checks on the white king
     // checkCount[1] counts the number of checks on the black king
-    uint8_t checkCount[2]; 
+    uint8_t checkCount[2];
 
     Logger logger;
 

@@ -8,3 +8,5 @@ checkstyle.txt
 */.cache/*
 compile_commands.json
 */compile_commands.json
+pulsar/*
+pulsar

@@ -719,27 +719,43 @@ bool Board::undoMove(void) {
     return true;
 }
 
+
+// BOARD EVAL
 int Board::eval() {
-    int score = 0;
+    // board : eval
+
+    int score_mg = 0;
+    int score_eg = 0;
 
     Side me = sideToMove;
     Side them = otherSide(sideToMove);
 
     // PIECES
-    score += bitCount(getPawnBB(me))        * PawnValueMg;
-    score -= bitCount(getPawnBB(them))      * PawnValueEg;
+    // mg
+    score_mg += bitCount(getPawnBB(me))        * PawnValueMg;
+    score_mg -= bitCount(getPawnBB(them))      * PawnValueMg;
+    score_mg += bitCount(getKnightBB(me))      * KnightValueMg;
+    score_mg -= bitCount(getKnightBB(them))    * KnightValueMg;
+    score_mg += bitCount(getBishopBB(me))      * BishopValueMg;
+    score_mg -= bitCount(getBishopBB(them))    * BishopValueMg;
+    score_mg += bitCount(getRookBB(me))        * RookValueMg;
+    score_mg -= bitCount(getRookBB(them))      * RookValueMg;
+    score_mg += bitCount(getQueenBB(me))       * QueenValueMg;
+    score_mg -= bitCount(getQueenBB(them))     * QueenValueMg;
+    // eg
+    score_eg += bitCount(getPawnBB(me))        * PawnValueEg;
+    score_eg -= bitCount(getPawnBB(them))      * PawnValueEg;
+    score_eg += bitCount(getKnightBB(me))      * KnightValueEg;
+    score_eg -= bitCount(getKnightBB(them))    * KnightValueEg;
+    score_eg += bitCount(getBishopBB(me))      * BishopValueEg;
+    score_eg -= bitCount(getBishopBB(them))    * BishopValueEg;
+    score_eg += bitCount(getRookBB(me))        * RookValueEg;
+    score_eg -= bitCount(getRookBB(them))      * RookValueEg;
+    score_eg += bitCount(getQueenBB(me))       * QueenValueEg;
+    score_eg -= bitCount(getQueenBB(them))     * QueenValueEg;
 
-    score += bitCount(getKnightBB(me))      * KnightValueMg;
-    score -= bitCount(getKnightBB(them))    * KnightValueEg;
+    // PIECE POSITIONING
 
-    score += bitCount(getBishopBB(me))      * BishopValueMg;
-    score -= bitCount(getBishopBB(them))    * BishopValueEg;
-
-    score += bitCount(getRookBB(me))        * RookValueMg;
-    score -= bitCount(getRookBB(them))      * RookValueEg;
-
-    score += bitCount(getQueenBB(me))       * QueenValueMg;
-    score -= bitCount(getQueenBB(them))     * QueenValueEg;
 
     // score += bishopPairWeight * ((bishopCount + 2) >> 2);
 
@@ -756,15 +772,30 @@ int Board::eval() {
     // // Bishops are more valuable at the end
     // score += (moveHistory.size() - 30) * 5.0 / 3 * bishopCount;
     
-    
-    
     // KING PRESENCE
     if (!bitCount(getKingBB(me)))
         return INT_MIN;
     if (!bitCount(getKingBB(them)))
         return INT_MAX;
 
-    return score;
+
+    // PHASE CALCULATION
+    uint16_t phase = TotalPhase;
+
+    phase -= bitCount(getPawnBB(me)) * PawnPhase;
+    phase -= bitCount(getPawnBB(them)) * PawnPhase;
+    phase -= bitCount(getKnightBB(me)) * KnightPhase;
+    phase -= bitCount(getKnightBB(them)) * KnightPhase;
+    phase -= bitCount(getBishopBB(me)) * BishopPhase;
+    phase -= bitCount(getBishopBB(them)) * BishopPhase;
+    phase -= bitCount(getRookBB(me)) * RookPhase;
+    phase -= bitCount(getRookBB(them)) * RookPhase;
+    phase -= bitCount(getQueenBB(me)) * QueenPhase;
+    phase -= bitCount(getQueenBB(them)) * QueenPhase;
+
+    phase = (phase * 256 + 12) / TotalPhase;
+
+    return ((score_mg * (256 - phase)) + (score_eg * phase)) / 256;
 }
 
 U64 Board::hash() {
