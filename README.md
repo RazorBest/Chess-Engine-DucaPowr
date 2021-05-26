@@ -64,6 +64,21 @@ XBoard sends the move to the handler in a Pure Coordinate String Format (eg. "e3
 
 Stockfish uses a similar [encoding](https://github.com/official-stockfish/Stockfish/blob/b1c8840f104d4d36b3f9a420b8b26a5e94c6dc18/src/types.h#L112).
 
+### Search
+
+We are using Alpha-Beta Pruning to search to a fixed depth at each move.
+
+### Evaluation
+
+We are evaluating each leaf-node in our Alpha-Beta tree using Board::eval() method.
+We are evaluating based on many criterias:
+  * Material (amount of pieces * their weight)
+  * Piece Positioning on the table
+  * 3-check checking
+  * Mate Checking
+  * Variable weights for Middle-Game and End-Game
+
+
 ### Further details
 
 To find more about the internals of the engine check the code comments and `Internals.md` file.

@@ -755,8 +755,7 @@ int Board::eval() {
     score_eg -= bitCount(getQueenBB(them))     * QueenValueEg;
 
     // PIECE POSITIONING
-
-
+    
     // score += bishopPairWeight * ((bishopCount + 2) >> 2);
 
     // // Score high if king is near friend pieces
