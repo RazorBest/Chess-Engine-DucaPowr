@@ -114,6 +114,9 @@ class Board  {
 
  public:
     U64 pieceBB[14];
+    U64 pieceHashKeys[64][12];
+    U64 flagHashKeys[20];
+    U64 checkHashKeys[64][2];
 
     // state vars
     Side sideToMove;
@@ -154,6 +157,8 @@ class Board  {
     bool undoMove(void);
 
     int eval();
+
+    U64 hash();
 
     // SAN Move Converters
     uint16_t convertSanToMove(std::string move);
