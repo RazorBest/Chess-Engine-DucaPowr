@@ -931,12 +931,16 @@ void Generator::knightMoves(uint16_t* moves, uint16_t* len, U64 knightBB,
 
 void Generator::whiteCastle(uint16_t* moves, uint16_t* len) {
     if ((_board.getFlags() & WHITEKINGSIDECASTLE) &&
-        (_board.getAllBB() & 0x60) == 0) {
+        (_board.getAllBB() & 0x60) == 0 &&
+        _board.getKingBB(whiteSide) == 0x10 &&
+        (_board.getRookBB(whiteSide) & 0x80)) {
         // 0b1100 000110 000100
         moves[(*len)++] = 0xc184;
     }
     if ((_board.getFlags() & WHITEQUEENSIDECASTLE) &&
-        (_board.getAllBB() & 0xe) == 0) {
+        (_board.getAllBB() & 0xe) == 0 &&
+        _board.getKingBB(whiteSide) == 0x10 &&
+        (_board.getRookBB(whiteSide) & 0x1)) {
         // 0b1100 000010 000100
         moves[(*len)++] = 0xc084;
     }
@@ -944,13 +948,19 @@ void Generator::whiteCastle(uint16_t* moves, uint16_t* len) {
 
 void Generator::blackCastle(uint16_t* moves, uint16_t* len) {
     if ((_board.getFlags() & BLACKKINGSIDECASTLE) &&
-        (_board.getAllBB() & 0x6000000000000000) == 0) {
+        (_board.getAllBB() & 0x6000000000000000) == 0 &&
+        _board.getKingBB(blackSide) == 0x1000000000000000 &&
+        (_board.getRookBB(blackSide) & 0x8000000000000000)) {
         // 0b1100 111110 111100
         moves[(*len)++] = 0xcfbc;
+        _logger.raw("Black king side castle");
     }
     if ((_board.getFlags() & BLACKQUEENSIDECASTLE) &&
-        (_board.getAllBB() & 0xe00000000000000) == 0) {
+        (_board.getAllBB() & 0xe00000000000000) == 0 &&
+        _board.getKingBB(blackSide) == 0x1000000000000000 &&
+        (_board.getRookBB(blackSide) & 0x100000000000000)) {
         // 0b1100 111010 111100
         moves[(*len)++] = 0xcebc;
+        _logger.raw("Black queen side castle");
     }
 }

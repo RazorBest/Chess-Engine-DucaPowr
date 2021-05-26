@@ -18,15 +18,8 @@ unsigned int bitCount(U64 x) {
     return __builtin_popcountll(x);
 }
 
-// TODO(razorbest) - This is inefficient
 uint16_t getSquareIndex(U64 bb) {
-    int index = 0;
-
-    while (bb >>= 1) {
-        index++;
-    }
-
-    return index;
+    return __builtin_ffsll(bb) - 1;
 }
 
 U64 flipVertical(U64 x) {
