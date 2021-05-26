@@ -14,8 +14,12 @@ std::vector<U64> getSeparatedBits(U64 bb) {
     return moves;
 }
 
+unsigned int bitCount(U64 x) {
+    return __builtin_popcountll(x);
+}
+
 uint16_t getSquareIndex(U64 bb) {
-    return bb == 0 ? 0 : __builtin_ffsll(bb) - 1;
+    return __builtin_ffsll(bb) - 1;
 }
 
 U64 flipVertical(U64 x) {

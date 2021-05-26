@@ -1,7 +1,7 @@
 /* Copyright 2021 DucaPowr Team */
 #pragma once
 
-#define DEBUG 0
+#define DEBUG 1
 
 #include <stdint.h>
 #include <fstream>

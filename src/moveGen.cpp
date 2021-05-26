@@ -964,36 +964,3 @@ void Generator::blackCastle(uint16_t* moves, uint16_t* len) {
         _logger.raw("Black queen side castle");
     }
 }
-
-
-
-// To be deleted after etapa 2
-void Generator::generateMovesWithoutKing(uint16_t* moves, uint16_t* len) {
-    if (_board.sideToMove == whiteSide) {
-        whitePawnMoves(moves, len);
-        whitePawnAttacks(moves, len);
-        whiteRookAttacks(moves, len);
-        whiteKnightMoves(moves, len);
-        whiteBishopAttacks(moves, len);
-        whiteQueenAttacks(moves, len);
-        // whiteCastle(moves, len);
-    } else {
-        blackPawnMoves(moves, len);
-        blackPawnAttacks(moves, len);
-        blackRookAttacks(moves, len);
-        blackKnightMoves(moves, len);
-        blackBishopAttacks(moves, len);
-        blackQueenAttacks(moves, len);
-        // blackCastle(moves, len);
-    }
-    kingMoves(_board.sideToMove, moves, len);
-    kingAttacks(_board.sideToMove, moves, len);
-}
-
-void Generator::generateCastlingMoves(uint16_t* moves, uint16_t* len) {
-    if (_board.sideToMove == whiteSide) {
-        whiteCastle(moves, len);
-    } else {
-        blackCastle(moves, len);
-    }
-}

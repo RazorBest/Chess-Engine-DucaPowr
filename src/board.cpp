@@ -29,6 +29,9 @@ void Board::init(void) {
     moveHistory  = std::stack<uint16_t>();
     takeHistory  = std::stack<enum enumPiece>();
     flagsHistory = std::stack<U64>();
+
+    checkCount[0] = 0;
+    checkCount[1] = 0;
 }
 
 #pragma region Bitboard getters
@@ -286,10 +289,6 @@ void Board::enPassantAttackPrep(uint16_t move) {
     U64 srcPosBoard = 1LL << (destSquare - (sideToMove == Side::whiteSide ? 8
         : -8));
 
-    if (DEBUG) {
-        logger.logBB(srcPosBoard);
-    }
-
     enum enumPiece sourceSquareIndex = getPieceIndexFromSquare(
         getSquareIndex(srcPosBoard));
 
@@ -520,7 +519,8 @@ void Board::undoCastle(void) {
 }
 
 void Board::resetCastleFlags(enum enumPiece movedPieceIndex,
-        U64 srcPosBitboard) {
+        U64 srcPosBitboard, enum enumPiece destPieceIndex,
+        U64 destPosBitboard) {
     /**
      * Note: Check board.h to see what each bit in the flags variable
      * represents, should the following code be unclear.
@@ -553,6 +553,43 @@ void Board::resetCastleFlags(enum enumPiece movedPieceIndex,
             // Black cannot castle queen side anymore.
             flags &= 0xfffffffffffbffff;
         } else if (srcPosBitboard == 0x8000000000000000) {
+            // Black cannot castle king side anymore.
+            flags &= 0xfffffffffff7ffff;
+        }
+        break;
+
+    default:
+        break;
+    }
+
+    switch (destPieceIndex) {
+    case nWhiteKing:
+        // White cannot castle queen nor king side anymore.
+        flags &= 0xfffffffffffcffff;
+        break;
+
+    case nBlackKing:
+        // Black cannot castle queen side nor king side anymore.
+        flags &= 0xfffffffffff3ffff;
+        break;
+
+    case nWhiteRook:
+        // Check for side.
+        if (destPosBitboard == 0x1) {
+            // White cannot castle queen side anymore.
+            flags &= 0xfffffffffffeffff;
+        } else if (destPosBitboard == 0x80) {
+            // White cannot castle king side anymore.
+            flags &= 0xfffffffffffdffff;
+        }
+        break;
+
+    case nBlackRook:
+        // Check for side.
+        if (destPosBitboard == 0x100000000000000) {
+            // Black cannot castle queen side anymore.
+            flags &= 0xfffffffffffbffff;
+        } else if (destPosBitboard == 0x8000000000000000) {
             // Black cannot castle king side anymore.
             flags &= 0xfffffffffff7ffff;
         }
@@ -601,13 +638,10 @@ bool Board::applyMove(uint16_t move) {
 
     castle(move);
 
-    resetCastleFlags(sourceSquareIndex, sourcePosBoard);
+    resetCastleFlags(sourceSquareIndex, sourcePosBoard,
+            destSquareIndex, destPosBoard);
 
     switchSide();
-
-    if (DEBUG) {
-        logger.raw(toString() + '\n');
-    }
 
     // TODO(all) change later with move legality.
     return true;
@@ -663,4 +697,52 @@ bool Board::undoMove(void) {
     takeHistory.pop();
 
     return true;
+}
+
+int Board::eval() {
+    int score = 0;
+
+    Side me = sideToMove;
+    Side them = otherSide(sideToMove);
+
+    // PIECES
+    score += bitCount(getPawnBB(me))        * PawnValueMg;
+    score -= bitCount(getPawnBB(them))      * PawnValueEg;
+
+    score += bitCount(getKnightBB(me))      * KnightValueMg;
+    score -= bitCount(getKnightBB(them))    * KnightValueEg;
+
+    score += bitCount(getBishopBB(me))      * BishopValueMg;
+    score -= bitCount(getBishopBB(them))    * BishopValueEg;
+
+    score += bitCount(getRookBB(me))        * RookValueMg;
+    score -= bitCount(getRookBB(them))      * RookValueEg;
+
+    score += bitCount(getQueenBB(me))       * QueenValueMg;
+    score -= bitCount(getQueenBB(them))     * QueenValueEg;
+
+    // score += bishopPairWeight * ((bishopCount + 2) >> 2);
+
+    // // Score high if king is near friend pieces
+    // score += kingFriendsWeight * (aKingsNeighbors(getKingBB(sideToMove)) &
+    //         friendPieceBB);
+
+    // // Scoring that depends on number of checks
+    // score -= (1<<(6+checkDiff*checkDiff)) + 100;
+
+    // Move number dependent scoring
+    // // Knights are more valuable at the beggining
+    // score += (30 - moveHistory.size()) * 5.0 / 3 * knightCount;
+    // // Bishops are more valuable at the end
+    // score += (moveHistory.size() - 30) * 5.0 / 3 * bishopCount;
+    
+    
+    
+    // KING PRESENCE
+    if (!bitCount(getKingBB(me)))
+        return INT_MIN;
+    if (!bitCount(getKingBB(them)))
+        return INT_MAX;
+
+    return score;
 }
