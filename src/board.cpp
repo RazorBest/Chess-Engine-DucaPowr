@@ -701,26 +701,34 @@ bool Board::undoMove(void) {
 
 int Board::eval() {
     int score = 0;
-    int bishopCount = bitCount(getBishopBB(sideToMove));
-    int knightCount = bitCount(getKnightBB(sideToMove));
-    int checkDiff = checkCount[sideToMove] - 
-        checkCount[otherSide(sideToMove)];
-    U64 friendPieceBB = getPieceBB(sideToMove);
 
-    score += pawnWeight * bitCount(getPawnBB(sideToMove));
-    score += bishopWeight * bishopCount;
-    score += knightWeight * knightCount;
-    score += rookWeight * bitCount(getRookBB(sideToMove));
-    score += queenWeight * bitCount(getQueenBB(sideToMove));
+    Side me = sideToMove;
+    Side them = otherSide(sideToMove);
 
-    score += bishopPairWeight * ((bishopCount + 2) >> 2);
+    // PIECES
+    score += bitCount(getPawnBB(me))        * PawnValueMg;
+    score -= bitCount(getPawnBB(them))      * PawnValueEg;
 
-    // Score high if king is near friend pieces
-    score += kingFriendsWeight * (aKingsNeighbors(getKingBB(sideToMove)) &
-            friendPieceBB);
+    score += bitCount(getKnightBB(me))      * KnightValueMg;
+    score -= bitCount(getKnightBB(them))    * KnightValueEg;
 
-    // Scoring that depends on number of checks
-    score -= (1<<(6+checkDiff*checkDiff)) + 100;
+    score += bitCount(getBishopBB(me))      * BishopValueMg;
+    score -= bitCount(getBishopBB(them))    * BishopValueEg;
+
+    score += bitCount(getRookBB(me))        * RookValueMg;
+    score -= bitCount(getRookBB(them))      * RookValueEg;
+
+    score += bitCount(getQueenBB(me))       * QueenValueMg;
+    score -= bitCount(getQueenBB(them))     * QueenValueEg;
+
+    // score += bishopPairWeight * ((bishopCount + 2) >> 2);
+
+    // // Score high if king is near friend pieces
+    // score += kingFriendsWeight * (aKingsNeighbors(getKingBB(sideToMove)) &
+    //         friendPieceBB);
+
+    // // Scoring that depends on number of checks
+    // score -= (1<<(6+checkDiff*checkDiff)) + 100;
 
     // Move number dependent scoring
     // // Knights are more valuable at the beggining
@@ -728,9 +736,13 @@ int Board::eval() {
     // // Bishops are more valuable at the end
     // score += (moveHistory.size() - 30) * 5.0 / 3 * bishopCount;
     
-    if (bitCount(getKingBB(sideToMove))) {
-        return score;
-    } else {
+    
+    
+    // KING PRESENCE
+    if (!bitCount(getKingBB(me)))
         return INT_MIN;
-    }
+    if (!bitCount(getKingBB(them)))
+        return INT_MAX;
+
+    return score;
 }
