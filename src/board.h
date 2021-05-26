@@ -7,6 +7,7 @@
 #include <string>
 #include <iostream>
 #include <stack>
+#include <climits>
 
 #include "./logger.h"
 #include "./utils.h"
@@ -29,12 +30,24 @@ enum enumPiece {
     trashPieceBlack
 };
 
+enum PieceConstants : int {
+    PawnValueMg = 126, PawnValueEg = 208,
+    KnightValueMg = 781, KnightValueEg = 854,
+    BishopValueMg = 825, BishopValueEg = 915,
+    RookValueMg = 1276, RookValueEg = 1380,
+    QueenValueMg = 2538, QueenValueEg = 2682
+};
+
 class Board  {
  private:
+    // Two check counters for the two sides
+    // checkCount[0] counts the number of checks on the white king
+    // checkCount[1] counts the number of checks on the black king
+    uint8_t checkCount[2]; 
+
     Logger logger;
 
     // An array of piece bitboards
-    U64 pieceBB[14];
 
     /**
      * Flag bits used for (1 means move is doable, 0 otherwise):
@@ -96,9 +109,12 @@ class Board  {
      * Helper function for applyMove().
      * Sets castling rights flags to false based on the moved piece, if needed.
     */
-   void resetCastleFlags(enum enumPiece movedPieceIndex, U64 srcPosBitboard);
+   void resetCastleFlags(enum enumPiece movedPieceIndex, U64 srcPosBitboard,
+           enum enumPiece destPieceIndex, U64 destPosBitboard);
 
  public:
+    U64 pieceBB[14];
+
     // state vars
     Side sideToMove;
     void switchSide(void);
@@ -136,6 +152,8 @@ class Board  {
      * @return Returns whether a move was undone or not.
     */
     bool undoMove(void);
+
+    int eval();
 
     // SAN Move Converters
     uint16_t convertSanToMove(std::string move);
