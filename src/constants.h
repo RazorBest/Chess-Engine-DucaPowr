@@ -162,6 +162,8 @@ enum PieceConstants : int {
 #define QueenPhase  4
 #define TotalPhase  24
 
+const int CheckCountValue = 250;
+
 const int mg_pawn_table[64] = {
       0,   0,   0,   0,   0,   0,  0,   0,
     -35,  -1, -20, -23, -15,  24, 38, -22,

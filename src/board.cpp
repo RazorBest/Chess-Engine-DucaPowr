@@ -260,6 +260,8 @@ std::string Board::toString(void) {
     snprintf(flagsC, 18, "Flags: 0x%lx", flags);
     output += "\n" + std::string(flagsC);
 
+    output += "Checks: w=" + std::to_string(checkCount[0]) + " b=" + std::to_string(checkCount[1]) + "\n";
+
     return output;
 }
 
@@ -719,11 +721,13 @@ bool Board::undoMove(void) {
     return true;
 }
 
+void Board::updateCheckCounter(uint8_t x, Side side) {
+    checkCount[side] += x;
+}
+
 
 // BOARD EVAL
 int Board::eval() {
-    // board : eval
-
     int score_mg = 0;
     int score_eg = 0;
 
@@ -891,8 +895,19 @@ int Board::eval() {
     // score += kingFriendsWeight * (aKingsNeighbors(getKingBB(sideToMove)) &
     //         friendPieceBB);
 
-    // // Scoring that depends on number of checks
-    // score -= (1<<(6+checkDiff*checkDiff)) + 100;
+    // Scoring that depends on number of checks
+    int my_check_score    = checkCount[me] * checkCount[me] * CheckCountValue;
+    int their_check_score = checkCount[them] * checkCount[them] * CheckCountValue;
+    score_mg += my_check_score;
+    score_mg -= their_check_score;
+    score_eg += my_check_score;
+    score_eg -= their_check_score;
+
+    // Move number dependent scoring
+    // // Knights are more valuable at the beggining
+    // score += (30 - moveHistory.size()) * 5.0 / 3 * knightCount;
+    // // Bishops are more valuable at the end
+    // score += (moveHistory.size() - 30) * 5.0 / 3 * bishopCount;
     
     // KING PRESENCE
     if (!bitCount(getKingBB(me)))
