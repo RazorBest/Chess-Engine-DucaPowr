@@ -519,7 +519,8 @@ void Board::undoCastle(void) {
 }
 
 void Board::resetCastleFlags(enum enumPiece movedPieceIndex,
-        U64 srcPosBitboard) {
+        U64 srcPosBitboard, enum enumPiece destPieceIndex,
+        U64 destPosBitboard) {
     /**
      * Note: Check board.h to see what each bit in the flags variable
      * represents, should the following code be unclear.
@@ -552,6 +553,43 @@ void Board::resetCastleFlags(enum enumPiece movedPieceIndex,
             // Black cannot castle queen side anymore.
             flags &= 0xfffffffffffbffff;
         } else if (srcPosBitboard == 0x8000000000000000) {
+            // Black cannot castle king side anymore.
+            flags &= 0xfffffffffff7ffff;
+        }
+        break;
+
+    default:
+        break;
+    }
+
+    switch (destPieceIndex) {
+    case nWhiteKing:
+        // White cannot castle queen nor king side anymore.
+        flags &= 0xfffffffffffcffff;
+        break;
+
+    case nBlackKing:
+        // Black cannot castle queen side nor king side anymore.
+        flags &= 0xfffffffffff3ffff;
+        break;
+
+    case nWhiteRook:
+        // Check for side.
+        if (destPosBitboard == 0x1) {
+            // White cannot castle queen side anymore.
+            flags &= 0xfffffffffffeffff;
+        } else if (destPosBitboard == 0x80) {
+            // White cannot castle king side anymore.
+            flags &= 0xfffffffffffdffff;
+        }
+        break;
+
+    case nBlackRook:
+        // Check for side.
+        if (destPosBitboard == 0x100000000000000) {
+            // Black cannot castle queen side anymore.
+            flags &= 0xfffffffffffbffff;
+        } else if (destPosBitboard == 0x8000000000000000) {
             // Black cannot castle king side anymore.
             flags &= 0xfffffffffff7ffff;
         }
@@ -600,7 +638,8 @@ bool Board::applyMove(uint16_t move) {
 
     castle(move);
 
-    resetCastleFlags(sourceSquareIndex, sourcePosBoard);
+    resetCastleFlags(sourceSquareIndex, sourcePosBoard,
+            destSquareIndex, destPosBoard);
 
     switchSide();
 

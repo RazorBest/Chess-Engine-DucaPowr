@@ -109,7 +109,8 @@ class Board  {
      * Helper function for applyMove().
      * Sets castling rights flags to false based on the moved piece, if needed.
     */
-   void resetCastleFlags(enum enumPiece movedPieceIndex, U64 srcPosBitboard);
+   void resetCastleFlags(enum enumPiece movedPieceIndex, U64 srcPosBitboard,
+           enum enumPiece destPieceIndex, U64 destPosBitboard);
 
  public:
     U64 pieceBB[14];
