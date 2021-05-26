@@ -282,6 +282,179 @@ void Generator::initBishopAttackTable(void) {
     }
 }
 
+U64 Generator::getPositionedRookAttackBB(Side side, U64 rookBB) {
+    U64 friendPieceBB = _board.getPieceBB(side);
+    U64 allAttacksBB = 0;
+    U64 allBB = _board.getAllBB();
+    U64 occ;
+
+    std::vector<U64> separated = getSeparatedBits(rookBB);
+    for (auto piece : separated) {
+        uint16_t move = getSquareIndex(piece);
+        uint16_t rank = move / 8;
+        uint16_t file = move % 8;
+
+        occ = allBB & (~piece);
+        U64 attacksBB = getRookRankAttackBB(rank, file, occ, friendPieceBB);
+
+        occ = allBB & (~piece);
+        attacksBB |= getRookFileAttackBB(rank, file, occ, friendPieceBB);
+
+        allAttacksBB |= attacksBB;
+     }
+
+    return allAttacksBB;
+}
+
+U64 Generator::getRookAttackBB(Side side) {
+    U64 rookBB = _board.getRookBB(side);
+    return getPositionedRookAttackBB(side, rookBB);
+}
+
+U64 Generator::getPositionedBishopAttackBB(Side side, U64 bishopBB) {
+    U64 friendPieceBB = _board.getPieceBB(side);
+    U64 allBB = _board.getAllBB();
+    U64 occ, allAttacksBB = 0, attacksBB;
+
+    std::vector<U64> separated = getSeparatedBits(bishopBB);
+    for (auto piece : separated) {
+        uint16_t move = getSquareIndex(piece);
+
+        // Index the occupancy bitboard
+        occ = bishopMask[move] & allBB;
+        occ = (occ * bishopMagics[move]) >> (64 - bishopRelevantBits[move]);
+        uint16_t occIndex = occ & ((1 << bishopRelevantBits[move]) - 1);
+
+        // Get the attacks bitboard
+        attacksBB = bishopAttackTable[move][occIndex];
+        attacksBB &= ~friendPieceBB;
+
+        allAttacksBB |= attacksBB;
+    }
+
+    return allAttacksBB;
+}
+
+U64 Generator::getBishopAttackBB(Side side) {
+    U64 bishopBB = _board.getBishopBB(side);
+    return getPositionedBishopAttackBB(side, bishopBB);
+}
+
+U64 Generator::getKnightAttackBB(Side side) {
+    U64 knightBB = _board.getKnightBB(side);
+    U64 friendPieceBB = _board.getPieceBB(side);
+    uint16_t knightIndex;
+    std::vector<U64> separatedMoves;
+    U64 allAttacksBB = 0;
+
+    // All possible moves of a given knight.
+    U64 allPosMoves;
+
+    while (knightBB) {
+        // Get knight from bit board.
+        knightIndex = getSquareIndex(knightBB);
+
+        // Set source of moves this knight can do.
+
+        allPosMoves = knightPosMoves[knightIndex] & (~friendPieceBB);
+
+        allAttacksBB |= allPosMoves;
+
+        // Remove knight from bitboard.
+        U64 one = 1;
+        knightBB ^= (one << knightIndex);
+    }
+
+    return allAttacksBB;
+}
+
+U64 Generator::getQueenAttackBB(Side side) {
+    U64 queenBB = _board.getQueenBB(side);
+    return getPositionedRookAttackBB(side, queenBB) |
+        getPositionedBishopAttackBB(side, queenBB);
+}
+
+U64 Generator::getWhitePawnAttackBB() {
+    U64 opponentBB = _board.getPieceBB(blackSide);
+    U64 enPassantablePawns = _board.getEnPassantablePawnsBB(blackSide);
+    U64 pawnBB = _board.getPawnBB(whiteSide);
+    U64 leftAttacks;
+    U64 rightAttacks;
+    U64 leftPromotions;
+    U64 rightPromotions;
+    U64 leftEnPassant;
+    U64 rightEnPassant;
+    U64 allAttacksBB = 0;
+
+    leftAttacks = (pawnBB << 7) & (~HFILE) & opponentBB & (~RANK8);
+    rightAttacks = (pawnBB << 9) & (~AFILE) & opponentBB & (~RANK8);
+    leftPromotions = (pawnBB << 7) & (~HFILE) & opponentBB & RANK8;
+    rightPromotions = (pawnBB << 9) & (~AFILE) & opponentBB & RANK8;
+    leftEnPassant = (pawnBB >> 1) & (~HFILE) & enPassantablePawns;
+    leftEnPassant <<= 8;
+    rightEnPassant = (pawnBB << 1) & (~AFILE) & enPassantablePawns;
+    rightEnPassant <<= 8;
+
+
+    allAttacksBB |= leftAttacks;
+    allAttacksBB |= rightAttacks;
+    allAttacksBB |= leftPromotions;
+    allAttacksBB |= rightPromotions;
+    allAttacksBB |= leftEnPassant;
+    allAttacksBB |= rightEnPassant;
+
+    return allAttacksBB;
+}
+
+U64 Generator::getBlackPawnAttackBB() {
+    U64 opponentBB = _board.getPieceBB(whiteSide);
+    U64 enPassantablePawns = _board.getEnPassantablePawnsBB(whiteSide);
+    U64 pawnBB = _board.getPawnBB(blackSide);
+    U64 leftAttacks;
+    U64 rightAttacks;
+    U64 leftPromotions;
+    U64 rightPromotions;
+    U64 leftEnPassant;
+    U64 rightEnPassant;
+    U64 allAttacksBB = 0;
+
+    leftAttacks = (pawnBB >> 9) & (~HFILE) & opponentBB & (~RANK1);
+    rightAttacks = (pawnBB >> 7) & (~AFILE) & opponentBB & (~RANK1);
+    leftPromotions = (pawnBB >> 9) & (~HFILE) & opponentBB & RANK1;
+    rightPromotions = (pawnBB >> 7) & (~AFILE) & opponentBB & RANK1;
+    leftEnPassant = (pawnBB >> 1) & (~HFILE) & enPassantablePawns;
+    leftEnPassant >>= 8;
+    rightEnPassant = (pawnBB << 1) & (~AFILE) & enPassantablePawns;
+    rightEnPassant >>= 8;
+
+    allAttacksBB |= leftAttacks;
+    allAttacksBB |= rightAttacks;
+    allAttacksBB |= leftPromotions;
+    allAttacksBB |= rightPromotions;
+    allAttacksBB |= leftEnPassant;
+    allAttacksBB |= rightAttacks;
+    allAttacksBB |= rightEnPassant;
+
+    return allAttacksBB;
+}
+
+U64 Generator::getAttackBB(Side side) {
+    U64 attackBB = 0;
+
+    attackBB |= getRookAttackBB(side);
+    attackBB |= getBishopAttackBB(side);
+    attackBB |= getKnightAttackBB(side);
+    attackBB |= getQueenAttackBB(side);
+
+    if (side == whiteSide) {
+        attackBB |= getWhitePawnAttackBB();
+    } else {
+        attackBB |= getBlackPawnAttackBB();
+    }
+
+    return attackBB;
+}
+
 void Generator::generateMoves(uint16_t* attacks, uint16_t* attacksLen) {
     uint16_t moves[MAX_MOVES_AT_STEP];
     uint16_t movesLen = 0;

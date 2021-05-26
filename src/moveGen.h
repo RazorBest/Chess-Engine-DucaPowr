@@ -21,6 +21,8 @@ class Generator {
 
     void generateMoves(uint16_t* moves, uint16_t* len);
 
+    U64 getAttackBB(Side side);
+
     // vvvvv Perhaps these should be private?
     U64 firstRankAttacks[64][8];
     U64 firstFileAttacks[64][8];
@@ -85,6 +87,15 @@ class Generator {
     void initBishopMask();
     void initPositionedBishopAttackTable(int bishopIndex);
     void initBishopAttackTable();
+
+    U64 getPositionedRookAttackBB(Side side, U64 rookBB);
+    U64 getRookAttackBB(Side side);
+    U64 getPositionedBishopAttackBB(Side side, U64 bishopBB);
+    U64 getBishopAttackBB(Side side);
+    U64 getKnightAttackBB(Side side);
+    U64 getQueenAttackBB(Side side);
+    U64 getWhitePawnAttackBB();
+    U64 getBlackPawnAttackBB();
 
     void whitePawnMoves(uint16_t* moves, uint16_t* len);
     void blackPawnMoves(uint16_t* moves, uint16_t* len);
