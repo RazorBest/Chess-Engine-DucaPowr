@@ -953,7 +953,6 @@ void Generator::blackCastle(uint16_t* moves, uint16_t* len) {
         (_board.getRookBB(blackSide) & 0x8000000000000000)) {
         // 0b1100 111110 111100
         moves[(*len)++] = 0xcfbc;
-        _logger.raw("Black king side castle");
     }
     if ((_board.getFlags() & BLACKQUEENSIDECASTLE) &&
         (_board.getAllBB() & 0xe00000000000000) == 0 &&
@@ -961,6 +960,5 @@ void Generator::blackCastle(uint16_t* moves, uint16_t* len) {
         (_board.getRookBB(blackSide) & 0x100000000000000)) {
         // 0b1100 111010 111100
         moves[(*len)++] = 0xcebc;
-        _logger.raw("Black queen side castle");
     }
 }
