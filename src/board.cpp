@@ -3,6 +3,9 @@
 
 #include <bits/stdint-uintn.h>
 #include <csetjmp>
+#include <string>
+#include <sys/types.h>
+#include <random>
 
 #include "./constants.h"
 #include "./logger.h"
@@ -32,6 +35,23 @@ void Board::init(void) {
 
     checkCount[0] = 0;
     checkCount[1] = 0;
+
+    std::uniform_int_distribution<unsigned long long int>
+                                 dist(0, UINT64_MAX);
+    std::mt19937 mt(1234567);
+    for (uint16_t i = 0; i < 64; i++) {
+        for (uint16_t j = 0; j < 12; j++) {
+            pieceHashKeys[i][j] = dist(mt);
+        }
+    }
+    for (uint16_t i = 0; i < 20; i++) {
+        flagHashKeys[i] = dist(mt);
+    }
+    for (uint16_t i = 0; i < 64; i++) {
+        checkHashKeys[i][0] = dist(mt);
+        checkHashKeys[i][1] = dist(mt);
+    }
+
 }
 
 #pragma region Bitboard getters
@@ -745,4 +765,24 @@ int Board::eval() {
         return INT_MAX;
 
     return score;
+}
+
+U64 Board::hash() {
+    U64 hash = 0;
+    for (size_t i = 0; i < 12; i++) {
+        auto pieces = getSeparatedBits(pieceBB[i]);
+        for (U64 pieceBB : pieces) {
+            int sqIndex = getSquareIndex(pieceBB);
+
+            hash ^= pieceHashKeys[sqIndex][i];
+        }
+    }
+    for (size_t i = 0; i < 20; i++) {
+        if (flags & (1 << i)) {
+            hash ^= flagHashKeys[i];
+        }
+    }
+    hash ^= checkHashKeys[checkCount[whiteSide]][whiteSide];
+    hash ^= checkHashKeys[checkCount[blackSide]][blackSide];
+    return hash;
 }
