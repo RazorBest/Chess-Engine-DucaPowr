@@ -30,7 +30,7 @@ enum enumPiece {
     trashPieceBlack
 };
 
-class Board  {
+class Board {
  private:
     // Two check counters for the two sides
     // checkCount[0] counts the number of checks on the white king
@@ -157,4 +157,6 @@ class Board  {
     std::string convertMoveToSan(uint16_t move);
 
     std::string toString(void);
+
+    void updateCheckCounter(uint8_t x, Side side);
 };

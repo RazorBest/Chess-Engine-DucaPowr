@@ -161,3 +161,5 @@ enum PieceConstants : int {
 #define RookPhase   2
 #define QueenPhase  4
 #define TotalPhase  24
+
+const int CheckCountValue = 250;
