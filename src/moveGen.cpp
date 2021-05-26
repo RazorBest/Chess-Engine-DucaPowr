@@ -479,8 +479,6 @@ void Generator::generateMoves(uint16_t* attacks, uint16_t* attacksLen) {
     kingMoves(_board.sideToMove, moves, &movesLen);
     kingAttacks(_board.sideToMove, moves, &movesLen);
 
-    //_logger.raw("Found attacks:" + std::to_string(*attacksLen));
-
      memcpy(attacks + *attacksLen, moves, movesLen * sizeof(uint16_t));
     *attacksLen += movesLen;
 }

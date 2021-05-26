@@ -99,9 +99,10 @@ At the end of the game, the bot brings to the user's attention an insightful quo
 9. [Bitboard](https://www.chessprogramming.org/Bitboards)
 
 ## Each member's duties
-* Andrei IONESCU - bitboards research; movement generator implementation; internal move execution; internal move undo; knight moves;
-* Dimitrie DAVID - team leader; create xBoardHandler and initial engine flow design and framework; made sure the coding style is correct; move legality checking; xBoardHandler updates;
-* Matei BARBU - task distribution and schedule planner; research on different chess board representations and algorithms; implementation of internal move representation; king moves and castling;
-* Razvan PRICOP - in-depth research of different chess aspects, algorithms and data structures; implemented board representation, pawn movement generation and other utils; queen, bishop and rook moves; perft checking;
+* Andrei IONESCU - bitboards research; movement generator implementation; internal move execution; internal move undo; knight moves; eval function
+* Dimitrie DAVID - team leader; create xBoardHandler and initial engine flow design and framework; made sure the coding style is correct; move legality checking; xBoardHandler updates; eval function; alpha-beta pruning implementation; 
+* Matei BARBU - task distribution and schedule planner; research on different chess board representations and algorithms; implementation of internal move representation; king moves and castling; transposition table with Zobrist hashing; cleanup code;
+* Razvan PRICOP - in-depth research of different chess aspects, algorithms and data structures; implemented board representation, pawn movement generation and other utils; queen, bishop and rook moves; perft checking; eval function;
+move sorting; generate attack moves; perft for depth 7
 
 ** Everyone worked really hard to fix many bugs and to do many imporvements that we did not mention above.
