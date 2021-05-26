@@ -756,6 +756,31 @@ int Board::eval() {
 
     // PIECE POSITIONING
     
+    U64 pieceBBCpy[14];
+    memcpy(pieceBBCpy, pieceBB, 14 * sizeof(U64));
+    unsigned int position, otherSideOffset, mySideOffset, pieceBBIndex;
+    mySideOffset = (me == Side::whiteSide ? 0 : 1);
+    otherSideOffset = (them == Side::whiteSide ? -1 : 0);
+
+    pieceBBIndex = nWhitePawn + mySideOffset;
+    while (pieceBBCpy[pieceBBIndex]) {
+        position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
+
+        score_mg += mg_pawn_table[position];
+
+        pieceBBCpy[pieceBBIndex] ^= (1LL << position);
+    }
+
+    pieceBBIndex = nBlackPawn + otherSideOffset;
+    while (pieceBBCpy[pieceBBIndex]) {
+        position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
+
+        score_mg -= mg_pawn_table[position];
+
+        pieceBBCpy[pieceBBIndex] ^= (1LL << position);
+    }
+
+    // THREE CHECK RULE
     // score += bishopPairWeight * ((bishopCount + 2) >> 2);
 
     // // Score high if king is near friend pieces
@@ -764,12 +789,6 @@ int Board::eval() {
 
     // // Scoring that depends on number of checks
     // score -= (1<<(6+checkDiff*checkDiff)) + 100;
-
-    // Move number dependent scoring
-    // // Knights are more valuable at the beggining
-    // score += (30 - moveHistory.size()) * 5.0 / 3 * knightCount;
-    // // Bishops are more valuable at the end
-    // score += (moveHistory.size() - 30) * 5.0 / 3 * bishopCount;
     
     // KING PRESENCE
     if (!bitCount(getKingBB(me)))
