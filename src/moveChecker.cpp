@@ -5,6 +5,9 @@
 MoveChecker::MoveChecker(Board& board) : _board(board) { }
 
 bool MoveChecker::isLegal(uint16_t move, U64 attackBB) {
+    // is my king in check and i dont move it
+
+
     // if our move is castling check if our king gets in check
     if (((move >> 14) & 3) != 3) {
         // Castling flag was not set, nothing to do.
@@ -39,6 +42,12 @@ bool MoveChecker::isLegal(uint16_t move, U64 attackBB) {
 
 bool MoveChecker::isCheck(U64 attackBB) {
     U64 kingBB = _board.getKingBB(_board.sideToMove);
+
+    return kingBB & attackBB;
+}
+
+bool MoveChecker::IamInCheck(U64 attackBB) {
+    U64 kingBB = _board.getKingBB(otherSide(_board.sideToMove));
 
     return kingBB & attackBB;
 }

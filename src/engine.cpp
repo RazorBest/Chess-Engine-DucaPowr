@@ -101,6 +101,11 @@ int Engine::alphaBetaMax(int alpha, int beta, int depthleft, uint16_t *move) {
 
         // apply move && update check counter
         _board.applyMove(currMove);
+        // check if i am in check
+        if (_checker.IamInCheck(_generator.getAttackBB(_board.sideToMove))) {
+            _board.undoMove();
+            continue;
+        }
         U64 attacksAfterApplyMove = _generator.getAttackBB(otherSide(_board.sideToMove));
         if (_checker.isCheck(attacksAfterApplyMove)) {
             _board.updateCheckCounter(1, _board.sideToMove);
@@ -151,6 +156,11 @@ int Engine::alphaBetaMin(int alpha, int beta, int depthleft, uint16_t *move) {
 
         // apply move
         _board.applyMove(currMove);
+        // check if i am in check
+        if (_checker.IamInCheck(_generator.getAttackBB(_board.sideToMove))) {
+            _board.undoMove();
+            continue;
+        }
         U64 attacksAfterApplyMove = _generator.getAttackBB(otherSide(_board.sideToMove));
         if (_checker.isCheck(attacksAfterApplyMove)) {
             _board.updateCheckCounter(1, _board.sideToMove);

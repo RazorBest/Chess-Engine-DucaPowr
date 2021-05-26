@@ -148,7 +148,7 @@ const U64 bishopMagics[64] = {
 
 // EVAL
 enum PieceConstants : int {
-    PawnValueMg = 126, PawnValueEg = 208,
+    PawnValueMg = 78, PawnValueEg = 153,
     KnightValueMg = 781, KnightValueEg = 854,
     BishopValueMg = 825, BishopValueEg = 915,
     RookValueMg = 1276, RookValueEg = 1380,
@@ -162,7 +162,10 @@ enum PieceConstants : int {
 #define QueenPhase  4
 #define TotalPhase  24
 
-const int CheckCountValue = 250;
+const int CheckCountValue = 1500;
+
+const int KingFriendsValueMg = 80;
+const int KingFriendsValueEg = 140;
 
 const int mg_pawn_table[64] = {
       0,   0,   0,   0,   0,   0,  0,   0,

@@ -13,6 +13,8 @@ class MoveChecker {
     bool isLegal(uint16_t move, U64 attackBB);
 
     bool isCheck(U64 attackBB);
+
+    bool IamInCheck(U64 attackBB);
  private:
     Board& _board;
 
