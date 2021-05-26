@@ -608,10 +608,6 @@ bool Board::applyMove(uint16_t move) {
 
     switchSide();
 
-    if (DEBUG) {
-        logger.raw(toString() + '\n');
-    }
-
     // TODO(all) change later with move legality.
     return true;
 }
@@ -681,7 +677,6 @@ int Board::eval() {
     score += knightWeight * knightCount;
     score += rookWeight * bitCount(getRookBB(sideToMove));
     score += queenWeight * bitCount(getQueenBB(sideToMove));
-    score += kingWeight * bitCount(getKingBB(sideToMove));
 
     score += bishopPairWeight * ((bishopCount + 2) >> 2);
 
@@ -693,13 +688,14 @@ int Board::eval() {
     score -= (1<<(6+checkDiff*checkDiff)) + 100;
 
     // Move number dependent scoring
-    // Knights are more valuable at the beggining
-    score += (30 - moveHistory.size()) * 5.0 / 3 * knightCount;
-    // Bishops are more valuable at the end
-    score += (moveHistory.size() - 30) * 5.0 / 3 * bishopCount;
-
-    // Make score negative if sideToMove == blackSide
-    score *= ((1 - sideToMove) << 1) - 1;
-
-    return score;
+    // // Knights are more valuable at the beggining
+    // score += (30 - moveHistory.size()) * 5.0 / 3 * knightCount;
+    // // Bishops are more valuable at the end
+    // score += (moveHistory.size() - 30) * 5.0 / 3 * bishopCount;
+    
+    if (bitCount(getKingBB(sideToMove))) {
+        return score;
+    } else {
+        return INT_MIN;
+    }
 }

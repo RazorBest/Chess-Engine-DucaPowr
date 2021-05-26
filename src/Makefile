@@ -1,7 +1,7 @@
 # Copyright 2021 DucaPowr Team
 CC = g++
 CFLAGS = -Wall -Wextra -Wno-unknown-pragmas
-DEBUG =
+DEBUG = -ggdb -O0
 
 BINARY = duca
 

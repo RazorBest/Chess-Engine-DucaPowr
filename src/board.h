@@ -7,6 +7,7 @@
 #include <string>
 #include <iostream>
 #include <stack>
+#include <climits>
 
 #include "./logger.h"
 #include "./utils.h"
@@ -36,7 +37,6 @@ class Board  {
     const int knightWeight = 350;
     const int rookWeight = 525;
     const int queenWeight = 1000;
-    const int kingWeight = 50000;
     const int bishopPairWeight = 50;
     const int kingFriendsWeight = 50;
 

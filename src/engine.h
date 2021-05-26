@@ -53,4 +53,7 @@ class Engine {
     Logger _logger;
 
     bool running = true;
+
+    int alphaBetaMax(int alpha, int beta, int depthleft, uint16_t *move);
+    int alphaBetaMin(int alpha, int beta, int depthleft, uint16_t *move);
 };

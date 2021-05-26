@@ -3,6 +3,7 @@
 #include "./logger.h"
 
 #include <time.h>
+#include <climits>
 
 /**
  * Resets the game and makes engine play black.
@@ -19,6 +20,10 @@ void Engine::newGame(void) {
  */
 void Engine::userMove(std::string move) {
     _board.applyMove(_board.convertSanToMove(move));
+
+    if (DEBUG) {
+        _logger.raw(_board.toString() + '\n');
+    }
 }
 
 /**
@@ -27,81 +32,18 @@ void Engine::userMove(std::string move) {
  * @return SAN=0 encoding of the move
  */
 std::string Engine::move(void) {
-    // this only for stage 1 - generate random pseudo-legal pawn move
-    // init
-    uint16_t moves[MAX_MOVES_AT_STEP];
-    uint16_t movesOtherSide[MAX_MOVES_AT_STEP];
-    memset(moves, 0, sizeof(moves));
-    uint16_t movesLen = 0, movesOtherSideLen = 0;
 
-    // CASTLING ------------------------
-    _generator.generateCastlingMoves(moves, &movesLen);
     uint16_t move = 0xffff;
 
-    for (int i = 0; i < movesLen; i++) {
-        move = moves[i];
+    int depth = 6;
 
-        // apply move
-        _board.applyMove(move);
+    int score = alphaBetaMax(INT_MIN, INT_MAX, depth, &move);
 
-        // generate all moves from enemy
-        movesOtherSideLen = 0;
-        _generator.generateMovesWithoutKing(movesOtherSide, &movesOtherSideLen);
+    _board.applyMove(move);
 
-        // check if move is illegal
-        if (_checker.isLegal(move, movesOtherSide, movesOtherSideLen))
-            break;
-
-        _board.undoMove();
-        move = 0xffff;
-    }
-    if (move != 0xffff) {
-        return _board.convertMoveToSan(move);
-    }
-
-
-
-    // REST ----------------------------
-    // generate moves
-    movesLen = 0;
-    _generator.generateMoves(moves, &movesLen);
-
-    // if i cant move, resign
-    if (!movesLen) {
-        // resign
-        return "resign";
-    }
-
-    move = 0xffff;
-
-    // shuffle moves
-    // To obtain a time-based seed
-    unsigned int seed = static_cast <int64_t> (time(NULL));
-
-    // Shuffling our array
-    std::shuffle(moves, moves + movesLen, std::default_random_engine(seed));
-
-    for (int i = 0; i < movesLen; i++) {
-        move = moves[i];
-
-        // apply move
-        _board.applyMove(move);
-
-        // generate all moves from enemy
-        movesOtherSideLen = 0;
-        _generator.generateMovesWithoutKing(movesOtherSide, &movesOtherSideLen);
-
-        // check if move is illegal
-        if (_checker.isLegal(move, movesOtherSide, movesOtherSideLen))
-            break;
-
-        _board.undoMove();
-        move = 0xffff;
-    }
-
-    if (move == 0xffff) {
-        // mate
-        return "resign";
+    if (DEBUG) {
+        _logger.raw(_board.toString() + '\n');
+        _logger.raw("Score for move: " + std::to_string(score));
     }
 
     // return san representation
@@ -118,4 +60,81 @@ bool Engine::isRunning(void) {
 
 Side Engine::sideToMove(void) {
     return _board.sideToMove;
+}
+
+
+// ALPHA-BETA
+int Engine::alphaBetaMax(int alpha, int beta, int depthleft, uint16_t *move) {
+    // if i'm last node return my eval
+    if ( depthleft == 0 ) {
+        return (_board.eval());
+    }
+
+    uint16_t moves[MAX_MOVES_AT_STEP];
+    uint16_t movesLen = 0;
+    uint16_t garbage;
+    // generate moves
+    _generator.generateMoves(moves, &movesLen);
+
+    // todo sort moves (here or in generateMoves)
+
+    int score = INT_MIN;
+    uint16_t currMove;
+    for (int i = 0; i < movesLen; ++i) {
+        currMove = moves[i];
+        // apply move
+        _board.applyMove(currMove);
+
+        // search deeper
+        score = alphaBetaMin(alpha, beta, depthleft - 1, &garbage);
+
+        // undo move
+        _board.undoMove();
+
+        if( score >= beta ) {
+            return beta;   // fail hard beta-cutoff
+        }
+        if( score > alpha ) {
+            alpha = score; // alpha acts like max in MiniMax
+            *move = currMove;
+        }
+    }
+    return alpha;
+}
+
+int Engine::alphaBetaMin(int alpha, int beta, int depthleft, uint16_t *move) {
+    // if i'm last node return my eval
+    if ( depthleft == 0 ) {
+        return -(_board.eval());
+    }
+
+    uint16_t moves[MAX_MOVES_AT_STEP];
+    uint16_t movesLen = 0;
+    // generate moves
+    _generator.generateMoves(moves, &movesLen);
+
+    // todo sort moves (here or in generateMoves)
+
+    int score = INT_MAX;
+    uint16_t currMove;
+    for (int i = 0; i < movesLen; ++i) {
+        currMove = moves[i];
+
+        // apply move
+        _board.applyMove(currMove);
+
+        // search deeper
+        score = alphaBetaMax( alpha, beta, depthleft - 1, move);
+
+        // undo move
+        _board.undoMove();
+
+        if( score <= alpha ) {
+            return alpha; // fail hard alpha-cutoff
+        }
+        if( score < beta ) {
+            beta = score; // beta acts like min in MiniMax
+        }
+    }
+    return beta;
 }
