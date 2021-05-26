@@ -767,6 +767,7 @@ int Board::eval() {
         position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
 
         score_mg += mg_pawn_table[position];
+        score_eg += eg_pawn_table[position];
 
         pieceBBCpy[pieceBBIndex] ^= (1LL << position);
     }
@@ -776,6 +777,109 @@ int Board::eval() {
         position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
 
         score_mg -= mg_pawn_table[position];
+        score_eg -= eg_pawn_table[position];
+
+        pieceBBCpy[pieceBBIndex] ^= (1LL << position);
+    }
+
+    pieceBBIndex = nWhiteRook + mySideOffset;
+    while (pieceBBCpy[pieceBBIndex]) {
+        position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
+
+        score_mg += mg_rook_table[position];
+        score_eg += eg_rook_table[position];
+
+        pieceBBCpy[pieceBBIndex] ^= (1LL << position);
+    }
+
+    pieceBBIndex = nBlackRook + otherSideOffset;
+    while (pieceBBCpy[pieceBBIndex]) {
+        position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
+
+        score_mg -= mg_rook_table[position];
+        score_eg -= eg_rook_table[position];
+
+
+        pieceBBCpy[pieceBBIndex] ^= (1LL << position);
+    }
+
+    pieceBBIndex = nWhiteBishop + mySideOffset;
+    while (pieceBBCpy[pieceBBIndex]) {
+        position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
+
+        score_mg += mg_bishop_table[position];
+        score_eg += eg_bishop_table[position];
+
+        pieceBBCpy[pieceBBIndex] ^= (1LL << position);
+    }
+
+    pieceBBIndex = nBlackBishop + otherSideOffset;
+    while (pieceBBCpy[pieceBBIndex]) {
+        position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
+
+        score_mg -= mg_bishop_table[position];
+        score_eg -= eg_bishop_table[position];
+
+        pieceBBCpy[pieceBBIndex] ^= (1LL << position);
+    }
+
+    pieceBBIndex = nWhiteKnight + mySideOffset;
+    while (pieceBBCpy[pieceBBIndex]) {
+        position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
+
+        score_mg += mg_knight_table[position];
+        score_eg += eg_knight_table[position];
+
+        pieceBBCpy[pieceBBIndex] ^= (1LL << position);
+    }
+
+    pieceBBIndex = nBlackKnight + otherSideOffset;
+    while (pieceBBCpy[pieceBBIndex]) {
+        position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
+
+        score_mg -= mg_knight_table[position];
+        score_eg -= eg_knight_table[position];
+
+
+        pieceBBCpy[pieceBBIndex] ^= (1LL << position);
+    }
+
+    pieceBBIndex = nWhiteQueen + mySideOffset;
+    while (pieceBBCpy[pieceBBIndex]) {
+        position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
+
+        score_mg += mg_queen_table[position];
+        score_eg += eg_queen_table[position];
+
+        pieceBBCpy[pieceBBIndex] ^= (1LL << position);
+    }
+
+    pieceBBIndex = nBlackQueen + otherSideOffset;
+    while (pieceBBCpy[pieceBBIndex]) {
+        position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
+
+        score_mg -= mg_queen_table[position];
+        score_eg -= eg_queen_table[position];
+
+        pieceBBCpy[pieceBBIndex] ^= (1LL << position);
+    }
+
+    pieceBBIndex = nWhiteKing + mySideOffset;
+    while (pieceBBCpy[pieceBBIndex]) {
+        position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
+
+        score_mg += mg_king_table[position];
+        score_eg += eg_king_table[position];
+
+        pieceBBCpy[pieceBBIndex] ^= (1LL << position);
+    }
+
+    pieceBBIndex = nBlackKing + otherSideOffset;
+    while (pieceBBCpy[pieceBBIndex]) {
+        position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
+
+        score_mg -= mg_king_table[position];
+        score_eg -= eg_king_table[position];
 
         pieceBBCpy[pieceBBIndex] ^= (1LL << position);
     }
