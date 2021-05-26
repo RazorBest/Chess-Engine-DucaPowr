@@ -48,7 +48,6 @@ class Board  {
     Logger logger;
 
     // An array of piece bitboards
-    U64 pieceBB[14];
 
     /**
      * Flag bits used for (1 means move is doable, 0 otherwise):
@@ -113,6 +112,8 @@ class Board  {
    void resetCastleFlags(enum enumPiece movedPieceIndex, U64 srcPosBitboard);
 
  public:
+    U64 pieceBB[14];
+
     // state vars
     Side sideToMove;
     void switchSide(void);

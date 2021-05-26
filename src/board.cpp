@@ -289,10 +289,6 @@ void Board::enPassantAttackPrep(uint16_t move) {
     U64 srcPosBoard = 1LL << (destSquare - (sideToMove == Side::whiteSide ? 8
         : -8));
 
-    if (DEBUG) {
-        logger.logBB(srcPosBoard);
-    }
-
     enum enumPiece sourceSquareIndex = getPieceIndexFromSquare(
         getSquareIndex(srcPosBoard));
 

@@ -2,6 +2,7 @@
 #include "./engine.h"
 #include "./logger.h"
 
+#include <istream>
 #include <time.h>
 #include <climits>
 
@@ -63,6 +64,7 @@ Side Engine::sideToMove(void) {
 }
 
 
+#include <cassert>
 // ALPHA-BETA
 int Engine::alphaBetaMax(int alpha, int beta, int depthleft, uint16_t *move) {
     // if i'm last node return my eval
@@ -82,6 +84,11 @@ int Engine::alphaBetaMax(int alpha, int beta, int depthleft, uint16_t *move) {
     uint16_t currMove;
     for (int i = 0; i < movesLen; ++i) {
         currMove = moves[i];
+        
+        U64 boardCopy[14];
+        memcpy(boardCopy, _board.pieceBB, 14 * sizeof(U64));
+
+
         // apply move
         _board.applyMove(currMove);
 
@@ -90,6 +97,25 @@ int Engine::alphaBetaMax(int alpha, int beta, int depthleft, uint16_t *move) {
 
         // undo move
         _board.undoMove();
+
+
+        U64 boardCopy2[14];
+        memcpy(boardCopy2, _board.pieceBB, 14 * sizeof(U64));
+
+        if (memcmp(boardCopy, boardCopy2, 12 * sizeof(U64))) {
+            _logger.raw("After undo:");
+            _logger.raw(_board.toString());
+
+            for (int j = 0; j < 12; j++) {
+                _logger.logBB(boardCopy[j]);
+                _logger.logBB(boardCopy2[j]);
+            }
+
+            Logger::debugFile.close();
+
+            assert(0);
+        }
+
 
         if( score >= beta ) {
             return beta;   // fail hard beta-cutoff
@@ -120,14 +146,52 @@ int Engine::alphaBetaMin(int alpha, int beta, int depthleft, uint16_t *move) {
     for (int i = 0; i < movesLen; ++i) {
         currMove = moves[i];
 
+        U64 boardCopy[14];
+        memcpy(boardCopy, _board.pieceBB, 14 * sizeof(U64));
+
         // apply move
         _board.applyMove(currMove);
 
+        U64 boardCopy3[14];
+        memcpy(boardCopy3, _board.pieceBB, 14 * sizeof(U64));
+
+
         // search deeper
         score = alphaBetaMax( alpha, beta, depthleft - 1, move);
+    
+        U64 boardCopy4[14];
+        memcpy(boardCopy4, _board.pieceBB, 14 * sizeof(U64));
 
         // undo move
         _board.undoMove();
+
+        U64 boardCopy2[14];
+        memcpy(boardCopy2, _board.pieceBB, 14 * sizeof(U64));
+
+        if (memcmp(boardCopy, boardCopy2, 12 * sizeof(U64))) {
+
+            _logger.raw("Error in alphaBetaMin");
+            _logger.raw("After undo:");
+            _logger.raw(_board.toString());
+
+
+            for (int j = 0; j < 12; j++) {
+                _logger.raw("Piece " + std::to_string(j) + "\n\n");
+                _logger.logBB(boardCopy[j]);
+                _logger.logBB(boardCopy3[j]);
+                _logger.logBB(boardCopy4[j]);
+                _logger.logBB(boardCopy2[j]);
+
+                char moveStr[20] = {0};
+                sprintf(moveStr, "0x%hx", currMove);
+
+                _logger.raw("Move: " + std::string(moveStr) + "\n");
+            }
+
+            Logger::debugFile.close();
+
+            assert(0);
+        }
 
         if( score <= alpha ) {
             return alpha; // fail hard alpha-cutoff
