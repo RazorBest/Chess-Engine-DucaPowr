@@ -759,8 +759,136 @@ int Board::eval() {
     score_eg -= bitCount(getQueenBB(them))     * QueenValueEg;
 
     // PIECE POSITIONING
+    
+    U64 pieceBBCpy[14];
+    memcpy(pieceBBCpy, pieceBB, 14 * sizeof(U64));
+    unsigned int position, otherSideOffset, mySideOffset, pieceBBIndex;
+    mySideOffset = (me == Side::whiteSide ? 0 : 1);
+    otherSideOffset = (them == Side::whiteSide ? -1 : 0);
+
+    pieceBBIndex = nWhitePawn + mySideOffset;
+    while (pieceBBCpy[pieceBBIndex]) {
+        position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
+
+        score_mg += mg_pawn_table[position];
+        score_eg += eg_pawn_table[position];
+
+        pieceBBCpy[pieceBBIndex] ^= (1LL << position);
+    }
+
+    pieceBBIndex = nBlackPawn + otherSideOffset;
+    while (pieceBBCpy[pieceBBIndex]) {
+        position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
+
+        score_mg -= mg_pawn_table[position];
+        score_eg -= eg_pawn_table[position];
+
+        pieceBBCpy[pieceBBIndex] ^= (1LL << position);
+    }
+
+    pieceBBIndex = nWhiteRook + mySideOffset;
+    while (pieceBBCpy[pieceBBIndex]) {
+        position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
+
+        score_mg += mg_rook_table[position];
+        score_eg += eg_rook_table[position];
+
+        pieceBBCpy[pieceBBIndex] ^= (1LL << position);
+    }
+
+    pieceBBIndex = nBlackRook + otherSideOffset;
+    while (pieceBBCpy[pieceBBIndex]) {
+        position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
+
+        score_mg -= mg_rook_table[position];
+        score_eg -= eg_rook_table[position];
 
 
+        pieceBBCpy[pieceBBIndex] ^= (1LL << position);
+    }
+
+    pieceBBIndex = nWhiteBishop + mySideOffset;
+    while (pieceBBCpy[pieceBBIndex]) {
+        position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
+
+        score_mg += mg_bishop_table[position];
+        score_eg += eg_bishop_table[position];
+
+        pieceBBCpy[pieceBBIndex] ^= (1LL << position);
+    }
+
+    pieceBBIndex = nBlackBishop + otherSideOffset;
+    while (pieceBBCpy[pieceBBIndex]) {
+        position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
+
+        score_mg -= mg_bishop_table[position];
+        score_eg -= eg_bishop_table[position];
+
+        pieceBBCpy[pieceBBIndex] ^= (1LL << position);
+    }
+
+    pieceBBIndex = nWhiteKnight + mySideOffset;
+    while (pieceBBCpy[pieceBBIndex]) {
+        position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
+
+        score_mg += mg_knight_table[position];
+        score_eg += eg_knight_table[position];
+
+        pieceBBCpy[pieceBBIndex] ^= (1LL << position);
+    }
+
+    pieceBBIndex = nBlackKnight + otherSideOffset;
+    while (pieceBBCpy[pieceBBIndex]) {
+        position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
+
+        score_mg -= mg_knight_table[position];
+        score_eg -= eg_knight_table[position];
+
+
+        pieceBBCpy[pieceBBIndex] ^= (1LL << position);
+    }
+
+    pieceBBIndex = nWhiteQueen + mySideOffset;
+    while (pieceBBCpy[pieceBBIndex]) {
+        position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
+
+        score_mg += mg_queen_table[position];
+        score_eg += eg_queen_table[position];
+
+        pieceBBCpy[pieceBBIndex] ^= (1LL << position);
+    }
+
+    pieceBBIndex = nBlackQueen + otherSideOffset;
+    while (pieceBBCpy[pieceBBIndex]) {
+        position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
+
+        score_mg -= mg_queen_table[position];
+        score_eg -= eg_queen_table[position];
+
+        pieceBBCpy[pieceBBIndex] ^= (1LL << position);
+    }
+
+    pieceBBIndex = nWhiteKing + mySideOffset;
+    while (pieceBBCpy[pieceBBIndex]) {
+        position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
+
+        score_mg += mg_king_table[position];
+        score_eg += eg_king_table[position];
+
+        pieceBBCpy[pieceBBIndex] ^= (1LL << position);
+    }
+
+    pieceBBIndex = nBlackKing + otherSideOffset;
+    while (pieceBBCpy[pieceBBIndex]) {
+        position = getSquareIndex(pieceBBCpy[pieceBBIndex]);
+
+        score_mg -= mg_king_table[position];
+        score_eg -= eg_king_table[position];
+
+        pieceBBCpy[pieceBBIndex] ^= (1LL << position);
+    }
+
+    // THREE CHECK RULE
     // score += bishopPairWeight * ((bishopCount + 2) >> 2);
 
     // // Score high if king is near friend pieces
