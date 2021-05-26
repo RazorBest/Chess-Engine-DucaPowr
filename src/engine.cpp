@@ -33,7 +33,6 @@ void Engine::userMove(std::string move) {
  * @return SAN=0 encoding of the move
  */
 std::string Engine::move(void) {
-
     uint16_t move = 0xffff;
 
     int depth = 6;
@@ -141,3 +140,4 @@ int Engine::alphaBetaMin(int alpha, int beta, int depthleft, uint16_t *move) {
     }
     return beta;
 }
+

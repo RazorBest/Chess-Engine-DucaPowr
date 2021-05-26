@@ -282,22 +282,23 @@ void Generator::initBishopAttackTable(void) {
     }
 }
 
-void Generator::generateMoves(uint16_t* moves, uint16_t* len) {
+void Generator::generateMoves(uint16_t* moves, uint16_t* len,
+        uint16_t *attacks, uint16_t *attacks_len) {
     if (_board.sideToMove == whiteSide) {
         whitePawnMoves(moves, len);
         whitePawnAttacks(moves, len);
-        whiteRookAttacks(moves, len);
+        whiteRookAttacks(moves, len, attacks, attacks_len);
         whiteKnightMoves(moves, len);
         whiteBishopAttacks(moves, len);
-        whiteQueenAttacks(moves, len);
+        whiteQueenAttacks(moves, len, attacks, attacks_len);
         whiteCastle(moves, len);
     } else {
         blackPawnMoves(moves, len);
         blackPawnAttacks(moves, len);
-        blackRookAttacks(moves, len);
+        blackRookAttacks(moves, len, attacks, attacks_len);
         blackKnightMoves(moves, len);
         blackBishopAttacks(moves, len);
-        blackQueenAttacks(moves, len);
+        blackQueenAttacks(moves, len, attacks, attacks_len);
         blackCastle(moves, len);
     }
     kingMoves(_board.sideToMove, moves, len);
@@ -663,7 +664,8 @@ U64 Generator::getRookFileAttackBB(uint16_t rookRank, uint16_t rookFile,
     return fileAttacks;
 }
 
-void Generator::rookAttacks(uint16_t *moves, uint16_t *len, U64 rookBB,
+void Generator::rookAttacks(uint16_t *moves, uint16_t *moves_len, 
+        uint16_t *attacks, uint16_t *attacks_len, U64 rookBB,
         U64 friendPieceBB) {
     U64 allBB = _board.getAllBB();
     U64 occ;
@@ -675,34 +677,51 @@ void Generator::rookAttacks(uint16_t *moves, uint16_t *len, U64 rookBB,
         uint16_t file = move % 8;
 
         occ = allBB & (~piece);
-        U64 attacks = getRookRankAttackBB(rank, file, occ, friendPieceBB);
+        U64 attacksBB = getRookRankAttackBB(rank, file, occ, friendPieceBB);
 
         occ = allBB & (~piece);
-        attacks |= getRookFileAttackBB(rank, file, occ, friendPieceBB);
+        attacksBB |= getRookFileAttackBB(rank, file, occ, friendPieceBB);
 
-        std::vector<U64> separatedAttacks = getSeparatedBits(attacks);
-        for (auto atk : separatedAttacks) {
+        // Separate quiet moves from attacks
+        U64 movesBB = attacksBB & (~allBB);
+        attacksBB &= allBB;
+
+        // Iterate through all quiet moves
+        std::vector<U64> separated = getSeparatedBits(movesBB);
+        for (auto atk : separated) {
             uint16_t atkIndex = getSquareIndex(atk);
             move &= ~(0xFC0);
             move |= atkIndex << 6;
-            moves[*len] = move;
-            (*len)++;
+            moves[*moves_len] = move;
+            (*moves_len)++;
+        }
+
+        // Iterate through all attacks
+        separated = getSeparatedBits(movesBB);
+        for (auto atk : separated) {
+            uint16_t atkIndex = getSquareIndex(atk);
+            move &= ~(0xFC0);
+            move |= atkIndex << 6;
+            attacks[*attacks_len] = move;
+            (*moves_len)++;
         }
      }
 }
 
-void Generator::whiteRookAttacks(uint16_t *moves, uint16_t *len) {
+void Generator::whiteRookAttacks(uint16_t *moves, uint16_t *len,
+        uint16_t *attacks, uint16_t *attacks_len) {
     U64 rookBB = _board.getRookBB(whiteSide);
     U64 friendPieceBB = _board.getPieceBB(whiteSide);
 
-    rookAttacks(moves, len, rookBB, friendPieceBB);
+    rookAttacks(moves, len, attacks, attacks_len, rookBB, friendPieceBB);
 }
 
-void Generator::blackRookAttacks(uint16_t *moves, uint16_t *len) {
+void Generator::blackRookAttacks(uint16_t *moves, uint16_t *len,
+        uint16_t *attacks, uint16_t *attacks_len) {
     U64 rookBB = _board.getRookBB(blackSide);
     U64 friendPieceBB = _board.getPieceBB(blackSide);
 
-    rookAttacks(moves, len, rookBB, friendPieceBB);
+    rookAttacks(moves, len, attacks, attacks_len, rookBB, friendPieceBB);
 }
 
 
@@ -785,22 +804,25 @@ void Generator::blackBishopAttacks(uint16_t *moves, uint16_t *len) {
     bishopAttacks(moves, len, bishopBB, friendPieceBB);
 }
 
-void Generator::queenAttacks(uint16_t* moves, uint16_t* len, U64 queenBB,
-        U64 friendPieceBB) {
+void Generator::queenAttacks(uint16_t* moves, uint16_t* len, 
+        uint16_t *attacks, uint16_t *attacks_len,
+        U64 queenBB, U64 friendPieceBB) {
     bishopAttacks(moves, len, queenBB, friendPieceBB);
-    rookAttacks(moves, len, queenBB, friendPieceBB);
+    rookAttacks(moves, len, attacks, attacks_len, queenBB, friendPieceBB);
 }
-void Generator::blackQueenAttacks(uint16_t* moves, uint16_t* len) {
+void Generator::blackQueenAttacks(uint16_t* moves, uint16_t* len,
+        uint16_t *attacks, uint16_t *attacks_len) {
     U64 queenBB = _board.getQueenBB(blackSide);
     U64 friendPieceBB = _board.getPieceBB(blackSide);
 
-    queenAttacks(moves, len, queenBB, friendPieceBB);
+    queenAttacks(moves, len, attacks, attacks_len, queenBB, friendPieceBB);
 }
-void Generator::whiteQueenAttacks(uint16_t* moves, uint16_t* len) {
+void Generator::whiteQueenAttacks(uint16_t* moves, uint16_t* len,
+        uint16_t *attacks, uint16_t *attacks_len) {
     U64 queenBB = _board.getQueenBB(whiteSide);
     U64 friendPieceBB = _board.getPieceBB(whiteSide);
 
-    queenAttacks(moves, len, queenBB, friendPieceBB);
+    queenAttacks(moves, len, attacks, attacks_len, queenBB, friendPieceBB);
 }
 
 void Generator::initKnightPosMoves(void) {
