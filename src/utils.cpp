@@ -19,7 +19,7 @@ unsigned int bitCount(U64 x) {
 }
 
 uint16_t getSquareIndex(U64 bb) {
-    return __builtin_ffsll(bb) - 1;
+    return bb == 0 ? 0 : __builtin_ffsll(bb) - 1;
 }
 
 U64 flipVertical(U64 x) {
