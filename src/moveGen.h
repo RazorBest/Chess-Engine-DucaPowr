@@ -19,8 +19,7 @@ class Generator {
  public:
     explicit Generator(Board& board);
 
-    void generateMoves(uint16_t* moves, uint16_t* len,
-        uint16_t *attacks, uint16_t *attacks_len);
+    void generateMoves(uint16_t* moves, uint16_t* len);
 
     // vvvvv Perhaps these should be private?
     U64 firstRankAttacks[64][8];
@@ -104,16 +103,22 @@ class Generator {
     void blackRookAttacks(uint16_t *moves, uint16_t *len,
         uint16_t *attacks, uint16_t *attacks_len);
 
-    void bishopAttacks(uint16_t* moves, uint16_t* len, U64 bishopBB,
-            U64 friendPieceBB);
-    void whiteBishopAttacks(uint16_t* moves, uint16_t* len);
-    void blackBishopAttacks(uint16_t* moves, uint16_t* len);
+    void bishopAttacks(uint16_t* moves, uint16_t* len,
+            uint16_t *attacks, uint16_t *attacks_len,
+            U64 bishopBB, U64 friendPieceBB);
+    void whiteBishopAttacks(uint16_t* moves, uint16_t* len,
+            uint16_t *attacks, uint16_t *attacks_len);
+    void blackBishopAttacks(uint16_t* moves, uint16_t* len,
+            uint16_t *attacks, uint16_t *attacks_len);
 
     void initKnightPosMoves();
-    void knightMoves(uint16_t* moves, uint16_t* len, U64 knightBB,
-            U64 friendPieceBB);
-    void whiteKnightMoves(uint16_t* moves, uint16_t* len);
-    void blackKnightMoves(uint16_t* moves, uint16_t* len);
+    void knightMoves(uint16_t* moves, uint16_t* len,
+        uint16_t *attacks, uint16_t *attacks_len,
+        U64 knightBB, U64 friendPieceBB);
+    void whiteKnightMoves(uint16_t* moves, uint16_t* len,
+        uint16_t *attacks, uint16_t *attacks_len);
+    void blackKnightMoves(uint16_t* moves, uint16_t* len,
+        uint16_t *attacks, uint16_t *attacks_len);
 
     void queenAttacks(uint16_t* moves, uint16_t* len,
             uint16_t *attacks, uint16_t *attacks_len, 

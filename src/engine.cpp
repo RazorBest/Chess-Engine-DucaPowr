@@ -81,6 +81,7 @@ int Engine::alphaBetaMax(int alpha, int beta, int depthleft, uint16_t *move) {
 
     int score = INT_MIN;
     uint16_t currMove;
+
     for (int i = 0; i < movesLen; ++i) {
         currMove = moves[i];
 
@@ -119,6 +120,7 @@ int Engine::alphaBetaMin(int alpha, int beta, int depthleft, uint16_t *move) {
 
     int score = INT_MAX;
     uint16_t currMove;
+
     for (int i = 0; i < movesLen; ++i) {
         currMove = moves[i];
 

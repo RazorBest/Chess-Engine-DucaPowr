@@ -282,27 +282,34 @@ void Generator::initBishopAttackTable(void) {
     }
 }
 
-void Generator::generateMoves(uint16_t* moves, uint16_t* len,
-        uint16_t *attacks, uint16_t *attacks_len) {
+void Generator::generateMoves(uint16_t* attacks, uint16_t* attacksLen) {
+    uint16_t moves[MAX_MOVES_AT_STEP];
+    uint16_t movesLen = 0;
+
     if (_board.sideToMove == whiteSide) {
-        whitePawnMoves(moves, len);
-        whitePawnAttacks(moves, len);
-        whiteRookAttacks(moves, len, attacks, attacks_len);
-        whiteKnightMoves(moves, len);
-        whiteBishopAttacks(moves, len);
-        whiteQueenAttacks(moves, len, attacks, attacks_len);
-        whiteCastle(moves, len);
+        whiteCastle(moves, &movesLen);
+        whiteRookAttacks(moves, &movesLen, attacks, attacksLen);
+        whiteKnightMoves(moves, &movesLen, attacks, attacksLen);
+        whiteBishopAttacks(moves, &movesLen, attacks, attacksLen);
+        whiteQueenAttacks(moves, &movesLen, attacks, attacksLen);
+        whitePawnMoves(moves, &movesLen);
+        whitePawnAttacks(attacks, attacksLen);
     } else {
-        blackPawnMoves(moves, len);
-        blackPawnAttacks(moves, len);
-        blackRookAttacks(moves, len, attacks, attacks_len);
-        blackKnightMoves(moves, len);
-        blackBishopAttacks(moves, len);
-        blackQueenAttacks(moves, len, attacks, attacks_len);
-        blackCastle(moves, len);
+        blackCastle(moves, &movesLen);
+        blackRookAttacks(moves, &movesLen, attacks, attacksLen);
+        blackKnightMoves(moves, &movesLen, attacks, attacksLen);
+        blackBishopAttacks(moves, &movesLen, attacks, attacksLen);
+        blackQueenAttacks(moves, &movesLen, attacks, attacksLen);
+        blackPawnMoves(moves, &movesLen);
+        blackPawnAttacks(attacks, attacksLen);
     }
-    kingMoves(_board.sideToMove, moves, len);
-    kingAttacks(_board.sideToMove, moves, len);
+    kingMoves(_board.sideToMove, moves, &movesLen);
+    kingAttacks(_board.sideToMove, moves, &movesLen);
+
+    //_logger.raw("Found attacks:" + std::to_string(*attacksLen));
+
+     memcpy(attacks + *attacksLen, moves, movesLen * sizeof(uint16_t));
+    *attacksLen += movesLen;
 }
 
 void Generator::whitePawnMoves(uint16_t* moves, uint16_t *len) {
@@ -697,13 +704,13 @@ void Generator::rookAttacks(uint16_t *moves, uint16_t *moves_len,
         }
 
         // Iterate through all attacks
-        separated = getSeparatedBits(movesBB);
+        separated = getSeparatedBits(attacksBB);
         for (auto atk : separated) {
             uint16_t atkIndex = getSquareIndex(atk);
             move &= ~(0xFC0);
             move |= atkIndex << 6;
             attacks[*attacks_len] = move;
-            (*moves_len)++;
+            (*attacks_len)++;
         }
      }
 }
@@ -762,9 +769,10 @@ void Generator::kingAttacks(Side side, uint16_t *moves, uint16_t *len) {
 }
 
 void Generator::bishopAttacks(uint16_t *moves, uint16_t *len,
+        uint16_t *attacks, uint16_t *attacks_len,
         U64 bishopBB, U64 friendPieceBB) {
     U64 allBB = _board.getAllBB();
-    U64 occ, attacks;
+    U64 occ, attacksBB;
 
     std::vector<U64> separated = getSeparatedBits(bishopBB);
     for (auto piece : separated) {
@@ -776,38 +784,54 @@ void Generator::bishopAttacks(uint16_t *moves, uint16_t *len,
         uint16_t occIndex = occ & ((1 << bishopRelevantBits[move]) - 1);
 
         // Get the attacks bitboard
-        attacks = bishopAttackTable[move][occIndex];
-        attacks &= ~friendPieceBB;
+        attacksBB = bishopAttackTable[move][occIndex];
+        attacksBB &= ~friendPieceBB;
 
-        std::vector<U64> separatedAttacks = getSeparatedBits(attacks);
-        for (auto atk : separatedAttacks) {
+        U64 movesBB = attacksBB & (~allBB);
+        attacksBB &= allBB;
+
+        // Iterate through all quiet moves
+        std::vector<U64> separated = getSeparatedBits(movesBB);
+        for (auto atk : separated) {
             uint16_t atkIndex = getSquareIndex(atk);
             move &= ~(0xFC0);
             move |= atkIndex << 6;
             moves[*len] = move;
             (*len)++;
         }
+
+        // Iterate through all attacks
+        separated = getSeparatedBits(attacksBB);
+        for (auto atk : separated) {
+            uint16_t atkIndex = getSquareIndex(atk);
+            move &= ~(0xFC0);
+            move |= atkIndex << 6;
+            attacks[*attacks_len] = move;
+            (*attacks_len)++;
+        }
     }
 }
 
-void Generator::whiteBishopAttacks(uint16_t *moves, uint16_t *len) {
+void Generator::whiteBishopAttacks(uint16_t *moves, uint16_t *len,
+        uint16_t *attacks, uint16_t *attacks_len) {
     U64 bishopBB = _board.getBishopBB(whiteSide);
     U64 friendPieceBB = _board.getPieceBB(whiteSide);
 
-    bishopAttacks(moves, len, bishopBB, friendPieceBB);
+    bishopAttacks(moves, len, attacks, attacks_len, bishopBB, friendPieceBB);
 }
 
-void Generator::blackBishopAttacks(uint16_t *moves, uint16_t *len) {
+void Generator::blackBishopAttacks(uint16_t *moves, uint16_t *len,
+        uint16_t *attacks, uint16_t *attacks_len) {
     U64 bishopBB = _board.getBishopBB(blackSide);
     U64 friendPieceBB = _board.getPieceBB(blackSide);
 
-    bishopAttacks(moves, len, bishopBB, friendPieceBB);
+    bishopAttacks(moves, len, attacks, attacks_len, bishopBB, friendPieceBB);
 }
 
 void Generator::queenAttacks(uint16_t* moves, uint16_t* len, 
         uint16_t *attacks, uint16_t *attacks_len,
         U64 queenBB, U64 friendPieceBB) {
-    bishopAttacks(moves, len, queenBB, friendPieceBB);
+    bishopAttacks(moves, len, attacks, attacks_len, queenBB, friendPieceBB);
     rookAttacks(moves, len, attacks, attacks_len, queenBB, friendPieceBB);
 }
 void Generator::blackQueenAttacks(uint16_t* moves, uint16_t* len,
@@ -901,25 +925,29 @@ void Generator::initKnightPosMoves(void) {
     }
 }
 
-void Generator::whiteKnightMoves(uint16_t* moves, uint16_t* len) {
+void Generator::whiteKnightMoves(uint16_t* moves, uint16_t* len,
+        uint16_t *attacks, uint16_t *attacks_len) {
     U64 knightBB = _board.getKnightBB(whiteSide);
     U64 friendPieceBB = _board.getPieceBB(whiteSide);
 
-    knightMoves(moves, len, knightBB, friendPieceBB);
+    knightMoves(moves, len, attacks, attacks_len, knightBB, friendPieceBB);
 }
 
-void Generator::blackKnightMoves(uint16_t* moves, uint16_t* len) {
+void Generator::blackKnightMoves(uint16_t* moves, uint16_t* len,
+        uint16_t *attacks, uint16_t *attacks_len) {
     U64 knightBB = _board.getKnightBB(blackSide);
     U64 friendPieceBB = _board.getPieceBB(blackSide);
 
-    knightMoves(moves, len, knightBB, friendPieceBB);
+    knightMoves(moves, len, attacks, attacks_len, knightBB, friendPieceBB);
 }
 
-void Generator::knightMoves(uint16_t* moves, uint16_t* len, U64 knightBB,
-            U64 friendPieceBB) {
+void Generator::knightMoves(uint16_t* moves, uint16_t* len,
+        uint16_t *attacks, uint16_t *attacks_len,
+        U64 knightBB, U64 friendPieceBB) {
     uint16_t tmpMove;
     uint16_t knightIndex;
     std::vector<U64> separatedMoves;
+    U64 allBB = _board.getAllBB();
 
     // All possible moves of a given knight.
     U64 allPosMoves;
@@ -933,12 +961,28 @@ void Generator::knightMoves(uint16_t* moves, uint16_t* len, U64 knightBB,
 
         allPosMoves = knightPosMoves[knightIndex] & (~friendPieceBB);
 
-        separatedMoves = getSeparatedBits(allPosMoves);
+        U64 movesBB = allPosMoves & (~allBB);
+        allPosMoves &= allBB;
+
+        // Iterate through quiet moves
+        separatedMoves = getSeparatedBits(movesBB);
         for (auto move : separatedMoves) {
             // Set the destination of this move.
             tmpMove |= (getSquareIndex(move) << 6);
 
             moves[(*len)++] = tmpMove;
+
+            // Reset the destination for the next move.
+            tmpMove &= 0x3f;
+        }
+        
+        // Iterate through all attacks
+        separatedMoves = getSeparatedBits(allPosMoves);
+        for (auto move : separatedMoves) {
+            // Set the destination of this move.
+            tmpMove |= (getSquareIndex(move) << 6);
+
+            attacks[(*attacks_len)++] = tmpMove;
 
             // Reset the destination for the next move.
             tmpMove &= 0x3f;
