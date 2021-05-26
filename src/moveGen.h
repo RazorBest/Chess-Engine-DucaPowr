@@ -65,7 +65,6 @@ class Generator {
      */
     U64 kingNeighbors[64];
 
-
  private:
     Board& _board;
     Logger _logger;
@@ -96,26 +95,38 @@ class Generator {
             U64 occ, U64 friendPieceBB);
     U64 getRookRankAttackBB(uint16_t rookRank, uint16_t rookFile,
             U64 occ, U64 friendPieceBB);
-    void rookAttacks(uint16_t *moves, uint16_t *len, U64 rookBB,
-            U64 friendPieceBB);
-    void whiteRookAttacks(uint16_t* moves, uint16_t* len);
-    void blackRookAttacks(uint16_t* moves, uint16_t* len);
+    void rookAttacks(uint16_t *moves, uint16_t *moves_len, 
+        uint16_t *attacks, uint16_t *attacks_len, U64 rookBB,
+        U64 friendPieceBB);
+    void whiteRookAttacks(uint16_t *moves, uint16_t *len,
+        uint16_t *attacks, uint16_t *attacks_len);
+    void blackRookAttacks(uint16_t *moves, uint16_t *len,
+        uint16_t *attacks, uint16_t *attacks_len);
 
-    void bishopAttacks(uint16_t* moves, uint16_t* len, U64 bishopBB,
-            U64 friendPieceBB);
-    void whiteBishopAttacks(uint16_t* moves, uint16_t* len);
-    void blackBishopAttacks(uint16_t* moves, uint16_t* len);
+    void bishopAttacks(uint16_t* moves, uint16_t* len,
+            uint16_t *attacks, uint16_t *attacks_len,
+            U64 bishopBB, U64 friendPieceBB);
+    void whiteBishopAttacks(uint16_t* moves, uint16_t* len,
+            uint16_t *attacks, uint16_t *attacks_len);
+    void blackBishopAttacks(uint16_t* moves, uint16_t* len,
+            uint16_t *attacks, uint16_t *attacks_len);
 
     void initKnightPosMoves();
-    void knightMoves(uint16_t* moves, uint16_t* len, U64 knightBB,
-            U64 friendPieceBB);
-    void whiteKnightMoves(uint16_t* moves, uint16_t* len);
-    void blackKnightMoves(uint16_t* moves, uint16_t* len);
+    void knightMoves(uint16_t* moves, uint16_t* len,
+        uint16_t *attacks, uint16_t *attacks_len,
+        U64 knightBB, U64 friendPieceBB);
+    void whiteKnightMoves(uint16_t* moves, uint16_t* len,
+        uint16_t *attacks, uint16_t *attacks_len);
+    void blackKnightMoves(uint16_t* moves, uint16_t* len,
+        uint16_t *attacks, uint16_t *attacks_len);
 
-    void queenAttacks(uint16_t* moves, uint16_t* len, U64 queenBBm,
-            U64 friendPieceBB);
-    void blackQueenAttacks(uint16_t* moves, uint16_t* len);
-    void whiteQueenAttacks(uint16_t* moves, uint16_t* len);
+    void queenAttacks(uint16_t* moves, uint16_t* len,
+            uint16_t *attacks, uint16_t *attacks_len, 
+            U64 queenBBm, U64 friendPieceBB);
+    void blackQueenAttacks(uint16_t* moves, uint16_t* len,
+        uint16_t *attacks, uint16_t *attacks_len);
+    void whiteQueenAttacks(uint16_t* moves, uint16_t* len,
+        uint16_t *attacks, uint16_t *attacks_len);
 
     /**
      * @brief This functions adds to an array the possible king moves.
